@@ -49,7 +49,7 @@ class JsonResponseMixin(object):
     def json_serializer(context):
         return json.dumps(context, indent=4)
 
-    def render_to_response(self, context, **response_kwargs):
+    def render_to_response(self, context={}, **response_kwargs):
         context_dict = self.context_serialize(context)
         json_context = self.json_serializer(context_dict)
         return HttpResponse(json_context, content_type='application/json', **response_kwargs)

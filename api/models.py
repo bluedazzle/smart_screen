@@ -2,13 +2,15 @@
 from __future__ import unicode_literals
 import datetime
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
 
 class BaseModel(models.Model):
-    create_time = models.DateTimeField(default=datetime.datetime.now())
+    create_time = models.DateTimeField(default=timezone.now)
     modify_time = models.DateTimeField(auto_now=True)
+    original_create_time = models.DateTimeField(default=timezone.now)
 
     class Meta:
         abstract = True
@@ -54,18 +56,21 @@ class GoodsOrder(BaseModel):
 
 class FuelTank(BaseModel):
     tank_id = models.IntegerField(default=1)
-    fuel = models.IntegerField(default=1)
-    max_value = models.IntegerField(default=10000)
-    min_value = models.IntegerField(default=1000)
+    name = models.CharField(max_length=30, default='', null=True, blank=True)
+    current = models.FloatField(default=0.0)
+    max_value = models.FloatField(default=10000.0)
+    min_value = models.FloatField(default=1000.0)
+    temperature = models.FloatField(default=0.0)
+    water_stick = models.FloatField(default=0.0)
     belong = models.ForeignKey(Site, related_name='site_fuel_tanks')
 
     def __unicode__(self):
-        return self.fuel
+        return self.name
 
 
 class InventoryRecord(BaseModel):
     record_choices = (
-        (1, '班结日结')
+        (1, '班结日结'),
     )
 
     record_type = models.IntegerField(default=1, choices=record_choices)
