@@ -24,7 +24,7 @@ class FuelTank(Base):
     original_create_time = Column(DateTime)
 
 
-engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/smart_screen',
+engine = create_engine('postgresql+psycopg2://postgres:123456qq@localhost:5432/smart_screen',
                        encoding='utf-8'.encode())
 
 DBSession = sessionmaker(bind=engine)
