@@ -10,7 +10,7 @@ from django.utils import timezone
 class BaseModel(models.Model):
     create_time = models.DateTimeField(default=timezone.now)
     modify_time = models.DateTimeField(auto_now=True)
-    original_create_time = models.DateTimeField(default=timezone.now)
+    original_create_time = models.DateTimeField(default=timezone.now, null=True, blank=True)
 
     class Meta:
         abstract = True
@@ -19,7 +19,9 @@ class BaseModel(models.Model):
 class Site(BaseModel):
     name = models.CharField(max_length=40, default='')
     slug = models.CharField(max_length=10, unique=True)
+    # office 系统
     fuel_server = models.GenericIPAddressField()
+    # eps 系统
     bos_server = models.GenericIPAddressField()
 
     def __unicode__(self):
@@ -57,11 +59,11 @@ class GoodsOrder(BaseModel):
 class FuelTank(BaseModel):
     tank_id = models.IntegerField(default=1)
     name = models.CharField(max_length=30, default='', null=True, blank=True)
-    current = models.FloatField(default=0.0)
-    max_value = models.FloatField(default=10000.0)
-    min_value = models.FloatField(default=1000.0)
-    temperature = models.FloatField(default=0.0)
-    water_stick = models.FloatField(default=0.0)
+    current = models.FloatField(default=0.0, null=True, blank=True)
+    max_value = models.FloatField(default=10000.0, null=True, blank=True)
+    min_value = models.FloatField(default=1000.0, null=True, blank=True)
+    temperature = models.FloatField(default=0.0, null=True, blank=True)
+    water_stick = models.FloatField(default=0.0, null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_fuel_tanks')
 
     def __unicode__(self):
