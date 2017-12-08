@@ -29,20 +29,21 @@ class Site(BaseModel):
 
 
 class FuelOrder(BaseModel):
-    fuel_choices = (
-        (1, '95号汽油'),
-        (2, '97号汽油'),
-        (3, '0号柴油'),
-    )
-
-    fuel_type = models.IntegerField(default=1, choices=fuel_choices)
+    fuel_type = models.CharField(default='', max_length=50)
     amount = models.FloatField(default=0.0)  # 卖出数量
+    price = models.FloatField(default=0.0)
     total_price = models.FloatField(default=0.0)
-    payment_type = models.IntegerField(default=1)
+    payment_type = models.CharField(default='其他', max_length=20)
+    payment_code = models.IntegerField(default=0)
+    catch_payment = models.BooleanField(default=False)
+    till_id = models.IntegerField(default=0)
+    pump_id = models.IntegerField(default=0)
+    hash = models.CharField(max_length=64, unique=True)
     belong = models.ForeignKey(Site, related_name='site_fuel_orders')
 
     def __unicode__(self):
-        return self.total_price
+        return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}-{3}L-￥{4}'.format(self.belong.name, self.original_create_time,
+                                                                 self.fuel_type, self.amount, self.total_price)
 
 
 class GoodsOrder(BaseModel):
@@ -58,6 +59,7 @@ class GoodsOrder(BaseModel):
 
 class FuelTank(BaseModel):
     tank_id = models.IntegerField(default=1)
+    grade_id = models.IntegerField(default=1, null=True, blank=True)
     name = models.CharField(max_length=30, default='', null=True, blank=True)
     current = models.FloatField(default=0.0, null=True, blank=True)
     max_value = models.FloatField(default=10000.0, null=True, blank=True)
@@ -72,21 +74,51 @@ class FuelTank(BaseModel):
 
 class InventoryRecord(BaseModel):
     record_choices = (
-        (1, '班结日结'),
+        (1, '卸前计量'),
+        (2, '卸后计量'),
+        (3, '班结计量'),
     )
 
     record_type = models.IntegerField(default=1, choices=record_choices)
     # 油品进货
-    send_amount = models.FloatField(default=0.0)
-    receive_amount = models.FloatField(default=0.0)
+    send_amount = models.FloatField(default=0.0, null=True, blank=True)
+    receive_amount = models.FloatField(default=0.0, null=True, blank=True)
     # 油品付出
-    tank_out_amount = models.FloatField(default=0.0)
-    tanker_out_amount = models.FloatField(default=0.0)
-    loss_amount = models.FloatField(default=0.0)
+    tank_out_amount = models.FloatField(default=0.0, null=True, blank=True)
+    # 加油机发出量
+    tanker_out_amount = models.FloatField(default=0.0, null=True, blank=True)
+    # 加油机实出量
+    tanker_act_out_amount = models.FloatField(default=0.0, null=True, blank=True)
+    # 回罐数量
+    back_tank_amount = models.FloatField(default=0.0, null=True, blank=True)
+    # 损耗量
+    loss_amount = models.FloatField(default=0.0, null=True, blank=True)
 
-    tank_amount = models.FloatField(default=0.0)
+    # 水高
+    water_altitude = models.FloatField(default=0.0, null=True, blank=True)
+    # 油水总高
+    altitude = models.FloatField(default=0.0, null=True, blank=True)
+    # 油品体积
+    fuel_volum = models.FloatField(default=0.0, null=True, blank=True)
+    # 油温
+    fuel_temperature = models.FloatField(default=0.0, null=True, blank=True)
+    # 油品标准体积
+    fuel_standard_volum = models.FloatField(default=0.0, null=True, blank=True)
+    # 实验
+    experiment_temperature = models.FloatField(default=0.0, null=True, blank=True)
+    experiment_density = models.FloatField(default=0.0, null=True, blank=True)
+    # 标准
+    standard_temperature = models.FloatField(default=0.0, null=True, blank=True)
+    standard_density = models.FloatField(default=0.0, null=True, blank=True)
+
+    vcf20 = models.FloatField(default=1.0, null=True, blank=True)
+    shift_control_id = models.IntegerField(default=1, null=True, blank=True)
+    hash = models.CharField(max_length=64, unique=True)
+
+    fuel_name = models.CharField(max_length=50, default='', null=True, blank=True)
     tank = models.ForeignKey(FuelTank, related_name='tank_inventory_records')
     belong = models.ForeignKey(Site, related_name='site_inventory_records')
 
     def __unicode__(self):
-        return '{0}-{1}-{2}'.format(self.belong.name, self.tank.name, self.record_type)
+        return '{0}-{1}号油罐-{2}-{3}-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.tank.tank_id, self.tank.name,
+                                                                  self.record_type, self.original_create_time)
