@@ -7,7 +7,8 @@ import hashlib
 import logging
 import pytz
 
-from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder
+from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
+    ThirdClassification, GoodsOrder
 
 
 def get_site_by_slug(slug):
@@ -20,7 +21,7 @@ def create_tank(tid, site_id, *args, **kwargs):
     obj.tank_id = tid,
     obj.name = ''
     obj.belong_id = site_id
-    obj.create_time = datetime.datetime.now()
+    obj.create_time = get_now_time_with_timezone()
     for k, v in kwargs:
         setattr(obj, k, v)
     session.add(obj)
@@ -30,7 +31,7 @@ def create_tank(tid, site_id, *args, **kwargs):
 
 def create_record(**kwargs):
     obj = InventoryRecord()
-    obj.create_time = datetime.datetime.now()
+    obj.create_time = get_now_time_with_timezone()
     for k, v in kwargs.items():
         if not v:
             v = 0.0
@@ -45,7 +46,7 @@ def create_record(**kwargs):
 
 def create_fuel_order(**kwargs):
     obj = FuelOrder()
-    obj.create_time = datetime.datetime.now()
+    obj.create_time = get_now_time_with_timezone()
     for k, v in kwargs.items():
         if isinstance(v, datetime.datetime):
             v = add_timezone_to_naive_time(v)
@@ -53,6 +54,18 @@ def create_fuel_order(**kwargs):
     session.add(obj)
     session.commit()
     logging.info('INFO create fuel order {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
+
+
+def create_goods_order(**kwargs):
+    obj = GoodsOrder()
+    obj.create_time = get_now_time_with_timezone()
+    for k, v in kwargs.items():
+        if isinstance(v, datetime.datetime):
+            v = add_timezone_to_naive_time(v)
+        setattr(obj, k, v)
+    session.add(obj)
+    session.commit()
+    logging.info('INFO create goods order {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
 
 
 def get_latest_settlement_record(tank_id):
@@ -67,9 +80,22 @@ def get_record_by_hash(hash_str):
     return obj
 
 
+def get_goods_order_by_hash(hash_str):
+    try:
+        obj = session.query(GoodsOrder).filter(GoodsOrder.hash == hash_str).first()
+        return obj
+    except Exception as e:
+        print e
+        return None
+
+
 def get_fuel_order_by_hash(hash_str):
-    obj = session.query(FuelOrder).filter(FuelOrder.hash == hash_str).first()
-    return obj
+    try:
+        obj = session.query(FuelOrder).filter(FuelOrder.hash == hash_str).first()
+        return obj
+    except Exception as e:
+        print e
+        return None
 
 
 def get_tank_by_tank_id(tid, site_id, *args, **kwargs):
@@ -97,7 +123,11 @@ def generate_hash(*args):
 
 
 def get_clean_data(value):
-    return value.strip().decode('gbk')
+    try:
+        return value.strip().decode('gbk')
+    except Exception as e:
+        logging.exception('ERROR IN get clean data reason {0}'.format(e))
+        return '错误'
 
 
 def datetime_to_string(obj, fmt='%Y-%m-%d'):
@@ -106,3 +136,59 @@ def datetime_to_string(obj, fmt='%Y-%m-%d'):
 
 def string_to_datetime(time_data, fmt='%Y-%m-%d %H:%M:%S'):
     return datetime.datetime.strptime(time_data, format=fmt)
+
+
+def get_second_cls_by_id(cid):
+    res = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
+    return res
+
+
+def get_now_time_with_timezone():
+    now = datetime.datetime.now()
+    now = add_timezone_to_naive_time(now)
+    return now
+
+
+def update_classification(cid, **kwargs):
+    res = session.query(Classification).filter(Classification.id == cid).first()
+    if not res:
+        res = Classification()
+        res.create_time = get_now_time_with_timezone()
+        res.id = cid
+    for k, v in kwargs.items():
+        setattr(res, k, v)
+    res.original_create_time = get_now_time_with_timezone()
+    session.add(res)
+    session.commit()
+    return res
+
+
+def update_second_classification(cid, **kwargs):
+    res = session.query(SecondClassification).filter(Classification.id == cid).first()
+    if not res:
+        res = SecondClassification()
+        res.create_time = get_now_time_with_timezone()
+        res.id = cid
+    for k, v in kwargs.items():
+        setattr(res, k, v)
+    res.original_create_time = get_now_time_with_timezone()
+    session.add(res)
+    session.commit()
+    return res
+
+
+def update_third_classification(cid, **kwargs):
+    res = session.query(ThirdClassification).filter(ThirdClassification.id == cid).first()
+    if not res:
+        res = ThirdClassification()
+        res.create_time = get_now_time_with_timezone()
+        res.id = cid
+    for k, v in kwargs.items():
+        setattr(res, k, v)
+    res.original_create_time = get_now_time_with_timezone()
+    second_cls = get_second_cls_by_id(kwargs.get('parent_id'))
+    if second_cls:
+        res.grandparent_id = second_cls.parent_id
+    session.add(res)
+    session.commit()
+    return res

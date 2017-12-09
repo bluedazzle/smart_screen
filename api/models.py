@@ -46,11 +46,48 @@ class FuelOrder(BaseModel):
                                                                  self.fuel_type, self.amount, self.total_price)
 
 
+class Classification(BaseModel):
+    name = models.CharField(max_length=100, default='')
+    id = models.IntegerField(unique=True, primary_key=True)
+    belong = models.ForeignKey(Site, related_name='site_classification', null=True, blank=True)
+
+    def __unicode__(self):
+        return '{0}-{1}'.format(self.id, self.name)
+
+
+class SecondClassification(BaseModel):
+    name = models.CharField(max_length=100, default='')
+    id = models.IntegerField(unique=True, primary_key=True)
+    parent = models.ForeignKey(Classification, related_name='cls_sub_cls')
+    belong = models.ForeignKey(Site, related_name='site_second_classification', null=True, blank=True)
+
+    def __unicode__(self):
+        return '{0}-{1}<-{2}'.format(self.id, self.name, self.parent.name)
+
+
+class ThirdClassification(BaseModel):
+    name = models.CharField(max_length=100, default='')
+    id = models.IntegerField(unique=True, primary_key=True)
+    parent = models.ForeignKey(SecondClassification, related_name='sub_cls_ssub_cls')
+    grandparent = models.ForeignKey(Classification, related_name='cls_ssub_cls')
+    belong = models.ForeignKey(Site, related_name='site_third_classification', null=True, blank=True)
+
+    def __unicode__(self):
+        return '{0}-{1}<-{2}<-{3}'.format(self.id, self.name, self.parent.name, self.grandparent.name)
+
+
 class GoodsOrder(BaseModel):
     name = models.CharField(max_length=120, default='')
+    barcode = models.CharField(max_length=50, default='')
     price = models.FloatField(default=0.0)
-    payment_type = models.IntegerField(default=1)
-    goods_type = models.IntegerField(default=1)
+    amount = models.FloatField(default=0)
+    total = models.FloatField(default=0.0)
+    payment_type = models.CharField(default='其他', max_length=20)
+    payment_code = models.IntegerField(default=0)
+    catch_payment = models.BooleanField(default=False)
+    till_id = models.IntegerField(default=0)
+    classification = models.ForeignKey(ThirdClassification, related_name='ssub_cls_goods')
+    hash = models.CharField(max_length=64, unique=True)
     belong = models.ForeignKey(Site, related_name='site_goods_orders')
 
     def __unicode__(self):
