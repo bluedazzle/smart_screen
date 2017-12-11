@@ -159,3 +159,34 @@ class InventoryRecord(BaseModel):
     def __unicode__(self):
         return '{0}-{1}号油罐-{2}-{3}-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.tank.tank_id, self.tank.name,
                                                                   self.record_type, self.original_create_time)
+
+
+class DeliveryRecord(BaseModel):
+    supplier = models.CharField(default='', max_length=50)
+    receiver = models.CharField(default='', max_length=50)
+    truck_number = models.CharField(default='', max_length=30)
+    hash = models.CharField(max_length=128, unique=True)
+    belong = models.ForeignKey(Site, related_name='site_deliveries')
+
+    def __unicode__(self):
+        return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}'.format(self.belong.name, self.original_create_time, self.truck_number)
+
+
+class Supplier(models.Model):
+    sid = models.IntegerField(default=1)
+    name = models.CharField(default='', max_length=50)
+    belong = models.ForeignKey(Site, related_name='site_suppliers')
+
+    def __unicode__(self):
+        return '{0}-{1}'.format(self.belong.name, self.name)
+
+
+class Receiver(models.Model):
+    rid = models.IntegerField(default=1)
+    name = models.CharField(default='', max_length=50)
+    belong = models.ForeignKey(Site, related_name='site_receivers')
+
+    def __unicode__(self):
+        return '{0}-{1}'.format(self.belong.name, self.name)
+
+

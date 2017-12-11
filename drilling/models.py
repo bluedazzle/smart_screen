@@ -145,6 +145,38 @@ class GoodsOrder(Base):
         super(GoodsOrder, self).__init__(*args, **kwargs)
 
 
+class Supplier(Base):
+    __tablename__ = 'api_supplier'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    sid = Column(Integer)
+    belong_id = Column(Integer)
+
+
+class Receiver(Base):
+    __tablename__ = 'api_receiver'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    rid = Column(Integer)
+    belong_id = Column(Integer)
+
+
+class DeliveryRecord(Base):
+    __tablename__ = 'api_deliveryrecord'
+
+    id = Column(Integer, primary_key=True)
+    supplier = Column(String)
+    receiver = Column(String)
+    truck_number = Column(String)
+    belong_id = Column(String)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    hash = Column(String)
+
+
 class Site(Base):
     __tablename__ = 'api_site'
 

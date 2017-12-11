@@ -8,7 +8,7 @@ import logging
 import pytz
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
-    ThirdClassification, GoodsOrder
+    ThirdClassification, GoodsOrder, Supplier, Receiver
 
 
 def get_site_by_slug(slug):
@@ -56,6 +56,18 @@ def create_fuel_order(**kwargs):
     logging.info('INFO create fuel order {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
 
 
+def create_object(obj_class, **kwargs):
+    obj = obj_class()
+    obj.create_time = get_now_time_with_timezone()
+    for k, v in kwargs.items():
+        if isinstance(v, datetime.datetime):
+            v = add_timezone_to_naive_time(v)
+        setattr(obj, k, v)
+    session.add(obj)
+    session.commit()
+    logging.info('INFO create obj {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
+
+
 def create_goods_order(**kwargs):
     obj = GoodsOrder()
     obj.create_time = get_now_time_with_timezone()
@@ -80,6 +92,15 @@ def get_record_by_hash(hash_str):
     return obj
 
 
+def get_obj_by_hash(hash_str, obj_class):
+    try:
+        obj = session.query(obj_class).filter(obj_class.hash == hash_str).first()
+        return obj
+    except Exception as e:
+        print e
+        return None
+
+
 def get_goods_order_by_hash(hash_str):
     try:
         obj = session.query(GoodsOrder).filter(GoodsOrder.hash == hash_str).first()
@@ -102,6 +123,21 @@ def get_tank_by_tank_id(tid, site_id, *args, **kwargs):
     obj = session.query(FuelTank).filter(FuelTank.tank_id == tid, FuelTank.belong_id == site_id).first()
     if not obj:
         obj = create_tank(tid, site_id, *args, **kwargs)
+    return obj
+
+
+def get_object_by_id(oid, site, obj_class):
+    obj = session.query(obj_class).filter(obj_class.id == oid, obj_class.belong_id == site.id).first()
+    return obj
+
+
+def get_sup_by_sid(sid, site):
+    obj = session.query(Supplier).filter(Supplier.sid == sid, Supplier.belong_id == site.id).first()
+    return obj
+
+
+def get_rev_by_rid(rid, site):
+    obj = session.query(Receiver).filter(Receiver.rid == rid, Receiver.belong_id == site.id).first()
     return obj
 
 
@@ -147,6 +183,32 @@ def get_now_time_with_timezone():
     now = datetime.datetime.now()
     now = add_timezone_to_naive_time(now)
     return now
+
+
+def update_sup(sid, site, **kwargs):
+    res = session.query(Supplier).filter(Supplier.sid == sid, Supplier.belong_id == site.id).first()
+    if not res:
+        res = Supplier()
+        res.sid = sid
+        res.belong_id = site.id
+    for k, v in kwargs.items():
+        setattr(res, k, v)
+    session.add(res)
+    session.commit()
+    return res
+
+
+def update_rev(rid, site, **kwargs):
+    res = session.query(Receiver).filter(Receiver.rid == rid, Receiver.belong_id == site.id).first()
+    if not res:
+        res = Receiver()
+        res.rid = rid
+        res.belong_id = site.id
+    for k, v in kwargs.items():
+        setattr(res, k, v)
+    session.add(res)
+    session.commit()
+    return res
 
 
 def update_classification(cid, **kwargs):
