@@ -5,8 +5,12 @@ from celery.schedules import crontab
 
 CELERYBEAT_SCHEDULE = {
     'get-tank-value': {
-        'task': 'smart_screen.drilling.tasks.test_tank',
-        'schedule': timedelta(seconds=10),
+        'task': 'drilling.tasks.get_tanks',
+        'schedule': timedelta(seconds=30),
+    },
+    'get-inventory-record': {
+        'task': 'drilling.tasks.get_inventory_record_task',
+        'schedule': timedelta(seconds=60),
     },
 }
 
