@@ -7,7 +7,7 @@ from drilling.db.interbase import init_interbase_connect
 from drilling.models import session, FuelOrder, DeliveryRecord, Receiver, Supplier
 from drilling.utils import get_site_by_slug, get_clean_data, get_fuel_order_by_hash, generate_hash, datetime_to_string, \
     create_fuel_order, update_sup, update_rev, get_obj_by_hash, create_object, get_object_by_id, get_rev_by_rid, \
-    get_sup_by_sid
+    get_sup_by_sid, query_by_pagination
 
 
 def get_fuel_order(site, start_time=None, end_time=None):
@@ -60,24 +60,25 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 
 def get_fuel_order_payment(site):
     orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False).all()
-    ib_session = init_interbase_connect(site.fuel_server)
-    till_list = []
-    for order in orders:
-        till_list.append(order.till_id)
-    tills = ','.join([unicode(i) for i in till_list])
-    sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
-PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
-PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
-    ib_session.execute(sql)
-    res = ib_session.fetchall()
-    for itm in res:
-        till_id, payment_code, payment_type = itm
-        order = session.query(FuelOrder).filter(FuelOrder.till_id == till_id).first()
-        if order:
-            order.payment_code = payment_code
-            order.payment_type = get_clean_data(payment_type)
-            order.catch_payment = True
-    session.commit()
+    total = len(orders)
+    for orders in query_by_pagination(session, FuelOrder, total, limit=100):
+        ib_session = init_interbase_connect(site.fuel_server)
+        tills = ','.join([unicode(i.till_id) for i in orders])
+        if not tills:
+            return
+        sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
+    PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
+    PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
+        ib_session.execute(sql)
+        res = ib_session.fetchall()
+        for itm in res:
+            till_id, payment_code, payment_type = itm
+            order = session.query(FuelOrder).filter(FuelOrder.till_id == till_id).first()
+            if order:
+                order.payment_code = payment_code
+                order.payment_type = get_clean_data(payment_type)
+                order.catch_payment = True
+        session.commit()
 
 
 def get_sup(site):
@@ -137,6 +138,6 @@ Order By EXTREF'''
 if __name__ == '__main__':
     # get_fuel_order('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 2))
     # site = get_site_by_slug('test')
-    get_sup('test')
+    # get_sup('test')
     # get_rev('test')
-    # get_delivery('test')
+    get_delivery('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 10))

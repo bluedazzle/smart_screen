@@ -6,7 +6,7 @@ from celery.schedules import crontab
 CELERYBEAT_SCHEDULE = {
     'get-tank-value': {
         'task': 'drilling.tasks.get_tanks',
-        'schedule': timedelta(seconds=30),
+        'schedule': timedelta(seconds=10),
     },
     'get-inventory-record': {
         'task': 'drilling.tasks.get_inventory_record_task',
@@ -18,7 +18,7 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 CELERY_TIMEZONE = 'Asia/Shanghai'
 
-CELERYD_CONCURRENCY = 24
+CELERYD_CONCURRENCY = 4
 
 CELERYD_MAX_TASKS_PER_CHILD = 300
 

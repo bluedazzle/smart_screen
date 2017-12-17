@@ -76,6 +76,24 @@ class ThirdClassification(BaseModel):
         return '{0}-{1}<-{2}<-{3}'.format(self.id, self.name, self.parent.name, self.grandparent.name)
 
 
+class GoodsInventory(BaseModel):
+    name = models.CharField(max_length=200, default='')
+    barcode = models.CharField(max_length=100, default='', null=True, blank=True)
+    itemcode = models.CharField(max_length=100, null=True, blank=True)
+    unit = models.CharField(max_length=20, null=True, blank=True)
+    amount = models.FloatField(default=0.0)
+    hash = models.CharField(max_length=128, unique=True)
+    last_sell_time = models.DateTimeField()
+
+    third_cls = models.ForeignKey(ThirdClassification, related_name='third_cls_gis')
+    second_cls = models.ForeignKey(SecondClassification, related_name='second_cls_gis')
+    cls = models.ForeignKey(Classification, related_name='cls_gis')
+    belong = models.ForeignKey(Site, related_name='site_gis')
+
+    def __unicode__(self):
+        return '{0}: {1} {2}{3}'.format(self.belong.name, self.name, self.amount, self.unit)
+
+
 class GoodsOrder(BaseModel):
     name = models.CharField(max_length=120, default='')
     barcode = models.CharField(max_length=50, default='')
@@ -91,7 +109,7 @@ class GoodsOrder(BaseModel):
     belong = models.ForeignKey(Site, related_name='site_goods_orders')
 
     def __unicode__(self):
-        return self.name
+        return '{0}-{1}x{2} {3}元-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.name, self.amount, self.total, self.original_create_time)
 
 
 class FuelTank(BaseModel):

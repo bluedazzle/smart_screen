@@ -170,11 +170,31 @@ class DeliveryRecord(Base):
     supplier = Column(String)
     receiver = Column(String)
     truck_number = Column(String)
-    belong_id = Column(String)
+    belong_id = Column(Integer)
     create_time = Column(DateTime)
     modify_time = Column(DateTime)
     original_create_time = Column(DateTime)
     hash = Column(String)
+
+
+class GoodsInventory(Base):
+    __tablename__ = 'api_goodsinventory'
+
+    id = Column(Integer, primary_key=True)
+    belong_id = Column(Integer)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    last_sell_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    hash = Column(String)
+    third_cls_id = Column(Integer)
+    second_cls_id = Column(Integer)
+    cls_id = Column(Integer)
+    name = Column(String)
+    barcode = Column(String)
+    itemcode = Column(String)
+    unit = Column(String)
+    amount = Column(Float)
 
 
 class Site(Base):

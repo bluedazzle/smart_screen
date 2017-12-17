@@ -5,10 +5,12 @@ import datetime
 import hashlib
 
 import logging
+
+import math
 import pytz
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
-    ThirdClassification, GoodsOrder, Supplier, Receiver
+    ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory
 
 
 def get_site_by_slug(slug):
@@ -146,6 +148,12 @@ def get_all_tanks_by_site(site):
     return objs
 
 
+def get_goods_inventory_by_barcode(barcode, site):
+    obj = session.query(GoodsInventory).filter(GoodsInventory.barcode == barcode,
+                                               GoodsInventory.belong_id == site.id).first()
+    return obj
+
+
 def add_timezone_to_naive_time(time_obj):
     tz = pytz.timezone('Asia/Shanghai')
     aware_time = tz.localize(time_obj)
@@ -226,7 +234,7 @@ def update_classification(cid, **kwargs):
 
 
 def update_second_classification(cid, **kwargs):
-    res = session.query(SecondClassification).filter(Classification.id == cid).first()
+    res = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
     if not res:
         res = SecondClassification()
         res.create_time = get_now_time_with_timezone()
@@ -254,3 +262,31 @@ def update_third_classification(cid, **kwargs):
     session.add(res)
     session.commit()
     return res
+
+
+def update_goods_inventory(hash_str, **kwargs):
+    gi = get_obj_by_hash(hash_str, GoodsInventory)
+    if not gi:
+        gi = GoodsInventory()
+        gi.create_time = get_now_time_with_timezone()
+        gi.original_create_time = get_now_time_with_timezone()
+        gi.last_sell_time = add_timezone_to_naive_time(datetime.datetime(2017, 1, 1))
+    for k, v in kwargs.items():
+        setattr(gi, k, v)
+    gi.modify_time = get_now_time_with_timezone()
+    session.add(gi)
+    session.commit()
+    return gi
+
+
+def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limit=1000):
+    total_page = int(math.ceil(total / float(limit)))
+    start = 0
+    if start_offset:
+        start = start_offset / limit
+
+    for i in xrange(start, total_page):
+        offset = limit * i
+        result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(offset).all()
+        logging.info('Current {0}->{1}/{2} {3}%'.format(offset, offset + limit, total, float(offset + limit) / total * 100))
+        yield result

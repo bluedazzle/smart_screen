@@ -10,7 +10,8 @@ from drilling.models import session, GoodsOrder
 from drilling.utils import get_site_by_slug, datetime_to_string, get_clean_data, update_classification, \
     update_second_classification, update_third_classification, generate_hash, get_goods_order_by_hash, \
     create_fuel_order, \
-    create_goods_order
+    create_goods_order, update_goods_inventory, get_goods_inventory_by_barcode, add_timezone_to_naive_time, \
+    query_by_pagination
 
 
 def get_store_order(site, start_time=None, end_time=None):
@@ -68,6 +69,10 @@ TILL.TIMECLOSE DESC'''.format(st, et)
         create_goods_order(till_id=till_id, original_create_time=original_create_time, classification_id=dept,
                            price=price, total=total, amount=amount, barcode=barcode, hash=unique_str, name=name,
                            belong_id=site.id)
+        gi = get_goods_inventory_by_barcode(barcode, site)
+        if gi:
+            gi.last_sell_time = add_timezone_to_naive_time(original_create_time)
+            session.commit()
     get_goods_order_payment(site)
 
 
@@ -113,33 +118,38 @@ def get_first_classify(site):
 
 def get_goods_order_payment(site):
     orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False).all()
-    ib_session = init_interbase_connect(site.fuel_server)
-    till_list = [unicode(order.till_id) for order in orders]
-    if not till_list:
-        return
-    tills = ','.join(till_list)
-    sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
-PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
-PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
-    ib_session.execute(sql)
-    res = ib_session.fetchall()
-    for itm in res:
-        till_id, payment_code, payment_type = itm
-        orders = session.query(GoodsOrder).filter(GoodsOrder.till_id == till_id).all()
-        for order in orders:
-            order.payment_code = payment_code
-            order.payment_type = get_clean_data(payment_type)
-            order.catch_payment = True
-        session.commit()
+    total = len(orders)
+    for orders in query_by_pagination(session, GoodsOrder, total, limit=100):
+        ib_session = init_interbase_connect(site.fuel_server)
+        till_list = [unicode(order.till_id) for order in orders]
+        if not till_list:
+            return
+        tills = ','.join(till_list)
+        sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
+    PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
+    PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
+        ib_session.execute(sql)
+        res = ib_session.fetchall()
+        for itm in res:
+            till_id, payment_code, payment_type = itm
+            orders = session.query(GoodsOrder).filter(GoodsOrder.till_id == till_id).all()
+            for order in orders:
+                order.payment_code = payment_code
+                order.payment_type = get_clean_data(payment_type)
+                order.catch_payment = True
+            session.commit()
 
 
 def get_inventories(site):
     site = get_site_by_slug(site)
     ib_session = init_interbase_connect(site.fuel_server)
-    sql = '''SELECT SUPERDEPT.SUPERDEPTNAME ,
- DEPT.DEPTNAME,SUBDEPT.SUBDEPTNAME,
+    sql = '''SELECT SUPERDEPT.SUPERDEPTID,
+ DEPT.DEPTID,
+ SUBDEPT.SUBDEPTID,
+ ITEM.BARCODE,
  ITEM.FULLDESCRIPTION,
- ITEM.ITEMCODE,UNITSIZE.UNITNAME,
+ ITEM.ITEMCODE,
+ UNITSIZE.UNITNAME,
  ITEM.ITEMID,
  SUM(ITEMLOCTOTAL.CALCBALANCE_QTY) as total
 FROM ITEMLOCTOTAL,ITEM,SUBDEPT,DEPT,SUPERDEPT,UNITSIZE
@@ -154,20 +164,28 @@ WHERE
   AND
  (ITEMLOCTOTAL.ITEM_ID = ITEM.ITEMID)
 GROUP BY
- SUPERDEPT.SUPERDEPTNAME,DEPT.DEPTNAME,SUBDEPT.SUBDEPTNAME,ITEM.FULLDESCRIPTION,
+ SUPERDEPT.SUPERDEPTID,DEPT.DEPTID,SUBDEPT.SUBDEPTID,ITEM.FULLDESCRIPTION,ITEM.BARCODE,
  ITEM.ITEMCODE,UNITSIZE.UNITNAME,ITEM.MANAGUNITFACTOR,ITEM.ITEMID
 ORDER BY
   ITEM.ITEMCODE'''
     ib_session.execute(sql)
     res = ib_session.fetchall()
+    total = len(res)
     for itm in res:
-        print get_clean_data(itm[2]), get_clean_data(itm[3])
-
+        f_cls, s_cls, t_cls, barcode, name, itemcode, unit, itemid, amount = itm
+        barcode = get_clean_data(barcode)
+        name = get_clean_data(name)
+        unit = get_clean_data(unit)
+        unique_str = generate_hash(unicode(f_cls), unicode(s_cls), unicode(t_cls), barcode, unicode(site.id))
+        update_goods_inventory(unique_str, name=name, unit=unit, hash=unique_str, barcode=barcode, itemcode=barcode,
+                               third_cls_id=t_cls,
+                               second_cls_id=s_cls, cls_id=f_cls, amount=amount, belong_id=site.id)
+    logging.info('SUCCESS update goods inventory total {0}'.format(total))
 
 
 if __name__ == '__main__':
-    # get_store_order('test', datetime.datetime(2017, 5, 2), datetime.datetime(2017, 5, 3))
+    get_store_order('test', datetime.datetime(2017, 2, 2), datetime.datetime(2017, 2, 3))
     # get_first_classify('test')
     # get_second_classify('test')
     # get_third_classify('test')
-    get_inventories('test')
+    # get_inventories('test')
