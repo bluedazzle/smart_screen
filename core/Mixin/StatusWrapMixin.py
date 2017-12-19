@@ -1,8 +1,13 @@
 # coding: utf-8
 from __future__ import unicode_literals
+
+import datetime
+import calendar
 from django.http import HttpResponse
 
 # Info Code
+from drilling.utils import add_timezone_to_naive_time, string_to_datetime
+
 ERROR_UNKNOWN = 0
 INFO_SUCCESS = 1
 ERROR_PERMISSION_DENIED = 2
@@ -53,3 +58,28 @@ class AdminStatusWrapMixin(StatusWrapMixin):
                 error_data[k] = v[0].get('message', '')
         data['msg'] = error_data
         return data
+
+
+class DateTimeHandleMixin(object):
+    now = datetime.datetime.now()
+    yesterday = now - datetime.timedelta(days=1)
+    st_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day)),
+                 'yesterday': add_timezone_to_naive_time(datetime.datetime(yesterday.year, yesterday.month, yesterday.day)),
+                 'month': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, day=1)),
+                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 1, 1))}
+    et_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59)),
+                 'yesterday': add_timezone_to_naive_time(datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)),
+                 'month': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)),
+                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31, 23, 59, 59))}
+
+    def get_date_period(self, fmt='day'):
+        st = self.request.GET.get('start_time')
+        et = self.request.GET.get('end_time')
+        print st,et
+        if not (st or et):
+            st = self.st_format.get(fmt)
+            et = self.et_format.get(fmt)
+        else:
+            st = string_to_datetime(st)
+            et = string_to_datetime(et)
+        return st, et

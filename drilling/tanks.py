@@ -203,7 +203,7 @@ AND FTH.ITEMDOCTYPE_ID IN (1, 7, 8, 10, 11)'''.format(start_time=st, end_time=et
                             standard_density=standard_density, fuel_standard_volum=fuel_standard_volum,
                             shift_control_id=shift_control_id, hash=unique_str, belong_id=site.id,
                             experiment_temperature=experiment_temperature, altitude=altitude,
-                            water_altitude=water_altitude)
+                            water_altitude=water_altitude, fuel_name=tank.name)
         if obj.record_type == 3:
             obj.tank_out_amount = volum_sum - fuel_standard_volum
             volum_sum = obj.fuel_standard_volum

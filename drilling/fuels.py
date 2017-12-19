@@ -115,8 +115,8 @@ def get_delivery(site, start_time=None, end_time=None):
     ib_session = init_interbase_connect(site.fuel_server)
     sql = '''Select EXTREF, pickup_date, ITEMDOCTYPE_ID, SUPPLIER_ID, TRUCK_NUMBER
 From Fuel_Tank_Delivery_Header
-WHERE DELIVERY_DATE BETWEEN '2017-5-2' and '2017-5-10'
-Order By EXTREF'''
+WHERE DELIVERY_DATE BETWEEN '{0}' and '{1}'
+Order By EXTREF'''.format(st, et)
     ib_session.execute(sql)
     res = ib_session.fetchall()
     for itm in res:
@@ -140,4 +140,4 @@ if __name__ == '__main__':
     # site = get_site_by_slug('test')
     # get_sup('test')
     # get_rev('test')
-    get_delivery('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 10))
+    get_delivery('test', datetime.datetime(2017, 5, 1), datetime.datetime(2017, 10, 30))

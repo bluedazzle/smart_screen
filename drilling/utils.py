@@ -178,10 +178,6 @@ def datetime_to_string(obj, fmt='%Y-%m-%d'):
     return obj.strftime(fmt)
 
 
-def string_to_datetime(time_data, fmt='%Y-%m-%d %H:%M:%S'):
-    return datetime.datetime.strptime(time_data, format=fmt)
-
-
 def get_second_cls_by_id(cid):
     res = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
     return res
@@ -287,6 +283,16 @@ def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limi
 
     for i in xrange(start, total_page):
         offset = limit * i
-        result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(offset).all()
-        logging.info('Current {0}->{1}/{2} {3}%'.format(offset, offset + limit, total, float(offset + limit) / total * 100))
+        result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(
+            offset).all()
+        logging.info(
+            'Current {0}->{1}/{2} {3}%'.format(offset, offset + limit, total, float(offset + limit) / total * 100))
         yield result
+
+
+def string_to_datetime(time_data, fmt='%Y-%m-%d %H:%M:%S'):
+    return datetime.datetime.strptime(time_data, fmt)
+
+
+if __name__ == '__main__':
+    print string_to_datetime('2017-01-01 00:00:00')

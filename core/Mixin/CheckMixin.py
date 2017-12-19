@@ -151,3 +151,8 @@ class CheckSiteMixin(object):
         self.message = '缺失站点信息'
         self.status_code = ERROR_PERMISSION_DENIED
         return self.render_to_response()
+
+    def get_queryset(self):
+        queryset = super(CheckSiteMixin, self).get_queryset()
+        queryset = queryset.filter(belong=self.site)
+        return queryset

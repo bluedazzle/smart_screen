@@ -50,13 +50,13 @@ def init_all():
         init_base_info(site.slug)
         init_st = add_timezone_to_naive_time(datetime.datetime(2017, 1, 1))
         init_et = add_timezone_to_naive_time(datetime.datetime.now())
-        detla = datetime.timedelta(days=3)
+        detla = datetime.timedelta(days=7)
         et = init_st
         while 1:
             st = et
             et = et + detla
             init_day_record(site.slug, st, et)
-            if et > init_et:
+            if st > init_et:
                 break
     end = datetime.datetime.now()
     logging.info('结束初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(end).encode('utf-8'))

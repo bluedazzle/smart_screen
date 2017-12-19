@@ -18,4 +18,8 @@ from api.views import *
 
 urlpatterns = [
     url(r'^tanks', TankListInfoView.as_view()),
+    url(r'^fuel/inventories', FuelInventoryListView.as_view()),
+    url(r'^fuel/charge_times', FuelChargeTimesView.as_view()),
+    url(r'^fuel/tanker_times', TankerSellTimesView.as_view()),
+    url(r'^fuel/payments', FuelOrderPaymentView.as_view()),
 ]
