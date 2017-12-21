@@ -35,13 +35,13 @@
 
 
 #油库
-##**获取油罐信息**
+## **获取油罐信息**
 ```
 GET /tanks
 ```
-###**Parameters**
+### **Parameters**
 
-###**Return**
+### **Return**
 成功
 ```
 {
@@ -126,13 +126,13 @@ GET /tanks
 }
 ```
 
-##**获取卸入量及损耗数据**
+## **获取卸入量及损耗数据**
 ```
 GET /fuel_inventories
 ```
-###**Parameters**
+### **Parameters**
 
-###**Return**
+### **Return**
 |record_type|含义|
 | --------------  | :---: |
 |1|卸前计量|
@@ -467,15 +467,15 @@ GET /fuel_inventories
 }
 ```
 
-##**卸油次数**
+## **卸油次数**
 ```
 GET /fuel/charge_times
 ```
-###**Parameters**
+### **Parameters**
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
 
-###**Return**
+### **Return**
 
 成功
 ```
@@ -513,15 +513,15 @@ GET /fuel/charge_times
 }
 ```
 
-##**提枪次数**
+## **提枪次数**
 ```
 GET /fuel/tanker_times
 ```
-###**Parameters**
+### **Parameters**
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
 
-###**Return**
+### **Return**
 
 成功
 ```
@@ -605,15 +605,15 @@ GET /fuel/tanker_times
 }
 ```
 
-##**提枪次数**
+## **提枪次数**
 ```
 GET /fuel/tanker_times
 ```
-###**Parameters**
+### **Parameters**
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
 
-###**Return**
+### **Return**
 
 成功
 ```
@@ -697,15 +697,18 @@ GET /fuel/tanker_times
 }
 ```
 
-##**提枪次数**
+## **油品消费类型**
+
 ```
 GET /fuel/payments
 ```
-###**Parameters**
+
+### **Parameters**
+
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
 
-###**Return**
+### **Return**
 
 成功
 ```
@@ -743,6 +746,655 @@ GET /fuel/payments
             }
         ],
         "end_time":"2017-10-09 23:59:59"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+
+## **油品环比**
+
+```
+GET /fuel/sequential
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "current_data":{
+            "start_time":"2017-03-01 00:00:00",
+            "end_time":"2017-03-07 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2607
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":285
+                }
+            ]
+        },
+        "last_data":{
+            "start_time":"2017-02-20 00:00:00",
+            "end_time":"2017-02-26 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2521
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":194
+                }
+            ]
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **油品结构**
+
+```
+GET /fuel/composition
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2017-03-01 00:00:00",
+        "summary":[
+            {
+                "fuel_type":"汽油",
+                "amount":358
+            },
+            {
+                "fuel_type":"柴油",
+                "amount":43
+            }
+        ],
+        "end_time":"2017-03-01 23:59:59",
+        "detail":[
+            {
+                "fuel_type":"-20号 车用柴油(Ⅴ)",
+                "amount":23
+            },
+            {
+                "fuel_type":"0号 车用柴油(Ⅴ)",
+                "amount":20
+            },
+            {
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "amount":281
+            },
+            {
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "amount":77
+            }
+        ]
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **油品同比**
+
+```
+GET /fuel/compare
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "current_data":{
+            "start_time":"2017-03-01 00:00:00",
+            "end_time":"2017-03-07 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2607
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":285
+                }
+            ]
+        },
+        "last_data":{
+            "start_time":"2017-02-20 00:00:00",
+            "end_time":"2017-02-26 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2521
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":194
+                }
+            ]
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **油品销售对比数据**
+
+```
+GET /fuel/detail
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2017-03-01 00:00:00",
+        "object_list":[
+            {
+                "amount":19,
+                "total_price":2421,
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "hour":19,
+                "sales":373.57
+            },
+            {
+                "amount":5,
+                "total_price":1093.33,
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "hour":20,
+                "sales":170.1
+            },
+            {
+                "amount":25,
+                "total_price":5008.2,
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "hour":21,
+                "sales":772.855
+            },
+            {
+                "amount":3,
+                "total_price":450,
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "hour":22,
+                "sales":69.44
+            },
+            {
+                "amount":3,
+                "total_price":554.72,
+                "fuel_type":"92号 车用汽油(Ⅴ)",
+                "hour":23,
+                "sales":86.15
+            },
+            {
+                "amount":3,
+                "total_price":955.83,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":0,
+                "sales":139.45
+            },
+            {
+                "amount":2,
+                "total_price":484.19,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":7,
+                "sales":70.07
+            },
+            {
+                "amount":1,
+                "total_price":30,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":8,
+                "sales":4.317
+            },
+            {
+                "amount":9,
+                "total_price":1645.68,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":9,
+                "sales":237.43
+            },
+            {
+                "amount":4,
+                "total_price":1357,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":10,
+                "sales":195.72
+            },
+            {
+                "amount":6,
+                "total_price":2040.04,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":11,
+                "sales":293.53
+            },
+            {
+                "amount":3,
+                "total_price":979.82,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":12,
+                "sales":143.46
+            },
+            {
+                "amount":3,
+                "total_price":785.25,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":13,
+                "sales":113.34
+            },
+            {
+                "amount":8,
+                "total_price":1896.35,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":14,
+                "sales":272.87
+            },
+            {
+                "amount":9,
+                "total_price":3306.22,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":15,
+                "sales":479.6
+            },
+            {
+                "amount":5,
+                "total_price":1520.68,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":16,
+                "sales":220.903
+            },
+            {
+                "amount":4,
+                "total_price":949.9,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":17,
+                "sales":137.39
+            },
+            {
+                "amount":1,
+                "total_price":350,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":18,
+                "sales":50.72
+            },
+            {
+                "amount":4,
+                "total_price":1382.86,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":19,
+                "sales":200.11
+            },
+            {
+                "amount":4,
+                "total_price":1019.02,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":20,
+                "sales":148.17
+            },
+            {
+                "amount":9,
+                "total_price":2847,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":21,
+                "sales":412.325
+            },
+            {
+                "amount":1,
+                "total_price":150,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":22,
+                "sales":21.58
+            },
+            {
+                "amount":1,
+                "total_price":100,
+                "fuel_type":"95号 车用汽油(Ⅴ)",
+                "hour":23,
+                "sales":14.39
+            }
+        ],
+        "end_time":"2017-03-01 23:59:59"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **非油消费类型**
+
+```
+GET /goods/payments
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2017-03-01 00:00:00",
+        "object_list":[
+            {
+                "amount":17,
+                "payment_type":"支付宝",
+                "cls_name":[
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    }
+                ]
+            },
+            {
+                "amount":31,
+                "payment_type":"积分消费",
+                "cls_name":[
+                    {
+                        "name":"香烟"
+                    },
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"奶类"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"零食"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    },
+                    {
+                        "name":"日用品"
+                    },
+                    {
+                        "name":"清洁用品"
+                    },
+                    {
+                        "name":"个人护理用品"
+                    },
+                    {
+                        "name":"汽车用品"
+                    }
+                ]
+            },
+            {
+                "amount":41,
+                "payment_type":"IC 卡",
+                "cls_name":[
+                    {
+                        "name":"香烟"
+                    },
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"奶类"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"零食"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    },
+                    {
+                        "name":"面包"
+                    },
+                    {
+                        "name":"清洁用品"
+                    },
+                    {
+                        "name":"个人护理用品"
+                    },
+                    {
+                        "name":"汽车用品"
+                    }
+                ]
+            },
+            {
+                "amount":1273,
+                "payment_type":"现金",
+                "cls_name":[
+                    {
+                        "name":"香烟"
+                    },
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"奶类"
+                    },
+                    {
+                        "name":"酒类"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"零食"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    },
+                    {
+                        "name":"面包"
+                    },
+                    {
+                        "name":"速食"
+                    },
+                    {
+                        "name":"日用品"
+                    },
+                    {
+                        "name":"清洁用品"
+                    },
+                    {
+                        "name":"个人护理用品"
+                    },
+                    {
+                        "name":"药品/计生/保健"
+                    },
+                    {
+                        "name":"汽车用品"
+                    },
+                    {
+                        "name":"润滑油"
+                    }
+                ]
+            },
+            {
+                "amount":1,
+                "payment_type":"其他",
+                "cls_name":[
+                    {
+                        "name":"包装饮料"
+                    }
+                ]
+            },
+            {
+                "amount":62,
+                "payment_type":"微信",
+                "cls_name":[
+                    {
+                        "name":"香烟"
+                    },
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"奶类"
+                    },
+                    {
+                        "name":"酒类"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"零食"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    },
+                    {
+                        "name":"面包"
+                    },
+                    {
+                        "name":"速食"
+                    },
+                    {
+                        "name":"个人护理用品"
+                    },
+                    {
+                        "name":"汽车用品"
+                    }
+                ]
+            },
+            {
+                "amount":93,
+                "payment_type":"银联卡",
+                "cls_name":[
+                    {
+                        "name":"香烟"
+                    },
+                    {
+                        "name":"包装饮料"
+                    },
+                    {
+                        "name":"奶类"
+                    },
+                    {
+                        "name":"糖果"
+                    },
+                    {
+                        "name":"零食"
+                    },
+                    {
+                        "name":"家庭食品"
+                    },
+                    {
+                        "name":"饼干/糕点"
+                    },
+                    {
+                        "name":"速食"
+                    },
+                    {
+                        "name":"清洁用品"
+                    },
+                    {
+                        "name":"个人护理用品"
+                    }
+                ]
+            }
+        ],
+        "end_time":"2017-04-01 23:59:59"
     },
     "status":1,
     "msg":"success"

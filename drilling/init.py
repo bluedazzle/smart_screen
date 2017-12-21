@@ -32,14 +32,14 @@ def init_base_info(site):
 
 
 def init_day_record(site, st, et):
-    get_inventory_record(site, st, et)
-    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油库记录'.format(site, st, et).encode('utf-8'))
-    get_delivery(site, st, et)
-    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et).encode('utf-8'))
+    # get_inventory_record(site, st, et)
+    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油库记录'.format(site, st, et).encode('utf-8'))
+    # get_delivery(site, st, et)
+    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et).encode('utf-8'))
     get_fuel_order(site, st, et)
     logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et).encode('utf-8'))
-    get_store_order(site, st, et)
-    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
+    # get_store_order(site, st, et)
+    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
 
 
 def init_all():
@@ -47,7 +47,7 @@ def init_all():
     logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin).encode('utf-8'))
     site_list = session.query(Site).all()
     for site in site_list:
-        init_base_info(site.slug)
+        # init_base_info(site.slug)
         init_st = add_timezone_to_naive_time(datetime.datetime(2017, 1, 1))
         init_et = add_timezone_to_naive_time(datetime.datetime.now())
         detla = datetime.timedelta(days=7)

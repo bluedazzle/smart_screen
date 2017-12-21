@@ -28,24 +28,6 @@ class Site(BaseModel):
         return self.name
 
 
-class FuelOrder(BaseModel):
-    fuel_type = models.CharField(default='', max_length=50)
-    amount = models.FloatField(default=0.0)  # 卖出数量
-    price = models.FloatField(default=0.0)
-    total_price = models.FloatField(default=0.0)
-    payment_type = models.CharField(default='其他', max_length=20)
-    payment_code = models.IntegerField(default=0)
-    catch_payment = models.BooleanField(default=False)
-    till_id = models.IntegerField(default=0)
-    pump_id = models.IntegerField(default=0)
-    hash = models.CharField(max_length=64, unique=True)
-    belong = models.ForeignKey(Site, related_name='site_fuel_orders')
-
-    def __unicode__(self):
-        return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}-{3}L-￥{4}'.format(self.belong.name, self.original_create_time,
-                                                                 self.fuel_type, self.amount, self.total_price)
-
-
 class Classification(BaseModel):
     name = models.CharField(max_length=100, default='')
     id = models.IntegerField(unique=True, primary_key=True)
@@ -74,6 +56,27 @@ class ThirdClassification(BaseModel):
 
     def __unicode__(self):
         return '{0}-{1}<-{2}<-{3}'.format(self.id, self.name, self.parent.name, self.grandparent.name)
+
+
+class FuelOrder(BaseModel):
+    fuel_type = models.CharField(default='', max_length=50)
+    amount = models.FloatField(default=0.0)  # 卖出数量
+    price = models.FloatField(default=0.0)
+    total_price = models.FloatField(default=0.0)
+    payment_type = models.CharField(default='其他', max_length=20)
+    payment_code = models.IntegerField(default=0)
+    catch_payment = models.BooleanField(default=False)
+    till_id = models.IntegerField(default=0)
+    pump_id = models.IntegerField(default=0)
+    hash = models.CharField(max_length=64, unique=True)
+    classification = models.ForeignKey(ThirdClassification, related_name='ssub_cls_fuels')
+    super_cls = models.ForeignKey(SecondClassification, related_name='sub_cls_fuels')
+    barcode = models.CharField(max_length=100, default='', null=True, blank=True)
+    belong = models.ForeignKey(Site, related_name='site_fuel_orders')
+
+    def __unicode__(self):
+        return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}-{3}L-￥{4}'.format(self.belong.name, self.original_create_time,
+                                                                 self.fuel_type, self.amount, self.total_price)
 
 
 class GoodsInventory(BaseModel):

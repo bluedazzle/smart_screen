@@ -74,6 +74,9 @@ class FuelOrder(Base):
     original_create_time = Column(DateTime)
     catch_payment = Column(Boolean)
     hash = Column(String)
+    classification_id = Column(Integer)
+    super_cls_id = Column(Integer)
+    barcode = Column(String)
 
     def __init__(self, *args, **kwargs):
         self.payment_type = '其他'

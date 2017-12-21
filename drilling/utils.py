@@ -155,6 +155,8 @@ def get_goods_inventory_by_barcode(barcode, site):
 
 
 def add_timezone_to_naive_time(time_obj):
+    if time_obj.tzinfo:
+        return time_obj
     tz = pytz.timezone('Asia/Shanghai')
     aware_time = tz.localize(time_obj)
     # obj = time_obj.replace(tzinfo=pytz.timezone('Asia/Shanghai'))

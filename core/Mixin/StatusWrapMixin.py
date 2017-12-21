@@ -64,22 +64,64 @@ class DateTimeHandleMixin(object):
     now = datetime.datetime.now()
     yesterday = now - datetime.timedelta(days=1)
     st_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day)),
-                 'yesterday': add_timezone_to_naive_time(datetime.datetime(yesterday.year, yesterday.month, yesterday.day)),
+                 'yesterday': add_timezone_to_naive_time(
+                     datetime.datetime(yesterday.year, yesterday.month, yesterday.day)),
+                 'week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday())),
+                 'last_week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday()+7)),
                  'month': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, day=1)),
-                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 1, 1))}
+                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 1, 1)),
+                 'last_year': add_timezone_to_naive_time(datetime.datetime(now.year - 1, 1, 1))}
     et_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59)),
-                 'yesterday': add_timezone_to_naive_time(datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)),
-                 'month': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)),
-                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31, 23, 59, 59))}
+                 'yesterday': add_timezone_to_naive_time(
+                     datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)),
+                 'week': add_timezone_to_naive_time(now + datetime.timedelta(days=6 - now.weekday())),
+                 'last_week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday()+1)),
+                 'month': add_timezone_to_naive_time(
+                     datetime.datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59)),
+                 'year': add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31, 23, 59, 59)),
+                 'last_year': add_timezone_to_naive_time(datetime.datetime(now.year - 1, 12, 31, 23, 59, 59))}
+
+    @staticmethod
+    def replace_time_to_end(time_obj):
+        return time_obj.replace(hour=23, minute=59, second=59)
+
+    @staticmethod
+    def replace_time_to_start(time_obj):
+        return time_obj.replace(hour=0, minute=0, second=0)
 
     def get_date_period(self, fmt='day'):
         st = self.request.GET.get('start_time')
         et = self.request.GET.get('end_time')
-        print st,et
         if not (st or et):
-            st = self.st_format.get(fmt)
-            et = self.et_format.get(fmt)
+            st = self.replace_time_to_start(self.st_format.get(fmt))
+            et = self.replace_time_to_end(self.et_format.get(fmt))
         else:
             st = string_to_datetime(st)
             et = string_to_datetime(et)
+        return st, et
+
+    def get_date_period_by_time(self, time_obj, fmt='day'):
+        now = time_obj
+        yesterday = now - datetime.timedelta(days=1)
+        st_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day)),
+                     'yesterday': add_timezone_to_naive_time(
+                         datetime.datetime(yesterday.year, yesterday.month, yesterday.day)),
+                     'week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday())),
+                     'last_week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday() + 7)),
+                     'month': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, day=1)),
+                     'year': add_timezone_to_naive_time(datetime.datetime(now.year, 1, 1)),
+                     'last_year': add_timezone_to_naive_time(datetime.datetime(now.year - 1, 1, 1))}
+        et_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59)),
+                     'yesterday': add_timezone_to_naive_time(
+                         datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)),
+                     'week': add_timezone_to_naive_time(now + datetime.timedelta(days=6 - now.weekday())),
+                     'last_week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday() + 1)),
+                     'month': add_timezone_to_naive_time(
+                         datetime.datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59,
+                                           59)),
+                     'year': add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31, 23, 59, 59)),
+                     'last_year': add_timezone_to_naive_time(datetime.datetime(now.year - 1, 12, 31, 23, 59, 59))}
+        self.now = time_obj
+        st = self.replace_time_to_start(st_format.get(fmt))
+        et = self.replace_time_to_end(et_format.get(fmt))
         return st, et

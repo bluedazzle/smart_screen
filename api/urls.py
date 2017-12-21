@@ -22,4 +22,9 @@ urlpatterns = [
     url(r'^fuel/charge_times', FuelChargeTimesView.as_view()),
     url(r'^fuel/tanker_times', TankerSellTimesView.as_view()),
     url(r'^fuel/payments', FuelOrderPaymentView.as_view()),
+    url(r'^fuel/sequential', FuelSequentialView.as_view()),
+    url(r'^fuel/compare', FuelCompareYearView.as_view()),
+    url(r'^fuel/composition', FuelCompositionView.as_view()),
+    url(r'^fuel/detail', FuelCompareDetailView.as_view()),
+    url(r'^goods/payments', GoodsPaymentView.as_view()),
 ]

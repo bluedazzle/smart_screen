@@ -18,7 +18,7 @@ def get_fuel_order(site, start_time=None, end_time=None):
     et = datetime_to_string(end_time)
     site = get_site_by_slug(site)
     ib_session = init_interbase_connect(site.fuel_server)
-    sql = '''select tillnum,timeopen,FULLDESCRIPTION,price,weight,total, tillitem.PUMP_ID from till left
+    sql = '''select tillnum,timeopen,FULLDESCRIPTION,price,weight,total, tillitem.PUMP_ID, ITEM.DEPT, ITEM.BARCODE from till left
 outer join tillitem on (till.tillnum=tillitem.tillnum) and
 (till.pos_batch_id=tillitem.pos_batch_id),item,fuel_pumps_hose where tillitem.grade
 =item.grade and tillitem.pump_id=fuel_pumps_hose.pump_id and
@@ -28,8 +28,10 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
     ib_session.execute(sql)
     orders = ib_session.fetchall()
     for order in orders:
-        till_id, original_create_time, fuel_type, price, amount, total_price, pump_id = order
+        till_id, original_create_time, fuel_type, price, amount, total_price, pump_id, dept, barcode = order
         fuel_type = get_clean_data(fuel_type)
+        barcode = get_clean_data(barcode)
+        super_dept = unicode(dept)[:6]
         unique_str = generate_hash(unicode(till_id), datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'),
                                    unicode(price), unicode(amount), unicode(pump_id),
                                    unicode(total_price))
@@ -37,7 +39,8 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
         if res:
             break
         create_fuel_order(till_id=till_id, original_create_time=original_create_time, fuel_type=fuel_type, price=price,
-                          total_price=total_price, amount=amount, pump_id=pump_id, hash=unique_str, belong_id=site.id)
+                          total_price=total_price, amount=amount, pump_id=pump_id, hash=unique_str, belong_id=site.id,
+                          classification_id=dept, barcode=barcode, super_cls_id=int(super_dept))
     get_fuel_order_payment(site)
 
 
@@ -136,8 +139,8 @@ Order By EXTREF'''.format(st, et)
 
 
 if __name__ == '__main__':
-    # get_fuel_order('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 2))
+    get_fuel_order('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 2))
     # site = get_site_by_slug('test')
     # get_sup('test')
     # get_rev('test')
-    get_delivery('test', datetime.datetime(2017, 5, 1), datetime.datetime(2017, 10, 30))
+    # get_delivery('test', datetime.datetime(2017, 5, 1), datetime.datetime(2017, 10, 30))
