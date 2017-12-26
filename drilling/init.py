@@ -36,10 +36,10 @@ def init_day_record(site, st, et):
     # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油库记录'.format(site, st, et).encode('utf-8'))
     # get_delivery(site, st, et)
     # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et).encode('utf-8'))
-    get_fuel_order(site, st, et)
-    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et).encode('utf-8'))
-    # get_store_order(site, st, et)
-    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
+    # get_fuel_order(site, st, et)
+    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et).encode('utf-8'))
+    get_store_order(site, st, et)
+    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
 
 
 def init_all():

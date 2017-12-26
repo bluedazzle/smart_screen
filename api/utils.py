@@ -13,3 +13,10 @@ def get_first_cls_name_by_ss_cls_ids(ids):
     cls_ids = session.query(ThirdClassification.grandparent_id).filter(ThirdClassification.id.in_(ids)).all()
     result = session.query(Classification.name).filter(Classification.id.in_(cls_ids)).all()
     return result
+
+
+def get_first_cls_name_by_id(cid):
+    res = session.query(Classification.name).filter(Classification.id == cid).first()
+    if res:
+        return res[0]
+    return None

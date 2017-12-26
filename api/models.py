@@ -108,11 +108,14 @@ class GoodsOrder(BaseModel):
     catch_payment = models.BooleanField(default=False)
     till_id = models.IntegerField(default=0)
     classification = models.ForeignKey(ThirdClassification, related_name='ssub_cls_goods')
+    super_cls = models.ForeignKey(Classification, related_name='cls_goods', null=True, blank=True,
+                                  on_delete=models.SET_NULL)
     hash = models.CharField(max_length=64, unique=True)
     belong = models.ForeignKey(Site, related_name='site_goods_orders')
 
     def __unicode__(self):
-        return '{0}-{1}x{2} {3}元-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.name, self.amount, self.total, self.original_create_time)
+        return '{0}-{1}x{2} {3}元-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.name, self.amount, self.total,
+                                                                self.original_create_time)
 
 
 class FuelTank(BaseModel):
@@ -209,5 +212,3 @@ class Receiver(models.Model):
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
-
-

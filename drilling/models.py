@@ -137,6 +137,7 @@ class GoodsOrder(Base):
     catch_payment = Column(Boolean)
     till_id = Column(Integer)
     classification_id = Column(Integer)
+    super_cls_id = Column(Integer)
     hash = Column(String)
     total = Column(Float)
     amount = Column(Float)

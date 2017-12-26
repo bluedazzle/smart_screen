@@ -56,7 +56,8 @@ TILL.TIMECLOSE DESC'''.format(st, et)
     orders = ib_session.fetchall()
     for order in orders:
         sale_date, pos_id, till_id, shift, original_create_time, dept, barcode, name, unit, price, total, amount, _ = order
-        if unicode(dept).startswith('1001'):
+        dept_str = unicode(dept)
+        if dept_str.startswith('1001'):
             continue
         name = get_clean_data(name)
         barcode = get_clean_data(barcode)
@@ -68,11 +69,13 @@ TILL.TIMECLOSE DESC'''.format(st, et)
             break
         create_goods_order(till_id=till_id, original_create_time=original_create_time, classification_id=dept,
                            price=price, total=total, amount=amount, barcode=barcode, hash=unique_str, name=name,
-                           belong_id=site.id)
+                           belong_id=site.id, super_cls_id=int(dept_str[:4]))
         gi = get_goods_inventory_by_barcode(barcode, site)
         if gi:
             gi.last_sell_time = add_timezone_to_naive_time(original_create_time)
             session.commit()
+
+
     get_goods_order_payment(site)
 
 
@@ -184,7 +187,7 @@ ORDER BY
 
 
 if __name__ == '__main__':
-    get_store_order('test', datetime.datetime(2017, 2, 2), datetime.datetime(2017, 2, 3))
+    get_store_order('test', datetime.datetime(2017, 8, 2), datetime.datetime(2017, 8, 3))
     # get_first_classify('test')
     # get_second_classify('test')
     # get_third_classify('test')

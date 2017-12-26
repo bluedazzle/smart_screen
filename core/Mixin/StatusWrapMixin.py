@@ -89,7 +89,7 @@ class DateTimeHandleMixin(object):
     def replace_time_to_start(time_obj):
         return time_obj.replace(hour=0, minute=0, second=0)
 
-    def get_date_period(self, fmt='day'):
+    def get_date_period(self, fmt='day', compare=False):
         st = self.request.GET.get('start_time')
         et = self.request.GET.get('end_time')
         if not (st or et):
@@ -98,6 +98,8 @@ class DateTimeHandleMixin(object):
         else:
             st = string_to_datetime(st)
             et = string_to_datetime(et)
+            if compare:
+                st, et = self.get_date_period_by_time(st, fmt)
         return st, et
 
     def get_date_period_by_time(self, time_obj, fmt='day'):

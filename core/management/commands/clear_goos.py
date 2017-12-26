@@ -3,10 +3,9 @@ from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
 
-from api.models import FuelOrder
+from api.models import GoodsOrder
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        FuelOrder.objects.all().delete()
-
+        GoodsOrder.objects.all().delete()
