@@ -6,7 +6,9 @@ import hashlib
 
 import datetime
 import json
+import time
 
+from django.utils.http import cookie_date
 from django.utils.timezone import get_current_timezone
 from django.http import HttpResponseRedirect
 
@@ -142,7 +144,7 @@ class CheckSiteMixin(object):
     site_slug = None
 
     def dispatch(self, request, *args, **kwargs):
-        token = request.GET.get('token', None) or request.POST.get('token', None)
+        token = request.GET.get('token', None) or request.POST.get('token', None) or request.COOKIES.get('token', None)
         queryset = Site.objects.filter(slug=token)
         if queryset.exists():
             self.site = queryset[0]
@@ -156,3 +158,9 @@ class CheckSiteMixin(object):
         queryset = super(CheckSiteMixin, self).get_queryset()
         queryset = queryset.filter(belong=self.site)
         return queryset
+
+    def render_to_response(self, context={}, **response_kwargs):
+        resp = super(CheckSiteMixin, self).render_to_response(context, **response_kwargs)
+        expire = cookie_date(time.time() + 86400)
+        resp.set_cookie(key='token', value=self.site_slug, expires=expire)
+        return resp

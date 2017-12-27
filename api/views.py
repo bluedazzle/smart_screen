@@ -358,6 +358,35 @@ class ConversionView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTim
         return res
 
 
+class FuelGoodsCompareView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    吨油非油分析
+    """
+
+    model = GoodsOrder
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        self.data_keys = [fmt_str, "goods_total_income", "fuel_total_amount", "conversion"]
+        goods_res = session.query(fmt, func.sum(self.model.total)).filter(self.model.belong_id == self.site.id,
+                                                               self.model.original_create_time.between(st,
+                                                                                                       et)).group_by(
+            fmt).order_by(
+            fmt).all()
+        self.model = FuelOrder
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        fuel_res = session.query(fmt, func.sum(self.model.amount)).filter(self.model.belong_id == self.site.id,
+                                                              self.model.original_create_time.between(st,
+                                                                                                      et)).group_by(
+            fmt).order_by(
+            fmt).all()
+        combine = zip(goods_res, fuel_res)
+        res = [(itm[0][0], itm[0][1], (itm[1][1] / 1000.0), itm[0][1] / (itm[1][1] / 1000.0)) for itm in combine]
+        return res
+
+
 class GoodsItemView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
     """
     商品品效
@@ -397,13 +426,15 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
         goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).all()
+            self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).all()
+            self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -426,13 +457,15 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
         goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).all()
+            self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).all()
+            self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -529,7 +562,7 @@ class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Dat
     """
 
     model = models.GoodsInventory
-    paginate_by = 50
+    paginate_by = 20
 
     @staticmethod
     def get_day_num(obj):

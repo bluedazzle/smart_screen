@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^goods/sequential', GoodSequentialView.as_view()),
     url(r'^goods/compare', GoodsCompareYearView.as_view()),
     url(r'^goods/unsold', UnsoldView.as_view()),
+    url(r'^goods/fuel/compare', FuelGoodsCompareView.as_view()),
     url(r'^goods/search/sequential', GoodsSearchSequentialView.as_view()),
     url(r'^goods/search/compare', GoodsSearchCompareYearView.as_view()),
 ]
