@@ -12,6 +12,7 @@ from django.utils.http import cookie_date
 from django.utils.timezone import get_current_timezone
 from django.http import HttpResponseRedirect
 
+from smart_admin.models import Account
 from api.models import Site
 from core.Mixin.StatusWrapMixin import ERROR_PERMISSION_DENIED, ERROR_TOKEN, INFO_EXPIRE
 
@@ -105,30 +106,38 @@ from core.Mixin.StatusWrapMixin import ERROR_PERMISSION_DENIED, ERROR_TOKEN, INF
 #         return True
 #
 #
-# class CheckAdminPermissionMixin(object):
-#     token = None
-#     admin = None
-#
-#     def get_current_token(self):
-#         self.token = self.request.GET.get('token') or self.request.GET.session.get('token', '')
-#         return self.token
-#
-#     def check_token(self):
-#         self.get_current_token()
-#         admin_list = HAdmin.objects.filter(token=self.token)
-#         if admin_list.exists():
-#             self.admin = admin_list[0]
-#             return True
-#         return False
-#
-#     def wrap_check_token_result(self):
-#         result = self.check_token()
-#         if not result:
-#             self.message = 'token已过期, 请重新登陆'
-#             self.status_code = ERROR_TOKEN
-#             return False
-#         return True
-#
+class CheckAdminPermissionMixin(object):
+    token = None
+    admin = None
+    site = None
+
+    def get_current_token(self):
+        self.token = self.request.GET.get('token') or self.request.POST.get('token', '')
+        return self.token
+
+    def check_token(self):
+        self.get_current_token()
+        admin_list = Account.objects.filter(token=self.token)
+        if admin_list.exists():
+            self.admin = admin_list[0]
+            self.site = admin_list[0].belong
+            return True
+        return False
+
+    def wrap_check_token_result(self):
+        result = self.check_token()
+        if not result:
+            self.message = 'token已过期, 请重新登陆'
+            self.status_code = ERROR_TOKEN
+            return False
+        return True
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.wrap_check_token_result():
+            return self.render_to_response()
+        return super(CheckAdminPermissionMixin, self).dispatch(request, *args, **kwargs)
+
+
 #
 # class CheckAdminPagePermissionMixin(object):
 #     def dispatch(self, request, *args, **kwargs):

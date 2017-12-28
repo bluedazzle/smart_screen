@@ -23,6 +23,8 @@ class Site(BaseModel):
     fuel_server = models.GenericIPAddressField()
     # eps 系统
     bos_server = models.GenericIPAddressField()
+    password = models.CharField(max_length=120, null=True, blank=True)
+    info = models.TextField(default='', null=True, blank=True)
 
     def __unicode__(self):
         return self.name
