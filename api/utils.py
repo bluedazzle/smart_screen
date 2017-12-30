@@ -6,7 +6,9 @@ from drilling.models import session, SecondClassification, ThirdClassification, 
 
 def get_fuel_type(cid):
     obj = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
-    return obj.name
+    if obj:
+        return obj.name
+    return None
 
 
 def get_first_cls_name_by_ss_cls_ids(ids):

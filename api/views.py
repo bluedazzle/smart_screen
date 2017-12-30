@@ -32,7 +32,6 @@ class SmartDetailView(DetailView):
         context['object_list'] = formated_data
         return formated_data
 
-    def get_objects(self, context):
         pass
 
     def get_time_fmt(self, st, et):
@@ -371,15 +370,15 @@ class FuelGoodsCompareView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = [fmt_str, "goods_total_income", "fuel_total_amount", "conversion"]
         goods_res = session.query(fmt, func.sum(self.model.total)).filter(self.model.belong_id == self.site.id,
-                                                               self.model.original_create_time.between(st,
-                                                                                                       et)).group_by(
+                                                                          self.model.original_create_time.between(st,
+                                                                                                                  et)).group_by(
             fmt).order_by(
             fmt).all()
         self.model = FuelOrder
         fmt_str, fmt = self.get_time_fmt(st, et)
         fuel_res = session.query(fmt, func.sum(self.model.amount)).filter(self.model.belong_id == self.site.id,
-                                                              self.model.original_create_time.between(st,
-                                                                                                      et)).group_by(
+                                                                          self.model.original_create_time.between(st,
+                                                                                                                  et)).group_by(
             fmt).order_by(
             fmt).all()
         combine = zip(goods_res, fuel_res)
@@ -587,3 +586,85 @@ class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Dat
         queryset = queryset.order_by('last_sell_time')
         map(self.get_day_num, queryset)
         return queryset
+
+
+class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    销售预测
+    """
+
+    model = FuelOrder
+    date_fmt = 'yesterday'
+
+    # display_func = {"fuel_name": get_fuel_type}
+
+    @staticmethod
+    def get_fuel_list(fuels):
+        fuel_amounts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for itm in fuels:
+            fuel_amounts[int(itm[0])] = itm[2]
+        return fuel_amounts
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        now_hour = datetime.datetime.now().hour
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        self.data_keys = [fmt_str, "fuel_name", "amount"]
+        fuel_types = session.query(self.model.fuel_type).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st,
+                                                    et)).group_by(
+            self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        fuel_types = [itm[0] for itm in fuel_types]
+        fuel_predict_list = []
+        for fuel_type in fuel_types:
+            body = {}
+            last_day_fuels = session.query(fmt, self.model.fuel_type, func.count("1")).filter(
+                self.model.belong_id == self.site.id, self.model.fuel_type == fuel_type,
+                self.model.original_create_time.between(st,
+                                                        et)).group_by(
+                fmt, self.model.fuel_type).order_by(
+                fmt).all()
+            lst = st - datetime.timedelta(days=7)
+            let = et - datetime.timedelta(days=7)
+            last_seven_day_fuels = session.query(fmt, self.model.fuel_type, func.count("1")).filter(
+                self.model.belong_id == self.site.id, self.model.fuel_type == fuel_type,
+                self.model.original_create_time.between(lst,
+                                                        let)).group_by(
+                fmt, self.model.fuel_type).order_by(
+                fmt).all()
+            last_fuel_list = self.get_fuel_list(last_day_fuels)
+            last_seven_fuels_list = self.get_fuel_list(last_seven_day_fuels)
+            total_fuel = last_fuel_list + last_seven_fuels_list
+            total = reduce(lambda x, y: x + y, total_fuel)
+            average = total / float(len(total_fuel))
+            combine = zip(last_fuel_list, last_seven_fuels_list)
+            predict_list = []
+            predict_str = '低峰期'
+            is_peak = False
+            for i, itm in enumerate(combine):
+                ava = (itm[0] + itm[1]) / 2
+                if i == now_hour:
+                    if ava > average:
+                        predict_str = '高峰期'
+                        is_peak = True
+                itm_dict = {'hour': i, 'amount': ava}
+                predict_list.append(itm_dict)
+            body['average'] = average
+            body['predict_list'] = predict_list
+            body['fuel_name'] = fuel_type
+            body['predict_str'] = predict_str
+            body['is_peak'] = is_peak
+            fuel_predict_list.append(body)
+        context['fuel_predict_list'] = fuel_predict_list
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = {}
+        st, et = self.get_date_period(self.date_fmt)
+        context['start_time'] = st
+        context['end_time'] = et
+        data = self.get_objects(context)
+        return self.render_to_response(context)

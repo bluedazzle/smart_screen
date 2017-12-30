@@ -17,7 +17,7 @@ from django.conf.urls import include, url
 from smart_admin.views import *
 
 urlpatterns = [
-    url(r'^login', AdminLoginView.as_view()),
-    url(r'^inventories', InventoryListView.as_view()),
-    url(r'^site', SiteInfoView.as_view()),
+    url(r'^login/', AdminLoginView.as_view()),
+    url(r'^inventories/', InventoryListView.as_view()),
+    url(r'^site/', SiteInfoView.as_view()),
 ]
