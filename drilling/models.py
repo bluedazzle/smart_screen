@@ -140,10 +140,14 @@ class GoodsOrder(Base):
     super_cls_id = Column(Integer)
     hash = Column(String)
     total = Column(Float)
+    cost = Column(Float)
+    gpm = Column(Float)
     amount = Column(Float)
 
     def __init__(self, *args, **kwargs):
         self.payment_type = '其他'
+        self.cost = 0.0
+        self.gpm = 0.0
         self.catch_payment = False
         self.payment_code = 0
         super(GoodsOrder, self).__init__(*args, **kwargs)
@@ -199,6 +203,11 @@ class GoodsInventory(Base):
     itemcode = Column(String)
     unit = Column(String)
     amount = Column(Float)
+    cost = Column(Float)
+
+    def __init__(self, *args, **kwargs):
+        self.cost = 0.0
+        super(GoodsInventory, self).__init__(*args, **kwargs)
 
 
 class Site(Base):

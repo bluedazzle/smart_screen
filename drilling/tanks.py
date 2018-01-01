@@ -86,7 +86,10 @@ def get_tank_grade(site):
     session.commit()
 
 
-def get_inventory_record(site, start_time, end_time):
+def get_inventory_record(site, start_time=None, end_time=None):
+    if not start_time:
+        start_time = datetime.datetime.now()
+        end_time = start_time + datetime.timedelta(days=1)
     st = datetime_to_string(start_time)
     et = datetime_to_string(end_time)
     site = get_site_by_slug(site)
