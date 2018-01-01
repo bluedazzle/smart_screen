@@ -87,6 +87,7 @@ class GoodsInventory(BaseModel):
     itemcode = models.CharField(max_length=100, null=True, blank=True)
     unit = models.CharField(max_length=20, null=True, blank=True)
     amount = models.FloatField(default=0.0)
+    cost = models.FloatField(default=0.0)
     hash = models.CharField(max_length=128, unique=True)
     last_sell_time = models.DateTimeField()
 
@@ -112,6 +113,8 @@ class GoodsOrder(BaseModel):
     classification = models.ForeignKey(ThirdClassification, related_name='ssub_cls_goods')
     super_cls = models.ForeignKey(Classification, related_name='cls_goods', null=True, blank=True,
                                   on_delete=models.SET_NULL)
+    gpm = models.FloatField(default=0.0)
+    cost = models.FloatField(default=0.0)
     hash = models.CharField(max_length=64, unique=True)
     belong = models.ForeignKey(Site, related_name='site_goods_orders')
 

@@ -4336,3 +4336,609 @@ GET /goods/unsold
   "msg": "数据缺失"
 }
 ```
+
+
+# **管理后台API**
+
+## **登录**
+
+```
+POST /api/admin/login/
+```
+
+### **Parameters**
+
+* name(_Required_|string)-用户名
+* password(_Required_|string)-密码
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "account": {
+            "token": "6g0cP7dJKAiHsnSkbFs9Mlvw3Zaijny2",
+            "belong": {
+                "name": "测试站",
+                "slug": "test"
+            },
+            "name": "test"
+        }
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+**注：管理API所有接口均需要 login 接口获得的 token 拼装在 url 里**
+
+## **获取库存列表**
+
+```
+GET /api/admin/inventories/
+```
+
+### **Parameters**
+
+* page(_Optional_|integer)-分页
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "goodsinventory_list": [
+            {
+                "third_cls_id": 20020402,
+                "second_cls_id": 200204,
+                "last_sell_time": "2017-08-10 17:11:00",
+                "cost": 0,
+                "name": "康师傅 鲜果橙 450ML",
+                "barcode": "70001767",
+                "original_create_time": "2017-12-17 20:35:34",
+                "amount": 117,
+                "belong_id": 1,
+                "itemcode": "70001767",
+                "create_time": "2017-12-17 20:35:34",
+                "modify_time": "2017-12-17 22:08:30",
+                "hash": "c998243e7485d33de74ddc62513139f5",
+                "cls_id": 2002,
+                "id": 13655,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20020202,
+                "second_cls_id": 200202,
+                "last_sell_time": "2017-07-03 16:28:00",
+                "cost": 0,
+                "name": "统一 小茗同学冰橘绿茶 480ML",
+                "barcode": "70247077",
+                "original_create_time": "2017-12-17 20:35:53",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "70247077",
+                "create_time": "2017-12-17 20:35:53",
+                "modify_time": "2017-12-17 22:08:47",
+                "hash": "fe79ba9418434cc61d89d2b3ef6b2987",
+                "cls_id": 2002,
+                "id": 17612,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20010401,
+                "second_cls_id": 200104,
+                "last_sell_time": "2017-08-15 13:55:00",
+                "cost": 0,
+                "name": "兰州 (桥) 硬盒香烟(包) 6MG",
+                "barcode": "70239821",
+                "original_create_time": "2017-12-17 20:35:51",
+                "amount": 79,
+                "belong_id": 1,
+                "itemcode": "70239821",
+                "create_time": "2017-12-17 20:35:51",
+                "modify_time": "2017-12-17 22:08:45",
+                "hash": "b419aa5572c87f91edab6094323321b8",
+                "cls_id": 2001,
+                "id": 17349,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20120101,
+                "second_cls_id": 201201,
+                "last_sell_time": "2017-07-24 20:31:00",
+                "cost": 0,
+                "name": "巧面馆 方便面老坛酸菜牛肉味 135g",
+                "barcode": "70023877",
+                "original_create_time": "2017-12-17 20:35:38",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "70023877",
+                "create_time": "2017-12-17 20:35:38",
+                "modify_time": "2017-12-17 22:08:33",
+                "hash": "030612f75d0a2ca748c6ff0351aec35e",
+                "cls_id": 2012,
+                "id": 14380,
+                "unit": "桶"
+            },
+            {
+                "third_cls_id": 20010401,
+                "second_cls_id": 200104,
+                "last_sell_time": "2017-07-31 21:49:00",
+                "cost": 0,
+                "name": "云烟 (印象)香烟",
+                "barcode": "70015299",
+                "original_create_time": "2017-12-17 20:35:37",
+                "amount": 100,
+                "belong_id": 1,
+                "itemcode": "70015299",
+                "create_time": "2017-12-17 20:35:37",
+                "modify_time": "2017-12-17 22:08:32",
+                "hash": "c2eb7da4a2384bfca1dd5ec1d17c1007",
+                "cls_id": 2001,
+                "id": 14180,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20060303,
+                "second_cls_id": 200603,
+                "last_sell_time": "2017-08-18 14:06:00",
+                "cost": 0,
+                "name": "好时 曲奇奶香巧克力排块 23G",
+                "barcode": "70256940",
+                "original_create_time": "2017-12-17 20:35:55",
+                "amount": 1,
+                "belong_id": 1,
+                "itemcode": "70256940",
+                "create_time": "2017-12-17 20:35:55",
+                "modify_time": "2017-12-17 22:08:50",
+                "hash": "92bea126c2d46ae2f8e5ce17ea5337e2",
+                "cls_id": 2006,
+                "id": 18010,
+                "unit": "每个"
+            },
+            {
+                "third_cls_id": 20040301,
+                "second_cls_id": 200403,
+                "last_sell_time": "2017-08-20 11:18:00",
+                "cost": 0,
+                "name": "光明 莫斯利安 2.4KG",
+                "barcode": "70188971",
+                "original_create_time": "2017-12-17 20:35:46",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "70188971",
+                "create_time": "2017-12-17 20:35:46",
+                "modify_time": "2017-12-17 22:08:41",
+                "hash": "9d60a70b7a5fdc62dc0bdc353d027907",
+                "cls_id": 2004,
+                "id": 16248,
+                "unit": "每个"
+            },
+            {
+                "third_cls_id": 20020101,
+                "second_cls_id": 200201,
+                "last_sell_time": "2017-08-16 08:15:00",
+                "cost": 0,
+                "name": "可口可乐 汽水 330ml",
+                "barcode": "70024754",
+                "original_create_time": "2017-12-17 20:35:38",
+                "amount": 144,
+                "belong_id": 1,
+                "itemcode": "70024754",
+                "create_time": "2017-12-17 20:35:38",
+                "modify_time": "2017-12-17 22:08:33",
+                "hash": "1c86092ebdf63fd9a6d91e09d1f4eeee",
+                "cls_id": 2002,
+                "id": 14412,
+                "unit": "罐"
+            },
+            {
+                "third_cls_id": 20190802,
+                "second_cls_id": 201908,
+                "last_sell_time": "2017-05-30 07:55:00",
+                "cost": 0,
+                "name": "昆仑之星乙二醇型重负荷机动车发动机冷却液",
+                "barcode": "405936",
+                "original_create_time": "2017-12-17 20:35:32",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "405936",
+                "create_time": "2017-12-17 20:35:32",
+                "modify_time": "2017-12-17 22:08:28",
+                "hash": "700f3bee1e5c360eb8e82f8008c0f38d",
+                "cls_id": 2019,
+                "id": 13108,
+                "unit": "桶"
+            },
+            {
+                "third_cls_id": 20060202,
+                "second_cls_id": 200602,
+                "last_sell_time": "2017-04-19 13:59:00",
+                "cost": 0,
+                "name": "绿箭 无糖黑加仑薄荷口味 35粒",
+                "barcode": "70192051",
+                "original_create_time": "2017-12-17 20:35:46",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "70192051",
+                "create_time": "2017-12-17 20:35:46",
+                "modify_time": "2017-12-17 22:08:41",
+                "hash": "d2fe5b3da4cf6df75151d358ee3e4fa9",
+                "cls_id": 2006,
+                "id": 16307,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20100103,
+                "second_cls_id": 201001,
+                "last_sell_time": "2017-08-15 11:19:00",
+                "cost": 0,
+                "name": "奥利奥 双心脆威化 87G",
+                "barcode": "70035465",
+                "original_create_time": "2017-12-17 20:35:39",
+                "amount": 62,
+                "belong_id": 1,
+                "itemcode": "70035465",
+                "create_time": "2017-12-17 20:35:39",
+                "modify_time": "2017-12-17 22:08:34",
+                "hash": "b170bc4f4f109ddcedb677351efbe413",
+                "cls_id": 2010,
+                "id": 14617,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20050201,
+                "second_cls_id": 200502,
+                "last_sell_time": "2017-07-18 01:46:00",
+                "cost": 0,
+                "name": "互助 新版坛头45° 500ML*6",
+                "barcode": "70195708",
+                "original_create_time": "2017-12-17 20:35:47",
+                "amount": 37,
+                "belong_id": 1,
+                "itemcode": "70195708",
+                "create_time": "2017-12-17 20:35:47",
+                "modify_time": "2017-12-17 22:08:41",
+                "hash": "26aff337530bd78648589dddd648932d",
+                "cls_id": 2005,
+                "id": 16345,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20120107,
+                "second_cls_id": 201201,
+                "last_sell_time": "2017-08-08 09:39:00",
+                "cost": 0,
+                "name": "龙涎香 香卤蛋 35G",
+                "barcode": "70168280",
+                "original_create_time": "2017-12-17 20:35:45",
+                "amount": 139,
+                "belong_id": 1,
+                "itemcode": "70168280",
+                "create_time": "2017-12-17 20:35:45",
+                "modify_time": "2017-12-17 22:08:40",
+                "hash": "bb90f79aaf3780428bd2bd8284d2b81b",
+                "cls_id": 2012,
+                "id": 15999,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20040301,
+                "second_cls_id": 200403,
+                "last_sell_time": "2017-03-05 19:54:00",
+                "cost": 0,
+                "name": "伊利 利乐钻安幕希希腊酸奶 205G 1*12",
+                "barcode": "70233690",
+                "original_create_time": "2017-12-17 20:35:51",
+                "amount": 0,
+                "belong_id": 1,
+                "itemcode": "70233690",
+                "create_time": "2017-12-17 20:35:51",
+                "modify_time": "2017-12-17 22:08:45",
+                "hash": "a5d38c160856d9c3431bd350a3b3b909",
+                "cls_id": 2004,
+                "id": 17136,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20120101,
+                "second_cls_id": 201201,
+                "last_sell_time": "2017-08-18 02:13:00",
+                "cost": 0,
+                "name": "康师傅油泼辣子酸汤面122g/桶",
+                "barcode": "70061532",
+                "original_create_time": "2017-12-17 20:35:40",
+                "amount": 37,
+                "belong_id": 1,
+                "itemcode": "70061532",
+                "create_time": "2017-12-17 20:35:40",
+                "modify_time": "2017-12-17 22:08:36",
+                "hash": "bbd8b29e2aa787e1064927b3e6cfb16b",
+                "cls_id": 2012,
+                "id": 15014,
+                "unit": "桶"
+            },
+            {
+                "third_cls_id": 20050201,
+                "second_cls_id": 200502,
+                "last_sell_time": "2017-02-03 16:01:00",
+                "cost": 0,
+                "name": "青海湖 青稞酒（蓝瓶） 500ml",
+                "barcode": "70259958",
+                "original_create_time": "2017-12-17 20:35:56",
+                "amount": 2,
+                "belong_id": 1,
+                "itemcode": "70259958",
+                "create_time": "2017-12-17 20:35:56",
+                "modify_time": "2017-12-17 22:08:51",
+                "hash": "a13e2e66baca53c1f399cf0c432030da",
+                "cls_id": 2005,
+                "id": 18298,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20010401,
+                "second_cls_id": 200104,
+                "last_sell_time": "2017-07-25 12:54:00",
+                "cost": 0,
+                "name": "利群 (软长嘴)香烟 20支",
+                "barcode": "70002658",
+                "original_create_time": "2017-12-17 20:35:34",
+                "amount": 37,
+                "belong_id": 1,
+                "itemcode": "70002658",
+                "create_time": "2017-12-17 20:35:34",
+                "modify_time": "2017-12-17 22:08:30",
+                "hash": "6274fbdccd5e0ea44519a82998cb08ca",
+                "cls_id": 2001,
+                "id": 13683,
+                "unit": "包"
+            },
+            {
+                "third_cls_id": 20120106,
+                "second_cls_id": 201201,
+                "last_sell_time": "2017-08-15 10:55:00",
+                "cost": 0,
+                "name": "金锣 王中王 70g",
+                "barcode": "70087506",
+                "original_create_time": "2017-12-17 20:35:42",
+                "amount": 53,
+                "belong_id": 1,
+                "itemcode": "70087506",
+                "create_time": "2017-12-17 20:35:42",
+                "modify_time": "2017-12-17 22:08:38",
+                "hash": "47ac7ae382577ba47b6fd37522ded48e",
+                "cls_id": 2012,
+                "id": 15444,
+                "unit": "每个"
+            },
+            {
+                "third_cls_id": 20020502,
+                "second_cls_id": 200205,
+                "last_sell_time": "2017-08-15 10:53:00",
+                "cost": 0,
+                "name": "脉动 维生素饮料水蜜桃口味 600ML",
+                "barcode": "70003391",
+                "original_create_time": "2017-12-17 20:35:35",
+                "amount": 33,
+                "belong_id": 1,
+                "itemcode": "70003391",
+                "create_time": "2017-12-17 20:35:35",
+                "modify_time": "2017-12-17 22:08:31",
+                "hash": "182bee9e5beee614a7ebfce1f44ac1d3",
+                "cls_id": 2002,
+                "id": 13759,
+                "unit": "瓶"
+            },
+            {
+                "third_cls_id": 20150201,
+                "second_cls_id": 201502,
+                "last_sell_time": "2017-05-01 11:55:00",
+                "cost": 0,
+                "name": "OLAY 紧致滋润沐浴乳特惠装 720ML",
+                "barcode": "70270322",
+                "original_create_time": "2017-12-17 20:35:59",
+                "amount": 13,
+                "belong_id": 1,
+                "itemcode": "70270322",
+                "create_time": "2017-12-17 20:35:59",
+                "modify_time": "2017-12-17 22:08:54",
+                "hash": "34118af32fabfe523950d1d42cc2a5da",
+                "cls_id": 2015,
+                "id": 18813,
+                "unit": "瓶"
+            }
+        ],
+        "page_obj": {
+            "current": 1,
+            "next": 2,
+            "total": 320,
+            "page_range": [
+                {
+                    "page": 1
+                },
+                {
+                    "page": 2
+                },
+                {
+                    "page": 3
+                }
+
+            ],
+            "previous": null
+        },
+        "is_paginated": true
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **更新库存信息**
+
+```
+POST /api/admin/inventorie/{iid}/
+```
+
+### **Parameters**
+
+* iid(_Required_|integer)-库存id
+* cost(_Required_|float)-库存成本价
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "object": {
+            "third_cls_id": 20020402,
+            "second_cls_id": 200204,
+            "last_sell_time": "2017-08-10 17:11:00",
+            "cost": "12",
+            "name": "康师傅 鲜果橙 450ML",
+            "barcode": "70001767",
+            "original_create_time": "2017-12-17 20:35:34",
+            "amount": 117,
+            "belong_id": 1,
+            "itemcode": "70001767",
+            "create_time": "2017-12-17 20:35:34",
+            "modify_time": "2018-01-01 19:26:18",
+            "hash": "c998243e7485d33de74ddc62513139f5",
+            "cls_id": 2002,
+            "id": 13655,
+            "unit": "瓶"
+        }
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **获取站点信息**
+
+```
+GET /api/admin/site/
+```
+
+### **Parameters**
+
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "site": {
+            "info": "",
+            "name": "测试站",
+            "slug": "test"
+        }
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **更新站点信息**
+
+```
+POST /api/admin/site/
+```
+
+### **Parameters**
+* content(_Required_|string)-站点介绍
+
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "site": {
+            "info": "",
+            "name": "测试站",
+            "slug": "test"
+        }
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **上传图片**
+
+```
+POST /api/admin/upload/
+```
+
+### **Parameters**
+* image(_Required_|file)-图片
+
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+        "url": "/static/image/fe952dd9d091c50bf2635fab2f9992a6.png"
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```

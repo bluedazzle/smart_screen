@@ -18,6 +18,8 @@ from smart_admin.views import *
 
 urlpatterns = [
     url(r'^login/', AdminLoginView.as_view()),
+    url(r'^upload/', UploadPictureView.as_view()),
     url(r'^inventories/', InventoryListView.as_view()),
+    url(r'^inventory/(?P<iid>(\w)+)/', UpdateInventoryView.as_view()),
     url(r'^site/', SiteInfoView.as_view()),
 ]
