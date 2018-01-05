@@ -8,6 +8,8 @@ import string
 import time
 
 import logging
+
+from django.http import HttpResponseRedirect
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
@@ -111,4 +113,11 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
             self.message = '未知错误'
             self.status_code = ERROR_UNKNOWN
             return self.render_to_response()
+
+
+class QtRedirctView(View):
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponseRedirect('https://qr.alipay.com/c1x06947u55wqijazkfykb9')
 

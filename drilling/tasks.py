@@ -13,7 +13,7 @@ from celery.schedules import crontab
 from celery import Celery
 
 from drilling.fuels import get_fuel_order, get_delivery
-from drilling.models import session, Site
+# from drilling.models import session, Site
 from drilling.store import get_store_order, get_inventories
 from drilling.tanks import get_tank_info, get_tank_temperature, get_tank_value, get_inventory_record
 
@@ -24,7 +24,8 @@ app.config_from_object('drilling.celery_config')
 
 @app.on_after_configure.connect
 def init_periodic_tasks(sender, **kwargs):
-    site_list = [itm[0] for itm in session.query(Site.slug).all()]
+    # site_list = [itm[0] for itm in session.query(Site.slug).all()]
+    site_list = ['test']
     for site in site_list:
         sender.add_periodic_task(
             datetime.timedelta(seconds=40),
