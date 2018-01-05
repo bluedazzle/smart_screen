@@ -12,6 +12,7 @@ import logging
 from django.http import HttpResponseRedirect
 from django.views.generic import DetailView
 from django.views.generic import ListView
+from django.views.generic import TemplateView
 from django.views.generic import UpdateView
 from django.views.generic import View
 
@@ -115,9 +116,5 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
             return self.render_to_response()
 
 
-class QtRedirctView(View):
-    http_method_names = ['get']
-
-    def get(self, request, *args, **kwargs):
-        return HttpResponseRedirect('https://qr.alipay.com/c1x06947u55wqijazkfykb9')
-
+class QtRedirctView(TemplateView):
+    template_name = 'qr.html'
