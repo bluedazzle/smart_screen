@@ -1273,6 +1273,94 @@ GET /fuel/sequential
 }
 ```
 
+
+## **油品计划**
+
+```
+GET /fuel/plan
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2017-01-01 00:00:00",
+        "object_list":[
+            {
+                "sell":302.880269000007,
+                "fuel_type":"汽油",
+                "plan":1000,
+                "month":1
+            },
+            {
+                "sell":101.16626,
+                "fuel_type":"柴油",
+                "plan":1000,
+                "month":1
+            },
+            {
+                "sell":98.5780079999999,
+                "fuel_type":"柴油",
+                "plan":1000,
+                "month":2
+            },
+            {
+                "sell":281.439814999984,
+                "fuel_type":"汽油",
+                "plan":1000,
+                "month":2
+            },
+            {
+                "sell":354.58253299997995,
+                "fuel_type":"汽油",
+                "plan":1000,
+                "month":3
+            },
+            {
+                "sell":212.988713,
+                "fuel_type":"柴油",
+                "plan":1000,
+                "month":3
+            },
+            {
+                "sell":347.592158999994,
+                "fuel_type":"汽油",
+                "plan":2000,
+                "month":4
+            },
+            {
+                "sell":194.91588000000002,
+                "fuel_type":"柴油",
+                "plan":2000,
+                "month":4
+            }
+        ],
+        "page_obj":{
+
+        },
+        "end_time":"2017-10-22 00:00:00"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 ## **油品结构**
 
 ```
@@ -3384,6 +3472,40 @@ GET /goods/search/compare
   "msg": "数据缺失"
 }
 ```
+
+
+## **获取日结时间**
+
+```
+GET /tool/daytime
+```
+
+### **Parameters**
+
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2017-10-18 16:05:37",
+        "end_time":"2017-10-19 16:05:37"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 
 ## **滞销商品**
 

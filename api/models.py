@@ -217,3 +217,24 @@ class Receiver(models.Model):
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
+
+
+class FuelPlan(models.Model):
+    year = models.IntegerField(default=2018)
+    fuel_type = models.ForeignKey(SecondClassification, related_name='cls_plans')
+    jan = models.FloatField(default=0)
+    feb = models.FloatField(default=0)
+    mar = models.FloatField(default=0)
+    apr = models.FloatField(default=0)
+    may = models.FloatField(default=0)
+    jun = models.FloatField(default=0)
+    jul = models.FloatField(default=0)
+    aug = models.FloatField(default=0)
+    sep = models.FloatField(default=0)
+    oct = models.FloatField(default=0)
+    nov = models.FloatField(default=0)
+    dec = models.FloatField(default=0)
+    total = models.FloatField(default=0)
+
+    def __unicode__(self):
+        return '{0}-{1}'.format(self.year, self.fuel_type.name)

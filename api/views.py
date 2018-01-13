@@ -684,3 +684,79 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
         context['end_time'] = et
         data = self.get_objects(context)
         return self.render_to_response(context)
+
+
+class DayTimeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, ListView):
+    """
+    日结时间
+    """
+    datetime_type = 'string'
+
+    def get(self, request, *args, **kwargs):
+        ir = session.query(InventoryRecord).filter(InventoryRecord.record_type == 3).order_by(
+            InventoryRecord.original_create_time.desc()).first()
+        end_time = ir.original_create_time + datetime.timedelta(days=1)
+        return self.render_to_response({'start_time': ir.original_create_time, 'end_time': end_time})
+
+
+class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, DateTimeHandleMixin,
+                       SmartDetailView):
+    """
+    销售计划
+    """
+    model = FuelOrder
+    display_func = {'fuel_type': get_fuel_type}
+
+    def get_plan(self, fmt_str, cls, fmt, st):
+        month_dict = {1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may', 6: 'jun', 7: 'jul', 8: 'aug', 9: 'sep',
+                      10: 'oct', 11: 'nov', 12: 'dec'}
+        if fmt_str == 'year':
+            # month_str = month_dict.get(month)
+            # year = datetime.datetime.now().year
+            # cls = models.SecondClassification.objects.filter(id=cls)[0]
+            plan = models.FuelPlan.objects.filter(year=fmt, fuel_type_id=cls)
+            if not plan.exists():
+                return 0
+            plan = plan[0]
+            year_plan_num = plan.total
+            return year_plan_num
+        if fmt_str == 'month':
+            month_str = month_dict.get(fmt)
+            year = st.year
+            # cls = models.SecondClassification.objects.filter(id=cls)[0]
+            plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls)
+            if not plan.exists():
+                return 0
+            plan = plan[0]
+            month_plan_num = getattr(plan, month_str)
+            return month_plan_num
+        month_str = month_dict.get(st.month)
+        year = st.year
+        plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls)
+        if not plan.exists():
+            return 0
+        plan = plan[0]
+        month_plan_num = getattr(plan, month_str)
+        day_plan_num = month_plan_num / 31
+        if fmt_str == 'day':
+            return day_plan_num
+        hour_plan_num = day_plan_num / 24
+        if fmt_str == 'hour':
+            return hour_plan_num
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        fuel_res = session.query(fmt, self.model.super_cls_id, func.sum(self.model.amount)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st,
+                                                    et)).group_by(
+            fmt, self.model.super_cls_id).order_by(
+            fmt).all()
+        res = []
+        for data in fuel_res:
+            res.append((data[0], data[1], data[2] / 1000.0, self.get_plan(fmt_str, data[1], data[0], st)))
+        self.data_keys = [fmt_str, 'fuel_type', 'sell', 'plan']
+        # res = [(itm[0][0], itm[0][1], (itm[1][1] / 1000.0), itm[0][1] / (itm[1][1] / 1000.0)) for itm in combine]
+        return res

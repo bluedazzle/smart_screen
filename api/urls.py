@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^fuel/composition', FuelCompositionView.as_view()),
     url(r'^fuel/detail', FuelCompareDetailView.as_view()),
     url(r'^fuel/predict', FuelSellPredict.as_view()),
+    url(r'^fuel/plan', FuelSellPlanView.as_view()),
     url(r'^goods/payments', GoodsPaymentView.as_view()),
     url(r'^goods/sell/classification', GoodsClassificationSellView.as_view()),
     url(r'^goods/sell/rank', GoodsSellRankView.as_view()),
@@ -39,4 +40,5 @@ urlpatterns = [
     url(r'^goods/fuel/compare', FuelGoodsCompareView.as_view()),
     url(r'^goods/search/sequential', GoodsSearchSequentialView.as_view()),
     url(r'^goods/search/compare', GoodsSearchCompareYearView.as_view()),
+    url(r'^tool/daytime', DayTimeView.as_view()),
 ]
