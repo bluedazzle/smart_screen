@@ -9,4 +9,3 @@ from api.models import FuelOrder
 class Command(BaseCommand):
     def handle(self, *args, **options):
         FuelOrder.objects.all().delete()
-

@@ -64,6 +64,21 @@ class SmartDetailView(DetailView):
 class TankListInfoView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
     model = models.FuelTank
 
+    def set_extra(self, obj):
+        status = '正常'
+        percentage = round(obj.current / float(obj.max_value) * 100, 2)
+        if obj.current <= obj.min_value:
+            status = '液位过低'
+        if obj.current >= obj.max_value:
+            status = '液位过高'
+        setattr(obj, 'percentage', percentage)
+        setattr(obj, 'status', status)
+
+    def get_queryset(self):
+        queryset = super(TankListInfoView, self).get_queryset()
+        map(self.set_extra, queryset)
+        return queryset
+
 
 class FuelInventoryListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
     model = models.InventoryRecord
@@ -190,6 +205,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     """
     油品销售数据对比
     """
+    model = FuelOrder
     data_keys = ['fuel_type', 'hour', 'sales', 'total_price', 'amount']
 
     def get_objects(self, context):
