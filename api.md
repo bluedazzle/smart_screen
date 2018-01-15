@@ -4460,6 +4460,290 @@ GET /goods/unsold
 ```
 
 
+## **卡消费结构**
+
+```
+GET /card/composition
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2018-01-15 00:00:00",
+        "object_list":[
+            {
+                "amount":2,
+                "cls_name":"汽油"
+            },
+            {
+                "amount":1,
+                "cls_name":"柴油"
+            }
+        ],
+        "end_time":"2018-01-15 23:59:59"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+## **卡销比**
+
+```
+GET /card/compare
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2018-01-15 00:00:00",
+        "object_list":[
+            {
+                "total_money":20,
+                "cls_name":"汽油"
+            },
+            {
+                "total_money":20,
+                "cls_name":"柴油"
+            }
+        ],
+        "end_time":"2018-01-15 23:59:59"
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **卡消费数据表**
+
+```
+GET /cards
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+* search(_Optional_|string)-查询条件(card_id)
+
+
+|card_type|说明|
+| --------------  | :---: |
+|0|银行卡|
+|1|记名卡|
+|2|车队卡|
+
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "is_paginated":false,
+        "cardrecord_list":[
+            {
+                "pos_id":null,
+                "classification_id":100101,
+                "trade_type":0,
+                "classification":{
+                    "name":"汽油",
+                    "original_create_time":"2017-12-17 23:13:05",
+                    "belong_id":null,
+                    "parent_id":1001,
+                    "create_time":"2017-12-09 23:01:28",
+                    "modify_time":"2017-12-09 23:01:28",
+                    "id":100101
+                },
+                "bank_unique_id":"1234",
+                "original_create_time":"2018-01-15 13:32:52",
+                "card_id":"",
+                "belong_id":1,
+                "bank_card_id":"636",
+                "card_type":1,
+                "create_time":"2018-01-15 13:32:52",
+                "modify_time":"2018-01-15 13:32:52",
+                "total":1000,
+                "pump_id":0,
+                "balance":10000,
+                "id":3,
+                "unique_id":3
+            },
+            {
+                "pos_id":null,
+                "classification_id":100102,
+                "trade_type":0,
+                "classification":{
+                    "name":"柴油",
+                    "original_create_time":"2017-12-17 23:13:05",
+                    "belong_id":null,
+                    "parent_id":1001,
+                    "create_time":"2017-12-09 23:01:28",
+                    "modify_time":"2017-12-09 23:01:28",
+                    "id":100102
+                },
+                "bank_unique_id":null,
+                "original_create_time":"2018-01-15 13:32:52",
+                "card_id":"112",
+                "belong_id":1,
+                "bank_card_id":null,
+                "card_type":2,
+                "create_time":"2018-01-15 13:32:52",
+                "modify_time":"2018-01-15 13:32:52",
+                "total":2000,
+                "pump_id":0,
+                "balance":20000,
+                "id":2,
+                "unique_id":2
+            },
+            {
+                "pos_id":null,
+                "classification_id":100101,
+                "trade_type":0,
+                "classification":{
+                    "name":"汽油",
+                    "original_create_time":"2017-12-17 23:13:05",
+                    "belong_id":null,
+                    "parent_id":1001,
+                    "create_time":"2017-12-09 23:01:28",
+                    "modify_time":"2017-12-09 23:01:28",
+                    "id":100101
+                },
+                "bank_unique_id":null,
+                "original_create_time":"2018-01-15 13:32:52",
+                "card_id":"111",
+                "belong_id":1,
+                "bank_card_id":null,
+                "card_type":1,
+                "create_time":"2018-01-15 13:32:52",
+                "modify_time":"2018-01-15 13:32:52",
+                "total":1000,
+                "pump_id":0,
+                "balance":10000,
+                "id":1,
+                "unique_id":1
+            }
+        ],
+        "page_obj":{
+
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **异常卡**
+
+```
+GET /card/abnormal
+```
+
+### **Parameters**
+
+
+|card_type|说明|
+| --------------  | :---: |
+|1|记名卡|
+|2|车队卡|
+
+|abnormal_type|说明|
+| --------------  | :---: |
+|1|日异常|
+|2|周异常|
+
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "abnormalrecord_list":[
+            {
+                "start_time":"2018-01-15 14:00:21",
+                "card_id":"112",
+                "belong_id":1,
+                "card_type":2,
+                "reason":"一周内汽柴油混刷",
+                "create_time":"2018-01-15 14:00:21",
+                "end_time":"2018-03-01 00:00:00",
+                "abnormal_type":2,
+                "id":2
+            },
+            {
+                "start_time":"2018-01-15 14:00:21",
+                "card_id":"111",
+                "belong_id":1,
+                "card_type":1,
+                "reason":"单日汽油消费 800 元以上",
+                "create_time":"2018-01-15 14:00:21",
+                "end_time":"2018-03-01 00:00:00",
+                "abnormal_type":1,
+                "id":1
+            }
+        ],
+        "page_obj":{
+
+        },
+        "is_paginated":false
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 # **管理后台API**
 
 ## **登录**

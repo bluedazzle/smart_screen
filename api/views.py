@@ -1,20 +1,18 @@
 # coding=utf-8
 import datetime
-from django.shortcuts import render
 
-# Create your views here.
 from django.views.generic import DetailView
 from django.views.generic import ListView
 
-from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id
-from drilling.utils import string_to_datetime
-from sqlalchemy import func
-
-from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin
-from core.Mixin.CheckMixin import CheckSiteMixin
-from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
 from api import models
-from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory
+from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id
+from core.Mixin.CheckMixin import CheckSiteMixin
+from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin
+from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
+from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory, \
+    CardRecord
+from drilling.utils import get_today_st_et, get_week_st_et
+from sqlalchemy import func
 
 
 class SmartDetailView(DetailView):
@@ -699,7 +697,7 @@ class DayTimeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, ListView):
         return self.render_to_response({'start_time': ir.original_create_time, 'end_time': end_time})
 
 
-class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, DateTimeHandleMixin,
+class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
                        SmartDetailView):
     """
     销售计划
@@ -760,3 +758,79 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
         self.data_keys = [fmt_str, 'fuel_type', 'sell', 'plan']
         # res = [(itm[0][0], itm[0][1], (itm[1][1] / 1000.0), itm[0][1] / (itm[1][1] / 1000.0)) for itm in combine]
         return res
+
+
+class CardRecordTypeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
+                         SmartDetailView):
+    """
+    卡消费结构
+    """
+
+    model = CardRecord
+    data_keys = ['cls_name', 'amount']
+    display_func = {'cls_name': get_fuel_type}
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        res = session.query(self.model.classification_id, func.count(1)).filter(
+            self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
+            self.model.classification_id).all()
+        return res
+
+
+class CardRecordCompareView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
+                            SmartDetailView):
+    """
+    卡销比
+    """
+
+    model = CardRecord
+    data_keys = ['cls_name', 'total_money']
+    display_func = {'cls_name': get_fuel_type}
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        res = session.query(self.model.classification_id, func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
+            self.model.classification_id).all()
+        res = [(itm[0], itm[1] / 100.0) for itm in res]
+        return res
+
+
+class CardRecordListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    """
+    卡消费记录
+    """
+
+    model = models.CardRecord
+    paginate_by = 50
+    foreign = True
+    exclude_attr = ['belong', 'parent']
+
+    def get_queryset(self):
+        search = self.request.GET.get('search', None)
+        queryset = super(CardRecordListView, self).get_queryset().order_by('-original_create_time')
+        if search:
+            queryset = queryset.filter(card_id=search).order_by('-original_create_time')
+        return queryset
+
+
+class AbnormalCardView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    """
+    异常卡监控
+    """
+
+    model = models.AbnormalRecord
+    paginate_by = 50
+
+    def get_queryset(self):
+        st, et = get_today_st_et()
+        queryset = super(AbnormalCardView, self).get_queryset()
+        queryset_day = queryset.filter(abnormal_type=1, start_time__gte=st, end_time__gte=et)
+        st, et = get_week_st_et()
+        queryset_week = queryset.filter(abnormal_type=2, start_time__gte=st, end_time__gte=et)
+        queryset = queryset_day | queryset_week
+        queryset = queryset.order_by('-create_time')
+        return queryset

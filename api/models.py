@@ -238,3 +238,61 @@ class FuelPlan(models.Model):
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.year, self.fuel_type.name)
+
+
+class CardRecord(BaseModel):
+    card_type_choices = (
+        (0, '银行卡'),
+        (1, '记名|不记名卡'),
+        (2, '车队卡'),
+    )
+
+    unique_id = models.IntegerField(unique=True)
+    pos_id = models.CharField(max_length=128, null=True, blank=True)
+    card_id = models.CharField(max_length=128, null=True, blank=True)
+    trade_type = models.IntegerField(default=0)
+    bank_card_id = models.CharField(max_length=128, null=True, blank=True)
+    # 银行流水
+    bank_unique_id = models.CharField(max_length=128, null=True, blank=True)
+    pump_id = models.IntegerField(default=0)
+    balance = models.FloatField(default=0.0)
+    # 实扣金额
+    total = models.FloatField(default=0.0)
+    card_type = models.IntegerField(default=0, choices=card_type_choices)
+    classification = models.ForeignKey(SecondClassification, related_name='sec_cls_card_records', null=True, blank=True,
+                                       on_delete=models.SET_NULL)
+    belong = models.ForeignKey(Site, related_name='site_card_records')
+
+    def __unicode__(self):
+        if self.card_type == 1 or self.card_type == 2:
+            card_id = self.card_id
+        else:
+            card_id = self.bank_card_id
+        return '{0}-{1}: ￥{2}元-{3: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, card_id, self.total / 100.0,
+                                                              self.original_create_time)
+
+
+class AbnormalRecord(models.Model):
+    card_type_choices = (
+        (1, '记名|不记名卡'),
+        (2, '车队卡'),
+    )
+
+    abnormal_type_choices = (
+        (1, '日异常'),
+        (2, '周异常')
+    )
+
+    card_id = models.CharField(max_length=128)
+    card_type = models.IntegerField(default=1, choices=card_type_choices)
+    reason = models.CharField(max_length=256, default='', null=True, blank=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    create_time = models.DateTimeField(default=timezone.now)
+    abnormal_type = models.IntegerField(default=1)
+    belong = models.ForeignKey(Site, related_name='site_abnormal_records')
+
+    def __unicode__(self):
+        return '{0}-{1}-{2}-{3: %Y-%m-%d %H:%M:%S}~{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.card_id,
+                                                                                  self.reason, self.start_time,
+                                                                                  self.end_time)

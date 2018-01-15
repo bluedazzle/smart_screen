@@ -10,7 +10,7 @@ import math
 import pytz
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
-    ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory
+    ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory, AbnormalRecord
 
 
 def get_site_by_slug(slug):
@@ -292,8 +292,45 @@ def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limi
         yield result
 
 
+def create_abnormal_record(**kwargs):
+    obj = AbnormalRecord()
+    obj.create_time = get_now_time_with_timezone()
+    for k, v in kwargs.items():
+        if not v:
+            v = 0.0
+        if isinstance(v, datetime.datetime):
+            v = add_timezone_to_naive_time(v)
+        setattr(obj, k, v)
+    session.add(obj)
+    session.commit()
+    logging.info('INFO create abnormal record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
+    return obj
+
+
 def string_to_datetime(time_data, fmt='%Y-%m-%d %H:%M:%S'):
     return datetime.datetime.strptime(time_data, fmt)
+
+
+def get_today_st_et():
+    now = datetime.datetime.now()
+    st = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day))
+    et = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59))
+    return st, et
+
+
+def get_today_night():
+    now = datetime.datetime.now()
+    st = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 6, 0, 0))
+    et = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 22, 0, 0))
+    return st, et
+
+
+def get_week_st_et():
+    now = datetime.datetime.now()
+    now_0 = datetime.datetime(now.year, now.month, now.day)
+    st = add_timezone_to_naive_time(now_0 - datetime.timedelta(days=now.weekday()))
+    et = add_timezone_to_naive_time(now_0 + datetime.timedelta(days=6 - now.weekday()))
+    return st, et
 
 
 if __name__ == '__main__':

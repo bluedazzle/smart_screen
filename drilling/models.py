@@ -210,6 +210,42 @@ class GoodsInventory(Base):
         super(GoodsInventory, self).__init__(*args, **kwargs)
 
 
+class CardRecord(Base):
+    __tablename__ = 'api_cardrecord'
+
+    id = Column(Integer, primary_key=True)
+    belong_id = Column(Integer)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    unique_id = Column(Integer)
+    pos_id = Column(String)
+    card_id = Column(String)
+    money = Column(Float)
+    trade_type = Column(Integer)
+    bank_card_id = Column(String)
+    bank_unique_id = Column(String)
+    pump_id = Column(Integer)
+    balance = Column(Float)
+    total = Column(Float)
+    card_type = Column(Integer)
+    classification_id = Column(Integer)
+
+
+class AbnormalRecord(Base):
+    __tablename__ = 'api_abnormalrecord'
+
+    id = Column(Integer, primary_key=True)
+    belong_id = Column(Integer)
+    create_time = Column(DateTime)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+    card_id = Column(String)
+    card_type = Column(Integer)
+    reason = Column(String)
+    abnormal_type = Column(Integer)
+
+
 class Site(Base):
     __tablename__ = 'api_site'
 
