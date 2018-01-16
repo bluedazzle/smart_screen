@@ -22,3 +22,14 @@ def get_first_cls_name_by_id(cid):
     if res:
         return res[0]
     return None
+
+
+def get_all_super_cls_id():
+    res = session.query(Classification.id).all()
+    return [itm[0] for itm in res]
+
+
+def get_all_goods_super_cls_id():
+    res = get_all_super_cls_id()
+    res = [itm for itm in res if 2000 <= itm <= 2999]
+    return res

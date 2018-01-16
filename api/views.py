@@ -3,22 +3,24 @@ import datetime
 
 from django.views.generic import DetailView
 from django.views.generic import ListView
+from sqlalchemy import func
 
 from api import models
-from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id
 from core.Mixin.CheckMixin import CheckSiteMixin
 from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin
 from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
 from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory, \
     CardRecord
 from drilling.utils import get_today_st_et, get_week_st_et
-from sqlalchemy import func
+from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id, get_all_super_cls_id, \
+    get_all_goods_super_cls_id
 
 
 class SmartDetailView(DetailView):
     data_keys = []
     display_func = {}
     date_fmt = 'day'
+    all_keys = None
 
     def format_data(self, context, data):
         formated_data = []
@@ -30,7 +32,15 @@ class SmartDetailView(DetailView):
         context['object_list'] = formated_data
         return formated_data
 
-        pass
+    def fill_data(self, data):
+        keys = [itm[0] for itm in data]
+        if not self.all_keys:
+            self.all_keys = get_all_goods_super_cls_id()
+        for key in self.all_keys:
+            if key not in keys:
+                data.append((key, key) + (0,) * (len(self.data_keys) - 2))
+        data = sorted(data, key=lambda x: x[0])
+        return data
 
     def get_time_fmt(self, st, et):
         period = et - st
@@ -423,6 +433,34 @@ class GoodsItemView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTime
         return res
 
 
+class GoodsOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    非油数据总览
+    """
+    http_method_names = ['get']
+    model = GoodsOrder
+
+    def get(self, request, *args, **kwargs):
+        st, et = self.get_date_period(self.date_fmt)
+        total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st, et)).all()[0]
+        average = total / float(amount)
+        total_item = session.query(GoodsInventory).count()
+        self.model = FuelOrder
+        fuel_volumn, fuel_amount = session.query(func.sum(self.model.amount), func.count(1)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st,
+                                                    et)).all()[0]
+        fuel_ton = fuel_volumn / 1000.0
+        product_effect = total / float(total_item)
+        ton_oil_goods = total / fuel_ton
+        oil_goods_conversion = '{0}%'.format(round(amount / float(fuel_amount) * 100, 2))
+        return self.render_to_response(
+            {'total': total, 'amount': amount, 'average': average, 'product_effect': product_effect,
+             'ton_oil_goods': ton_oil_goods, 'oil_goods_conversion': oil_goods_conversion})
+
+
 class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
     """
     商品环比
@@ -441,6 +479,7 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        goods_res = self.fill_data(goods_res)
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
@@ -448,6 +487,7 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        last_goods_res = self.fill_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -472,6 +512,7 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        goods_res = self.fill_data(goods_res)
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
@@ -479,6 +520,7 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        last_goods_res = self.fill_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -834,3 +876,18 @@ class AbnormalCardView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
         queryset = queryset_day | queryset_week
         queryset = queryset.order_by('-create_time')
         return queryset
+
+
+class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    卡数据总览
+    """
+
+    model = CardRecord
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        st, et = self.get_date_period(self.date_fmt)
+        total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
+            self.model.original_create_time.between(st, et)).all()[0]
+        return self.render_to_response({'income': total, 'amount': amount})

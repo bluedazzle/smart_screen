@@ -3128,6 +3128,40 @@ GET /goods/product/effect
 }
 ```
 
+## **非油总览**
+
+```
+GET /goods/overview
+```
+
+### **Parameters**
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "oil_goods_conversion":"14.15%", # 油非转化率
+        "ton_oil_goods":147.22849189858246, # 吨油非油收入
+        "average":36.258620689655174, # 客单价
+        "amount":58, # 订单数
+        "product_effect":0.32957216737188527, # 商品品效
+        "total":2103 # 销售收入
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
 
 ## **商品环比**
 
@@ -4445,6 +4479,37 @@ GET /goods/unsold
             "previous":null
         },
         "is_paginated":true
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **卡总览**
+
+```
+GET /card/overview
+```
+
+### **Parameters**
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "amount":6,
+        "income":8000
     },
     "status":1,
     "msg":"success"
