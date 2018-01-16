@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
+from drilling.card import get_card_record
 from drilling.fuels import get_sup, get_rev, get_delivery, get_fuel_order
 from drilling.models import session, Site
 from drilling.store import get_first_classify, get_second_classify, get_third_classify, get_inventories, get_store_order
@@ -38,8 +39,10 @@ def init_day_record(site, st, et):
     # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et).encode('utf-8'))
     # get_fuel_order(site, st, et)
     # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et).encode('utf-8'))
-    get_store_order(site, st, et)
-    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
+    # get_store_order(site, st, et)
+    # logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8'))
+    get_card_record(site, st, et)
+    logging.info('{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}卡数据'.format(site, st, et).encode('utf-8'))
 
 
 def init_all():

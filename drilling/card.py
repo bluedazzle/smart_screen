@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import logging
+
 from drilling.db.interbase import init_interbase_connect
 from drilling.db.mysql import init_mysql_connect, init_test
 from sqlalchemy import func
@@ -55,6 +57,8 @@ def abnormal_card_check(card_id):
 
 
 def convert_oil_id(oil_id):
+    if not oil_id:
+        return '', ''
     mapping = {300314: "98号 车用汽油(Ⅲ)",
                300451: "97号 车用汽油(沪Ⅳ)",
                300061: "97号 车用汽油(Ⅲ)",
@@ -198,7 +202,12 @@ def convert_oil_id(oil_id):
                300880: "95号 车用乙醇汽油调合组分油(ⅥA)",
                300878: "95号 车用乙醇汽油(E10)(ⅥA)",
                300889: "98号 车用乙醇汽油(E10)(ⅥA)"}
-    oil_str = mapping.get(int(oil_id), '其他')
+    try:
+        oil_id = int(oil_id)
+    except Exception as e:
+        logging.exception('ERROR in convert oil id {0}'.format(e))
+        return '', ''
+    oil_str = mapping.get(oil_id, '其他')
     if '柴油' in oil_str:
         return oil_str, '柴油'
     if '汽油' in oil_str:
@@ -207,6 +216,8 @@ def convert_oil_id(oil_id):
 
 
 def convert_goods(good_id):
+    if not good_id:
+        return '', ''
     mapping = {2010: "饼干/糕点",
                2011: "面包",
                2012: "速食",
@@ -238,7 +249,12 @@ def convert_goods(good_id):
                2022: "其他",
                5001: "收费服务",
                2023: "积分兑换商品"}
-    good_str = mapping.get(int(good_id))
+    try:
+        good_id = int(good_id)
+    except Exception as e:
+        logging.exception('ERROR in convert good id {0}'.format(e))
+        return '', ''
+    good_str = mapping.get(good_id, '其他')
     return good_str, good_str
 
 
@@ -249,12 +265,26 @@ def details_handle(details):
         if not detail:
             continue
         detail_data = detail.split(',')
+        if len(detail_data) == 0:
+            continue
         if detail_data[0]:
             goods_detail, goods_cls = convert_goods(detail_data[0])
-            details.append((goods_cls, goods_detail, detail_data[3]))
+            try:
+                total = detail_data[3]
+            except Exception as e:
+                logging.exception('ERROR in get good money reason {0}'.format(e))
+                total = 0
+            details.append((goods_cls, goods_detail, total))
         else:
+            if len(detail_data) < 2:
+                continue
+            try:
+                total = detail_data[3]
+            except Exception as e:
+                logging.exception('ERROR in get oil money reason {0}'.format(e))
+                total = 0
             oil_detail, oil_cls = convert_oil_id(detail_data[1])
-            details.append((oil_cls, oil_detail, detail_data[3]))
+            details.append((oil_cls, oil_detail, total))
     return details
 
 

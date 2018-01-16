@@ -12,6 +12,7 @@ import requests
 from celery.schedules import crontab
 from celery import Celery
 
+from drilling.card import get_card_record
 from drilling.fuels import get_fuel_order, get_delivery
 # from drilling.models import session, Site
 from drilling.store import get_store_order, get_inventories
@@ -51,6 +52,10 @@ def init_periodic_tasks(sender, **kwargs):
         sender.add_periodic_task(
             crontab(hour=7, minute=30, day_of_week=1),
             get_inventories_task.s(site),
+        )
+        sender.add_periodic_task(
+            datetime.timedelta(seconds=20),
+            get_card_record_task.s(site),
         )
 
 
@@ -104,5 +109,10 @@ def get_inventories_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-
+@app.task()
+def get_card_record_task(site):
+    task_info = 'get card record {0}'.format(site)
+    logging.info('START {0}'.format(task_info))
+    get_card_record(site)
+    logging.info('SUCCESS {0}'.format(task_info))
 
