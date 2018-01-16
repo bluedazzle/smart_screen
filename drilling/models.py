@@ -219,17 +219,16 @@ class CardRecord(Base):
     modify_time = Column(DateTime)
     original_create_time = Column(DateTime)
     unique_id = Column(Integer)
-    pos_id = Column(String)
+    parent_id = Column(Integer)
     card_id = Column(String)
-    money = Column(Float)
-    trade_type = Column(Integer)
     bank_card_id = Column(String)
-    bank_unique_id = Column(String)
+    detail = Column(String)
     pump_id = Column(Integer)
     balance = Column(Float)
     total = Column(Float)
     card_type = Column(Integer)
-    classification_id = Column(Integer)
+    classification = Column(String)
+    eps_unique_id = Column(String)
 
 
 class AbnormalRecord(Base):

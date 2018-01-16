@@ -10,7 +10,7 @@ import math
 import pytz
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
-    ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory, AbnormalRecord
+    ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory, AbnormalRecord, CardRecord
 
 
 def get_site_by_slug(slug):
@@ -44,6 +44,24 @@ def create_record(**kwargs):
     session.commit()
     logging.info('INFO create record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
     return obj
+
+
+def create_card_record(**kwargs):
+    obj = CardRecord()
+    obj.create_time = get_now_time_with_timezone()
+    obj.modify_time = get_now_time_with_timezone()
+    for k, v in kwargs.items():
+        if isinstance(v, datetime.datetime):
+            v = add_timezone_to_naive_time(v)
+        setattr(obj, k, v)
+    session.add(obj)
+    session.commit()
+    logging.info('INFO create card record {0} success'.format(obj.original_create_time))
+
+
+def check_card_record(unique_id):
+    res = session.query(CardRecord).filter(CardRecord.parent_id == unique_id).all()
+    return True if res else False
 
 
 def create_fuel_order(**kwargs):
@@ -292,14 +310,17 @@ def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limi
         yield result
 
 
-def create_abnormal_record(**kwargs):
+def create_abnormal_record(abnormal_type, **kwargs):
+    if abnormal_type == 1:
+        st, et = get_today_st_et()
+    else:
+        st, et = get_week_st_et()
     obj = AbnormalRecord()
     obj.create_time = get_now_time_with_timezone()
+    obj.start_time = st
+    obj.end_time = et
+    obj.abnormal_type = abnormal_type
     for k, v in kwargs.items():
-        if not v:
-            v = 0.0
-        if isinstance(v, datetime.datetime):
-            v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
     session.commit()

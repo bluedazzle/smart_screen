@@ -248,19 +248,19 @@ class CardRecord(BaseModel):
     )
 
     unique_id = models.IntegerField(unique=True)
-    pos_id = models.CharField(max_length=128, null=True, blank=True)
+    # eps id
+    parent_id = models.IntegerField()
     card_id = models.CharField(max_length=128, null=True, blank=True)
-    trade_type = models.IntegerField(default=0)
     bank_card_id = models.CharField(max_length=128, null=True, blank=True)
     # 银行流水
-    bank_unique_id = models.CharField(max_length=128, null=True, blank=True)
+    eps_unique_id = models.CharField(max_length=128, null=True, blank=True)
     pump_id = models.IntegerField(default=0)
     balance = models.FloatField(default=0.0)
     # 实扣金额
     total = models.FloatField(default=0.0)
     card_type = models.IntegerField(default=0, choices=card_type_choices)
-    classification = models.ForeignKey(SecondClassification, related_name='sec_cls_card_records', null=True, blank=True,
-                                       on_delete=models.SET_NULL)
+    classification = models.CharField(max_length='50', null=True, blank=True)
+    detail = models.CharField(max_length=50, null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_card_records')
 
     def __unicode__(self):
@@ -268,8 +268,8 @@ class CardRecord(BaseModel):
             card_id = self.card_id
         else:
             card_id = self.bank_card_id
-        return '{0}-{1}: ￥{2}元-{3: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, card_id, self.total / 100.0,
-                                                              self.original_create_time)
+        return '{0}-{1}: ￥{2}元-{3:%Y-%m-%d %H:%M:%S}'.format(self.belong.name, card_id, self.total / 100.0,
+                                                             self.original_create_time)
 
 
 class AbnormalRecord(models.Model):
