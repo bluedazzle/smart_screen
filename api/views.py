@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 
+import logging
 from django.views.generic import DetailView
 from django.views.generic import ListView
 from sqlalchemy import func
@@ -442,16 +443,27 @@ class GoodsOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTime
 
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period(self.date_fmt)
-        total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
-            self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(st, et)).all()[0]
-        average = total / float(amount)
+        try:
+            total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
+                self.model.belong_id == self.site.id,
+                self.model.original_create_time.between(st, et)).all()[0]
+        except Exception as e:
+            logging.exception('ERROR in good overview reason {0}'.format(e))
+            total, amount = 0, 0
+        if not amount:
+            average = total / float(amount)
+        else:
+            average = 0
         total_item = session.query(GoodsInventory).count()
         self.model = FuelOrder
-        fuel_volumn, fuel_amount = session.query(func.sum(self.model.amount), func.count(1)).filter(
-            self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(st,
-                                                    et)).all()[0]
+        try:
+            fuel_volumn, fuel_amount = session.query(func.sum(self.model.amount), func.count(1)).filter(
+                self.model.belong_id == self.site.id,
+                self.model.original_create_time.between(st,
+                                                        et)).all()[0]
+        except Exception as e:
+            logging.exception('ERROR in goods overview reason {0}'.format(e))
+            fuel_volumn, fuel_amount = 0, 0
         fuel_ton = fuel_volumn / 1000.0
         product_effect = total / float(total_item)
         ton_oil_goods = total / fuel_ton
@@ -888,6 +900,10 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
 
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period(self.date_fmt)
-        total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
-            self.model.original_create_time.between(st, et)).all()[0]
+        try:
+            total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
+                self.model.original_create_time.between(st, et)).all()[0]
+        except Exception as e:
+            logging.exception('ERROR in card overview reason {0}'.format(e))
+            total, amount = 0, 0
         return self.render_to_response({'income': total, 'amount': amount})
