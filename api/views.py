@@ -822,14 +822,13 @@ class CardRecordTypeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
 
     model = CardRecord
     data_keys = ['cls_name', 'amount']
-    display_func = {'cls_name': get_fuel_type}
 
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.classification_id, func.count(1)).filter(
+        res = session.query(self.model.classification, func.count(1)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
-            self.model.classification_id).all()
+            self.model.classification).all()
         return res
 
 
@@ -841,14 +840,13 @@ class CardRecordCompareView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
 
     model = CardRecord
     data_keys = ['cls_name', 'total_money']
-    display_func = {'cls_name': get_fuel_type}
 
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.classification_id, func.sum(self.model.total)).filter(
+        res = session.query(self.model.classification, func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
-            self.model.classification_id).all()
+            self.model.classification).all()
         res = [(itm[0], itm[1] / 100.0) for itm in res]
         return res
 
