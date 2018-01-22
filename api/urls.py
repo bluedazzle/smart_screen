@@ -48,4 +48,6 @@ urlpatterns = [
     url(r'^cards/$', CardRecordListView.as_view()),
     url(r'^card/abnormal/$', AbnormalCardView.as_view()),
     url(r'^site/$', SiteInfoView.as_view()),
+    url(r'^login/$', LoginView.as_view()),
+    url(r'^messages/$', MessageView.as_view()),
 ]

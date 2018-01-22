@@ -4808,6 +4808,93 @@ GET /card/abnormal
 }
 ```
 
+## **获取消息**
+
+```
+GET /messages/
+```
+
+### **Parameters**
+
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "page_obj":{
+
+        },
+        "is_paginated":false,
+        "deliveryrecord_list":[
+            {
+                "hash":"7d7b1d8eb0e7dc8d8f90bcb23ae02984",
+                "original_create_time":"2018-01-22 23:17:25",
+                "belong_id":1,
+                "create_time":"2017-12-18 20:14:00",
+                "modify_time":"2018-01-22 23:17:27",
+                "receiver":"收货",
+                "supplier":"油品供应商",
+                "truck_number":"青A42168",
+                "id":263
+            },
+            {
+                "hash":"beb2c70a042718d75cffe1a488130629",
+                "original_create_time":"2018-01-22 23:17:38",
+                "belong_id":1,
+                "create_time":"2017-12-18 20:14:00",
+                "modify_time":"2018-01-22 23:17:40",
+                "receiver":"收货",
+                "supplier":"油品供应商",
+                "truck_number":"青A42168",
+                "id":262
+            }
+        ]
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **智慧大屏登录**
+
+```
+GET /login/
+```
+
+### **Parameters**
+password(_Required_|string)-密码
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
 
 # **管理后台API**
 

@@ -9,7 +9,7 @@ from sqlalchemy import func
 
 from api import models
 from core.Mixin.CheckMixin import CheckSiteMixin
-from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin
+from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin, ERROR_PASSWORD
 from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
 from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory, \
     CardRecord
@@ -652,7 +652,7 @@ class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Dat
         unsold_day = self.request.GET.get('unsold_day', None)
         if unsold_day:
             unsold_time = self.get_unsold_datetime(unsold_day)
-            queryset = queryset.filter(last_sell_time__gt=unsold_time)
+            queryset = queryset.filter(last_sell_time__gt=unsold_time, belong=self.site)
         queryset = queryset.order_by('last_sell_time')
         map(self.get_day_num, queryset)
         return queryset
@@ -882,9 +882,9 @@ class AbnormalCardView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
     def get_queryset(self):
         st, et = get_today_st_et()
         queryset = super(AbnormalCardView, self).get_queryset()
-        queryset_day = queryset.filter(abnormal_type=1, start_time__gte=st, end_time__gte=et)
+        queryset_day = queryset.filter(abnormal_type=1, start_time__gte=st, end_time__gte=et, belong=self.site)
         st, et = get_week_st_et()
-        queryset_week = queryset.filter(abnormal_type=2, start_time__gte=st, end_time__gte=et)
+        queryset_week = queryset.filter(abnormal_type=2, start_time__gte=st, end_time__gte=et, belong=self.site)
         queryset = queryset_day | queryset_week
         queryset = queryset.order_by('-create_time')
         return queryset
@@ -912,7 +912,35 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
 class SiteInfoView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
     model = models.Site
     http_method_names = ['get']
-    include_attr = ['name', 'slug', 'info']
+    include_attr = ['name', 'slug', 'info', 'pictures']
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response({'site': self.site})
+
+
+class LoginView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
+    model = models.Site
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        password = request.GET.get('password', '')
+        if not password:
+            self.message = '密码不正确'
+            self.status_code = ERROR_PASSWORD
+            return self.render_to_response({})
+        if password != self.site.password:
+            self.message = '密码不正确'
+            self.status_code = ERROR_PASSWORD
+            return self.render_to_response({})
+        return self.render_to_response({})
+
+
+class MessageView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    model = models.DeliveryRecord
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        start = datetime.datetime.now() - datetime.timedelta(hours=1)
+        queryset = super(MessageView, self).get_queryset()
+        queryset = queryset.filter(original_create_time__gte=start, belong=self.site)
+        return queryset
