@@ -4,6 +4,7 @@ import datetime
 import logging
 from django.views.generic import DetailView
 from django.views.generic import ListView
+
 from sqlalchemy import func
 
 from api import models
@@ -40,6 +41,7 @@ class SmartDetailView(DetailView):
         for key in self.all_keys:
             if key not in keys:
                 data.append((key, key) + (0,) * (len(self.data_keys) - 2))
+        data = filter(lambda x: 2000 <= x[0] <= 2999, data)
         data = sorted(data, key=lambda x: x[0])
         return data
 
@@ -905,3 +907,12 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
             logging.exception('ERROR in card overview reason {0}'.format(e))
             total, amount = 0, 0
         return self.render_to_response({'income': total, 'amount': amount})
+
+
+class SiteInfoView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
+    model = models.Site
+    http_method_names = ['get']
+    include_attr = ['name', 'slug', 'info']
+
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response({'site': self.site})
