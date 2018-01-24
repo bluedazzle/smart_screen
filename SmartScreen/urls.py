@@ -16,8 +16,11 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from api.views import TokenView
+
 urlpatterns = [
     url(r'^site_admin/', include(admin.site.urls)),
     url(r'^api/v1/', include('api.urls')),
     url(r'^api/admin/', include('smart_admin.urls')),
+    url(r'^$', TokenView.as_view()),
 ]

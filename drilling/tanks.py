@@ -15,7 +15,7 @@ from drilling.utils import get_site_by_slug, get_tank_by_tank_id, add_timezone_t
 
 def get_tank_value(site):
     site = get_site_by_slug(site)
-    ib_session = init_interbase_connect()
+    ib_session = init_interbase_connect(site.fuel_server)
     for tank_id in range(1, 10):
         sql = 'SELECT SHIFT_CONTROL_ID ,TANK_ID ,WATER_STICK ,CLOSE_QTY ,WATER_VOLUME ,TRANS_DATE FROM FUEL_TANK_READING WHERE TANK_ID = {0} ORDER BY TRANS_DATE DESC'.format(
             tank_id)
@@ -33,7 +33,7 @@ def get_tank_value(site):
 
 def get_tank_temperature(site):
     site = get_site_by_slug(site)
-    ib_session = init_interbase_connect()
+    ib_session = init_interbase_connect(site.fuel_server)
     for tank_id in range(1, 10):
         sql = 'SELECT FDT.TEMPERATURE,FDT.READ_TIME, FT.TANK_ID, FT.TANK_NAME FROM FUEL_DAY_TEMPERATURE FDT, FUEL_TANKS FT WHERE FT.TANK_ID = {0} ORDER BY FDT.READ_TIME DESC'.format(
             tank_id)
@@ -52,7 +52,7 @@ def get_tank_temperature(site):
 
 def get_tank_info(site):
     site = get_site_by_slug(site)
-    ib_session = init_interbase_connect()
+    ib_session = init_interbase_connect(site.fuel_server)
     sql = 'SELECT TANK_ID ,TANK_NAME ,VOLUME_QTY ,ALARM_QTY, GRADE_PLU FROM FUEL_TANKS'
     ib_session.execute(sql)
     res = ib_session.fetchall()
@@ -71,7 +71,7 @@ def get_tank_info(site):
 def get_tank_grade(site):
     site = get_site_by_slug(site)
     tanks = get_all_tanks_by_site(site)
-    ib_session = init_interbase_connect()
+    ib_session = init_interbase_connect(site.fuel_server)
     for tank in tanks:
         sql = 'SELECT GRADE, GRADENAME FROM FUELGRADE WHERE GRADE={0}'.format(tank.grade_id)
         ib_session.execute(sql)
@@ -170,7 +170,7 @@ AND FTH.SERNUM = FTD.HEADERID
 AND FTH.STATUS in( 'A','C')
 AND DB.DAY_BATCH_DATE BETWEEN '{start_time}' AND '{end_time}'
 AND FTH.ITEMDOCTYPE_ID IN (1, 7, 8, 10, 11)'''.format(start_time=st, end_time=et)
-    ib_session = init_interbase_connect()
+    ib_session = init_interbase_connect(site.fuel_server)
     ib_session.execute(sql)
     records = ib_session.fetchall()
     record_obj_list = []

@@ -2,6 +2,9 @@
 import datetime
 
 import logging
+
+from django.http import HttpResponseRedirect
+from django.utils.http import cookie_date
 from django.views.generic import DetailView
 from django.views.generic import ListView
 
@@ -947,3 +950,15 @@ class MessageView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Li
         queryset = super(MessageView, self).get_queryset()
         queryset = queryset.filter(original_create_time__gte=start, belong=self.site)
         return queryset
+
+
+class TokenView(DetailView):
+
+    def get(self, request, *args, **kwargs):
+        import time
+        token = request.GET.get('token')
+        expire = cookie_date(time.time() + 86400)
+        resp = HttpResponseRedirect('/zhz/')
+        resp.set_cookie(key='token', value=token, expires=expire)
+        return resp
+

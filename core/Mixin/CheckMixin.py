@@ -153,7 +153,7 @@ class CheckSiteMixin(object):
     site_slug = None
 
     def dispatch(self, request, *args, **kwargs):
-        token = request.GET.get('token', None) or request.POST.get('token', None) or request.COOKIES.get('token', None)
+        token = request.COOKIES.get('token', None) or request.GET.get('token', None) or request.POST.get('token', None)
         queryset = Site.objects.filter(slug=token)
         if queryset.exists():
             self.site = queryset[0]
