@@ -33,3 +33,10 @@ def get_all_goods_super_cls_id():
     res = get_all_super_cls_id()
     res = [itm for itm in res if 2000 <= itm <= 2999]
     return res
+
+
+def get_card_type(card_type_id):
+    card_dict = {0: '银行卡',
+                 1: '记名卡',
+                 2: '车队卡'}
+    return card_dict.get(card_type_id, '记名卡')

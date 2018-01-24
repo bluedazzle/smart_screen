@@ -15,7 +15,7 @@ from drilling.models import session, InventoryRecord, FuelOrder, SecondClassific
     CardRecord
 from drilling.utils import get_today_st_et, get_week_st_et
 from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id, get_all_super_cls_id, \
-    get_all_goods_super_cls_id
+    get_all_goods_super_cls_id, get_card_type
 
 
 class SmartDetailView(DetailView):
@@ -117,6 +117,7 @@ class TankerSellTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
         res = session.query(FuelOrder.pump_id, FuelOrder.fuel_type, func.count('1')).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
             FuelOrder.pump_id, FuelOrder.fuel_type).all()
+        res = sorted(res, key=lambda x: x[0])
         res_list = [{'tanker_id': itm[0], 'fuel_name': itm[1], 'times': itm[2]} for itm in res]
         return self.render_to_response({'tanker_sell_times': res_list, 'start_time': st, 'end_time': et})
 
@@ -227,7 +228,8 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         res = session.query(FuelOrder.fuel_type, fmt,
                             func.sum(FuelOrder.amount), func.sum(FuelOrder.total_price), func.count("1")).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
-            FuelOrder.fuel_type, fmt).all()
+            FuelOrder.fuel_type, fmt).order_by(fmt).all()
+        res = sorted(res, key=lambda x: x[1])
         return res
 
     def format_data(self, context, data):
@@ -823,14 +825,15 @@ class CardRecordTypeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
     """
 
     model = CardRecord
-    data_keys = ['cls_name', 'amount']
+    data_keys = ['cls_name', 'card_type', 'card_type_id', 'amount']
+    display_func = {'card_type': get_card_type}
 
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.classification, func.count(1)).filter(
+        res = session.query(self.model.classification, self.model.card_type, self.model.card_type, func.count(1)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
-            self.model.classification).all()
+            self.model.classification, self.model.card_type).all()
         return res
 
 
