@@ -457,10 +457,13 @@ class GoodsOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTime
         except Exception as e:
             logging.exception('ERROR in good overview reason {0}'.format(e))
             total, amount = 0, 0
-        if not amount:
+        if not total:
+            total = 0
+        if amount:
             average = total / float(amount)
         else:
             average = 0
+            amount = 0
         total_item = session.query(GoodsInventory).count()
         self.model = FuelOrder
         try:

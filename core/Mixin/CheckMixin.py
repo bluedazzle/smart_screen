@@ -170,6 +170,6 @@ class CheckSiteMixin(object):
 
     def render_to_response(self, context={}, **response_kwargs):
         resp = super(CheckSiteMixin, self).render_to_response(context, **response_kwargs)
-        expire = cookie_date(time.time() + 86400)
-        resp.set_cookie(key='token', value=self.site_slug, expires=expire)
+        # expire = cookie_date(time.time() + 86400)
+        # resp.set_cookie(key='token', value=self.site_slug, expires=expire)
         return resp
