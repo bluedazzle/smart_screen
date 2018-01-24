@@ -474,6 +474,10 @@ class GoodsOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTime
         except Exception as e:
             logging.exception('ERROR in goods overview reason {0}'.format(e))
             fuel_volumn, fuel_amount = 0, 0
+        if not fuel_volumn:
+            fuel_volumn = 0
+        if not fuel_amount:
+            fuel_amount = 0
         fuel_ton = fuel_volumn / 1000.0
         product_effect = total / float(total_item)
         ton_oil_goods = total / fuel_ton
