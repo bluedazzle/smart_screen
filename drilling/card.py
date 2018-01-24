@@ -295,8 +295,8 @@ def get_card_record(site, start_time=None, end_time=None):
     st = datetime_to_string(start_time)
     et = datetime_to_string(end_time)
     site = get_site_by_slug(site)
-    ms_session = init_test()
-    # ms_session = init_mysql_connect(site.bos_server)
+    # ms_session = init_test()
+    ms_session = init_mysql_connect(site.bos_server)
     sql = '''select id, balance, details, nozzle, cardasn, bankcard, cardType, uniqueid, recordtime
     from tbl_epstrade
     where status in (2,3,5,23) and tradeType in (10,11,13,30,21) and recordtime BETWEEN '{0}' and '{1}'

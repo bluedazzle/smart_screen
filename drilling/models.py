@@ -255,7 +255,7 @@ class Site(Base):
     bos_server = Column(String)
 
 
-engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/smart_screen',
+engine = create_engine('postgresql+psycopg2://postgres:123456qq@localhost:5432/ss_produce',
                        encoding='utf-8'.encode())
 
 DBSession = sessionmaker(bind=engine)
