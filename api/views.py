@@ -480,8 +480,14 @@ class GoodsOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTime
             fuel_amount = 0
         fuel_ton = fuel_volumn / 1000.0
         product_effect = total / float(total_item)
-        ton_oil_goods = total / fuel_ton
-        oil_goods_conversion = '{0}%'.format(round(amount / float(fuel_amount) * 100, 2))
+        if fuel_ton:
+            ton_oil_goods = total / fuel_ton
+        else:
+            ton_oil_goods = 0
+        if fuel_amount:
+            oil_goods_conversion = '{0}%'.format(round(amount / float(fuel_amount) * 100, 2))
+        else:
+            oil_goods_conversion = '0%'
         return self.render_to_response(
             {'total': total, 'amount': amount, 'average': average, 'product_effect': product_effect,
              'ton_oil_goods': ton_oil_goods, 'oil_goods_conversion': oil_goods_conversion})
