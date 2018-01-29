@@ -26,7 +26,7 @@ class Site(BaseModel):
     password = models.CharField(max_length=120, null=True, blank=True)
     pictures = models.TextField(default='', null=True, blank=True)
     info = models.TextField(default='', null=True, blank=True)
-    lock = models.BooleanField(default=True)
+    lock = models.IntegerField(default=60)
 
     def __unicode__(self):
         return self.name
