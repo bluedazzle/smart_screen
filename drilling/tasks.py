@@ -16,7 +16,7 @@ from drilling.card import get_card_record
 from drilling.fuels import get_fuel_order, get_delivery
 # from drilling.models import session, Site
 from drilling.store import get_store_order, get_inventories
-from drilling.tanks import get_tank_info, get_tank_temperature, get_tank_value, get_inventory_record
+from drilling.tanks import get_tank_info, get_tank_temperature, get_tank_value, get_inventory_record, get_tank_grade
 
 app = Celery('tasks', backend='redis://localhost:6379/0', broker='redis://localhost:6379/0')
 
@@ -66,6 +66,7 @@ def get_tank_info_task(site):
     get_tank_info(site)
     get_tank_temperature(site)
     get_tank_value(site)
+    get_tank_grade(site)
     logging.info('SUCCESS {0}'.format(task_info))
 
 

@@ -1274,6 +1274,66 @@ GET /fuel/sequential
 ```
 
 
+## **油品月环比**
+
+```
+GET /fuel/month/sequential
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "current_data":{
+            "start_time":"2017-03-01 00:00:00",
+            "end_time":"2017-03-07 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2607
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":285
+                }
+            ]
+        },
+        "last_data":{
+            "start_time":"2017-02-20 00:00:00",
+            "end_time":"2017-02-26 23:59:59",
+            "contrast":[
+                {
+                    "fuel_type":"汽油",
+                    "times":2521
+                },
+                {
+                    "fuel_type":"柴油",
+                    "times":194
+                }
+            ]
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 ## **油品计划**
 
 ```
@@ -3406,6 +3466,61 @@ GET /goods/compare
 
 ```
 GET /goods/search/sequential
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+* search(_Required_|string)-搜索条件
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "current_data":{
+            "start_time":"2017-01-30 00:00:00",
+            "object_list":[
+                {
+                    "amount":4,
+                    "name":"云烟 12mg",
+                    "income":220
+                }
+            ],
+            "end_time":"2017-02-05 23:59:59"
+        },
+        "last_data":{
+            "start_time":"2017-01-23 00:00:00",
+            "object_list":[
+                {
+                    "amount":7,
+                    "name":"云烟 12mg",
+                    "income":280
+                }
+            ],
+            "end_time":"2017-01-29 23:59:59"
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **搜索月环比**
+
+```
+GET /goods/search/month/sequential
 ```
 
 ### **Parameters**

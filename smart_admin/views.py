@@ -69,14 +69,16 @@ class InventoryListView(CheckAdminPermissionMixin, StatusWrapMixin, MultipleJson
 class SiteInfoView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
     model = Site
     http_method_names = ['get', 'post']
-    include_attr = ['name', 'slug', 'info']
+    include_attr = ['name', 'slug', 'info', 'pictures', 'lock']
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response({'site': self.site})
 
     def post(self, request, *args, **kwargs):
         content = request.POST.get('content')
+        pictures = request.POST.get('picutres')
         self.site.info = content
+        self.site.pictures = pictures
         self.site.save()
         return self.render_to_response()
 

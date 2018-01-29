@@ -526,6 +526,39 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
         return self.render_to_response(context)
 
 
+class GoodMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    商品月环比
+    """
+
+    model = GoodsOrder
+    data_keys = ["cls_id", "cls_name", "amount", "income"]
+    display_func = {"cls_name": get_first_cls_name_by_id}
+    date_fmt = 'month'
+
+    def get(self, request, *args, **kwargs):
+        context = {}
+        st, et = self.get_date_period(self.date_fmt, True)
+        goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
+                                  func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
+        goods_res = self.fill_data(goods_res)
+        current_data = self.format_data(context, goods_res)
+        lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
+                                       func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
+            self.model.super_cls_id).all()
+        last_goods_res = self.fill_data(last_goods_res)
+        last_data = self.format_data(context, last_goods_res)
+        context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
+                   'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        return self.render_to_response(context)
+
+
 class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
     """
     商品同比
@@ -568,6 +601,48 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
     model = GoodsOrder
     data_keys = ["name", "amount", "income"]
     date_fmt = 'week'
+
+    def search_goods_by_key(self, key):
+        res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
+        if res:
+            return res[0]
+        res = session.query(self.model.barcode).filter(self.model.name == key).first()
+        return res[0] if res else None
+
+    def get(self, request, *args, **kwargs):
+        key = request.GET.get('search')
+        if not key:
+            return self.render_to_response()
+        barcode = self.search_goods_by_key(key)
+        if not barcode:
+            return self.render_to_response()
+        context = {}
+        st, et = self.get_date_period(self.date_fmt, True)
+        goods_res = session.query(self.model.name, func.count("1"),
+                                  func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id, self.model.barcode == barcode,
+            self.model.original_create_time.between(st, et)).group_by(self.model.name).all()
+        current_data = self.format_data(context, goods_res)
+        lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        last_goods_res = session.query(self.model.name, func.count("1"),
+                                       func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id, self.model.barcode == barcode,
+            self.model.original_create_time.between(lst, let)).group_by(self.model.name).all()
+        last_data = self.format_data(context, last_goods_res)
+        context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
+                   'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        return self.render_to_response(context)
+
+
+class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
+                                SmartDetailView):
+    """
+    搜索月环比
+    """
+
+    model = GoodsOrder
+    data_keys = ["name", "amount", "income"]
+    date_fmt = 'month'
 
     def search_goods_by_key(self, key):
         res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
@@ -931,7 +1006,7 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
 class SiteInfoView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
     model = models.Site
     http_method_names = ['get']
-    include_attr = ['name', 'slug', 'info', 'pictures']
+    include_attr = ['name', 'slug', 'info', 'pictures', 'lock']
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response({'site': self.site})
