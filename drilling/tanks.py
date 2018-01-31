@@ -250,7 +250,7 @@ AND FPH.TANK1_ID = {1}'''.format(record.shift_control_id, tank_id)
 if __name__ == '__main__':
     # get_tank_value('test')
     # get_tank_info('test')
-    # get_tank_temperature('test')
+    get_tank_temperature('test')
     # get_inventory_record('test', datetime.datetime(2017, 1, 6), datetime.datetime(2017, 1, 8))
     # get_tank_info('test')
     # get_tank_grade('test')

@@ -306,7 +306,7 @@ def get_card_record(site, start_time=None, end_time=None):
         unique_id, balance, details, pump_id, card_id, bank_card_id, card_type, eps_unique_id, original_create_time = itm
         exist = check_card_record(unique_id)
         if exist:
-            break
+            continue
         detail_list = details_handle(details)
         for index, dt in enumerate(detail_list):
             cls, detail, total = dt

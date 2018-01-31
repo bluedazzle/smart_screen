@@ -37,7 +37,7 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
                                    unicode(total_price))
         res = get_fuel_order_by_hash(unique_str)
         if res:
-            break
+            continue
         create_fuel_order(till_id=till_id, original_create_time=original_create_time, fuel_type=fuel_type, price=price,
                           total_price=total_price, amount=amount, pump_id=pump_id, hash=unique_str, belong_id=site.id,
                           classification_id=dept, barcode=barcode, super_cls_id=int(super_dept))

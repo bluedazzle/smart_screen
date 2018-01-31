@@ -66,7 +66,7 @@ TILL.TIMECLOSE DESC'''.format(st, et)
                                    unicode(total), unicode(site.id))
         res = get_goods_order_by_hash(unique_str)
         if res:
-            break
+            continue
         create_goods_order(till_id=till_id, original_create_time=original_create_time, classification_id=dept,
                            price=price, total=total, amount=amount, barcode=barcode, hash=unique_str, name=name,
                            belong_id=site.id, super_cls_id=int(dept_str[:4]))

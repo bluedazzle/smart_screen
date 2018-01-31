@@ -745,7 +745,7 @@ class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Dat
         return unsold_time
 
     def get_queryset(self):
-        queryset = super(UnsoldView, self).get_queryset()
+        queryset = super(UnsoldView, self).get_queryset().exclude(amount=0.0)
         unsold_day = self.request.GET.get('unsold_day', None)
         if unsold_day:
             unsold_time = self.get_unsold_datetime(unsold_day)
