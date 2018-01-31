@@ -128,9 +128,10 @@ class TankerSellTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
 class FuelOrderPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period()
-        res = session.query(FuelOrder.payment_type, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                                            FuelOrder.original_create_time.between(st,
-                                                                                                                   et)).group_by(
+        res = session.query(FuelOrder.payment_type, func.sum(FuelOrder.amount)).filter(
+            FuelOrder.belong_id == self.site.id,
+            FuelOrder.original_create_time.between(st,
+                                                   et)).group_by(
             FuelOrder.payment_type).all()
         res_list = [{'payment_type': itm[0], 'times': itm[1]} for itm in res]
         return self.render_to_response({'payments': res_list, 'start_time': st, 'end_time': et})
@@ -307,8 +308,15 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
     非油销售排行
     """
     model = GoodsOrder
-    data_keys = ["name", "amount", "income"]
+    data_keys = ["name", "amount", "income", 'barcode']
     date_fmt = 'month'
+
+    @staticmethod
+    def search_inventory(its, barcode):
+        for it in its:
+            if it[1] == barcode:
+                return it[0]
+        return 0
 
     def get_objects(self, context):
         st = context['start_time']
@@ -318,14 +326,26 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
             self.model.super_cls_id).order_by(func.count("1").desc()).limit(5).all()
         cls_list = [itm[0] for itm in cls_list]
+        cls_res_list = []
         for cls in cls_list:
-            cls_res = session.query(self.model.name, func.count("1"), func.sum(self.model.price)).filter(
+            cls_res = session.query(self.model.name, func.count("1"), func.sum(self.model.price),
+                                    self.model.barcode).filter(
                 self.model.belong_id == self.site.id, self.model.super_cls_id == cls,
                 self.model.original_create_time.between(st, et)).group_by(
-                self.model.name).order_by(func.count("1").desc()).limit(50).all()
+                self.model.name, self.model.barcode).order_by(func.count("1").desc()).limit(50).all()
+            bar_list = [itm[3] for itm in cls_res]
+            inventory_res = session.query(GoodsInventory.amount, GoodsInventory.barcode).filter(
+                GoodsInventory.barcode.in_(bar_list), GoodsInventory.belong_id == self.site.id).all()
             cls_res = self.format_data({}, cls_res)
+            for itm in cls_res:
+                it = self.search_inventory(inventory_res, itm.get('barcode'))
+                itm['inventory'] = it
+            cls_res_list.extend(cls_res)
             body = {'cls_name': get_first_cls_name_by_id(cls), 'data': cls_res}
             res.append(body)
+        cls_res_list = sorted(cls_res_list, key=lambda x: x.get('amount'), reverse=True)
+        body = {'cls_name': '汇总', 'data': cls_res_list}
+        res.insert(0, body)
         context['object_list'] = res
         return res
 

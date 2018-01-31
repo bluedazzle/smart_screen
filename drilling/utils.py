@@ -327,7 +327,7 @@ def create_abnormal_record(abnormal_type, **kwargs):
         setattr(obj, k, v)
     session.add(obj)
     session.commit()
-    logging.info('INFO create abnormal record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
+    logging.info('INFO create abnormal record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.create_time))
     return obj
 
 

@@ -57,13 +57,11 @@ def get_tank_info(site):
     sql = 'SELECT TANK_ID ,TANK_NAME ,VOLUME_QTY ,ALARM_QTY, GRADE_PLU FROM FUEL_TANKS'
     ib_session.execute(sql)
     res = ib_session.fetchall()
-    print res
     for itm in res:
         tank_id, tank_name, max_value, min_value, grade_id = itm
         tank_name = tank_name.strip().decode('gbk')
         obj = get_tank_by_tank_id(itm[0], site.id, tank_id=tank_id, name=tank_name, max_value=max_value,
                                   min_value=min_value, grade_id=grade_id)
-        obj.name = tank_name
         obj.max_value = max_value
         obj.min_value = min_value
         obj.grade_id = grade_id
