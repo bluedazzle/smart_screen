@@ -8,9 +8,12 @@ import logging
 
 import math
 import pytz
+from xpinyin import Pinyin
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
     ThirdClassification, GoodsOrder, Supplier, Receiver, GoodsInventory, AbnormalRecord, CardRecord
+
+PINYIN = Pinyin()
 
 
 def get_site_by_slug(slug):
@@ -352,6 +355,15 @@ def get_week_st_et():
     st = add_timezone_to_naive_time(now_0 - datetime.timedelta(days=now.weekday()))
     et = add_timezone_to_naive_time(now_0 + datetime.timedelta(days=6 - now.weekday()))
     return st, et
+
+
+def get_py(name):
+    try:
+        res = PINYIN.get_initials(name, '').replace(' ', '')
+        return res
+    except Exception as e:
+        logging.exception('ERROR in get pinyin {0} reason {1}'.format(name, e))
+        return ''
 
 
 if __name__ == '__main__':

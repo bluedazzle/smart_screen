@@ -45,14 +45,14 @@ def abnormal_card_check(card_id):
     count = week.count()
     if count > 0:
         return 2, '一周内柴油消费10000元及以上'
-    mix = session.query(CardRecord.classification, func.count(1)).filter(
-        CardRecord.classification.in_(('汽油', '柴油')),
-        CardRecord.original_create_time.between(st, et)).group_by(
-        CardRecord.classification).all()
-    if len(mix) < 2:
-        return 0, ''
-    if mix[0][1] > 0 and mix[1][1] > 0:
-        return 2, '一周内汽柴油混刷'
+    # mix = session.query(CardRecord.classification, func.count(1)).filter(
+    #     CardRecord.classification.in_(('汽油', '柴油')),
+    #     CardRecord.original_create_time.between(st, et)).group_by(
+    #     CardRecord.classification).all()
+    # if len(mix) < 2:
+    #     return 0, ''
+    # if mix[0][1] > 0 and mix[1][1] > 0:
+    #     return 2, '一周内汽柴油混刷'
     return 0, ''
 
 

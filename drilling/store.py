@@ -11,7 +11,7 @@ from drilling.utils import get_site_by_slug, datetime_to_string, get_clean_data,
     update_second_classification, update_third_classification, generate_hash, get_goods_order_by_hash, \
     create_fuel_order, \
     create_goods_order, update_goods_inventory, get_goods_inventory_by_barcode, add_timezone_to_naive_time, \
-    query_by_pagination
+    query_by_pagination, get_py
 
 
 def get_store_order(site, start_time=None, end_time=None):
@@ -181,14 +181,14 @@ ORDER BY
         unit = get_clean_data(unit)
         unique_str = generate_hash(unicode(f_cls), unicode(s_cls), unicode(t_cls), barcode, unicode(site.id))
         update_goods_inventory(unique_str, name=name, unit=unit, hash=unique_str, barcode=barcode, itemcode=barcode,
-                               third_cls_id=t_cls,
+                               third_cls_id=t_cls, py=get_py(name),
                                second_cls_id=s_cls, cls_id=f_cls, amount=amount, belong_id=site.id)
     logging.info('SUCCESS update goods inventory total {0}'.format(total))
 
 
 if __name__ == '__main__':
-    get_store_order('test', datetime.datetime(2017, 8, 2), datetime.datetime(2017, 8, 3))
+    # get_store_order('test', datetime.datetime(2017, 8, 2), datetime.datetime(2017, 8, 3))
     # get_first_classify('test')
     # get_second_classify('test')
     # get_third_classify('test')
-    # get_inventories('test')
+    get_inventories('test')

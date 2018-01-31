@@ -85,6 +85,7 @@ class FuelOrder(BaseModel):
 
 class GoodsInventory(BaseModel):
     name = models.CharField(max_length=200, default='')
+    py = models.CharField(max_length=80, null=True, blank=True)
     barcode = models.CharField(max_length=100, default='', null=True, blank=True)
     itemcode = models.CharField(max_length=100, null=True, blank=True)
     unit = models.CharField(max_length=20, null=True, blank=True)

@@ -35,7 +35,8 @@ def get_tank_temperature(site):
     site = get_site_by_slug(site)
     ib_session = init_interbase_connect(site.fuel_server)
     for tank_id in range(1, 10):
-        sql = 'SELECT FDT.TEMPERATURE,FDT.READ_TIME, FT.TANK_ID, FT.TANK_NAME FROM FUEL_DAY_TEMPERATURE FDT, FUEL_TANKS FT WHERE FT.TANK_ID = {0} ORDER BY FDT.READ_TIME DESC'.format(
+        # sql = 'SELECT FDT.TEMPERATURE,FDT.READ_TIME, FT.TANK_ID, FT.TANK_NAME FROM FUEL_DAY_TEMPERATURE FDT, FUEL_TANKS FT WHERE FT.TANK_ID = {0} ORDER BY FDT.READ_TIME DESC'.format(
+        sql = 'SELECT TEMPERATURE, READ_TIME FROM FUEL_DAY_TEMPERATURE where TANK_ID = {0} order by READ_TIME DESC'.format(
             tank_id)
         ib_session.execute(sql)
         res = ib_session.fetchone()
@@ -56,6 +57,7 @@ def get_tank_info(site):
     sql = 'SELECT TANK_ID ,TANK_NAME ,VOLUME_QTY ,ALARM_QTY, GRADE_PLU FROM FUEL_TANKS'
     ib_session.execute(sql)
     res = ib_session.fetchall()
+    print res
     for itm in res:
         tank_id, tank_name, max_value, min_value, grade_id = itm
         tank_name = tank_name.strip().decode('gbk')
@@ -249,7 +251,7 @@ if __name__ == '__main__':
     # get_tank_value('test')
     # get_tank_info('test')
     # get_tank_temperature('test')
-    get_inventory_record('test', datetime.datetime(2017, 1, 6), datetime.datetime(2017, 1, 8))
+    # get_inventory_record('test', datetime.datetime(2017, 1, 6), datetime.datetime(2017, 1, 8))
     # get_tank_info('test')
     # get_tank_grade('test')
     # get_inventory_before()

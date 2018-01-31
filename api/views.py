@@ -227,7 +227,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         st = context['start_time']
         et = context['end_time']
         fmt_str, fmt = self.get_time_fmt(st, et)
-        self.data_keys = ['fuel_type', fmt_str, 'sales', 'total_price', 'amount']
+        self.data_keys = ['fuel_type', fmt_str, 'amount', 'sales', 'total_price']
         res = session.query(FuelOrder.fuel_type, fmt,
                             func.sum(FuelOrder.amount), func.sum(FuelOrder.total_price), func.count("1")).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
@@ -319,7 +319,7 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
             self.model.super_cls_id).order_by(func.count("1").desc()).limit(5).all()
         cls_list = [itm[0] for itm in cls_list]
         for cls in cls_list:
-            cls_res = session.query(self.model.name, func.count("1"), func.sum(self.model.total)).filter(
+            cls_res = session.query(self.model.name, func.count("1"), func.sum(self.model.price)).filter(
                 self.model.belong_id == self.site.id, self.model.super_cls_id == cls,
                 self.model.original_create_time.between(st, et)).group_by(
                 self.model.name).order_by(func.count("1").desc()).limit(50).all()
@@ -603,10 +603,14 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
     date_fmt = 'week'
 
     def search_goods_by_key(self, key):
-        res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
+        key = unicode(key).upper()
+        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.py.contains(key)).first()
         if res:
             return res[0]
-        res = session.query(self.model.barcode).filter(self.model.name == key).first()
+        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.barcode == key).first()
+        if res:
+            return res[0]
+        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.name == key).first()
         return res[0] if res else None
 
     def get(self, request, *args, **kwargs):
@@ -635,7 +639,7 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
 
 
 class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
-                                SmartDetailView):
+                                     SmartDetailView):
     """
     搜索月环比
     """
@@ -774,13 +778,14 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
         now_hour = datetime.datetime.now().hour
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = [fmt_str, "fuel_name", "amount"]
-        fuel_types = session.query(self.model.fuel_type).filter(
-            self.model.belong_id == self.site.id,
-            self.model.original_create_time.between(st,
-                                                    et)).group_by(
-            self.model.fuel_type).order_by(
-            self.model.fuel_type).all()
-        fuel_types = [itm[0] for itm in fuel_types]
+        # fuel_types = session.query(self.model.fuel_type).filter(
+        # self.model.belong_id == self.site.id,
+        # self.model.original_create_time.between(st,
+        #                                         et)).group_by(
+        # self.model.fuel_type).order_by(
+        # self.model.fuel_type).all()
+        # fuel_types = [itm[0] for itm in fuel_types]
+        fuel_types = ['95号 车用汽油(Ⅴ)', '92号 车用汽油(Ⅴ)', '-20号 车用柴油(Ⅴ)', '98号 车用汽油(V)']
         fuel_predict_list = []
         for fuel_type in fuel_types:
             body = {}
@@ -922,7 +927,8 @@ class CardRecordTypeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.classification, self.model.card_type, self.model.card_type, func.count(1)).filter(
+        res = session.query(self.model.classification, self.model.card_type, self.model.card_type,
+                            func.count(1)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
             self.model.classification, self.model.card_type).all()
         return res
@@ -1000,7 +1006,7 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
         except Exception as e:
             logging.exception('ERROR in card overview reason {0}'.format(e))
             total, amount = 0, 0
-        return self.render_to_response({'income': total, 'amount': amount})
+        return self.render_to_response({'income': total / 100.0, 'amount': amount})
 
 
 class SiteInfoView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
@@ -1041,7 +1047,6 @@ class MessageView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Li
 
 
 class TokenView(DetailView):
-
     def get(self, request, *args, **kwargs):
         import time
         token = request.GET.get('token')
@@ -1049,4 +1054,3 @@ class TokenView(DetailView):
         resp = HttpResponseRedirect('/zhz/')
         resp.set_cookie(key='token', value=token, expires=expire)
         return resp
-
