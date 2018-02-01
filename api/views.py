@@ -581,22 +581,38 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
 
     def get(self, request, *args, **kwargs):
         context = {}
+        time_type = request.GET.get('type', 'week')
+        if time_type in ['month', 'week', 'day']:
+            self.date_fmt = time_type
         st, et = self.get_date_period(self.date_fmt, True)
         goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        total_num, total_price = 0, 0
+        for itm in goods_res:
+            total_num += itm[2]
+            total_price += itm[3]
         goods_res = self.fill_data(goods_res)
         current_data = self.format_data(context, goods_res)
-        lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        current_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        if self.date_fmt == 'day':
+            lst, let = self.get_date_period_by_time(st, 'yesterday')
+        else:
+            lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        total_num, total_price = 0, 0
+        for itm in last_goods_res:
+            total_num += itm[2]
+            total_price += itm[3]
         last_goods_res = self.fill_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
         self.fill_unit(context)
@@ -649,22 +665,41 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
 
     def get(self, request, *args, **kwargs):
         context = {}
-        st, et = self.get_date_period(self.date_fmt, True)
+        time_type = request.GET.get('type', 'year')
+        if time_type in ['year', 'month', 'custom']:
+            self.date_fmt = time_type
+        if self.date_fmt == 'custom':
+            st, et = self.get_date_period(self.date_fmt)
+        else:
+            st, et = self.get_date_period(self.date_fmt, True)
         goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        total_num, total_price = 0, 0
+        for itm in goods_res:
+            total_num += itm[2]
+            total_price += itm[3]
         goods_res = self.fill_data(goods_res)
         current_data = self.format_data(context, goods_res)
-        lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        current_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        if self.date_fmt == 'custom' or self.date_fmt == 'month':
+            lst, let = st.replace(year=st.year - 1), et.replace(year=et.year - 1)
+        else:
+            lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.super_cls_id, self.model.super_cls_id, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(lst, let)).group_by(self.model.super_cls_id).order_by(
             self.model.super_cls_id).all()
+        total_num, total_price = 0, 0
+        for itm in last_goods_res:
+            total_num += itm[2]
+            total_price += itm[3]
         last_goods_res = self.fill_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
         self.fill_unit(context)
@@ -1131,7 +1166,7 @@ class MessageView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Li
     http_method_names = ['get']
 
     def get_queryset(self):
-        start = datetime.datetime.now() - datetime.timedelta(hours=1)
+        start = datetime.datetime.now() - datetime.timedelta(minutes=30)
         queryset = super(MessageView, self).get_queryset()
         queryset = queryset.filter(original_create_time__gte=start, belong=self.site)
         return queryset
@@ -1148,7 +1183,7 @@ class TokenView(DetailView):
 
 
 class CardRankList(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
-                         SmartDetailView):
+                   SmartDetailView):
     """
     卡消费排行
     """
@@ -1160,8 +1195,39 @@ class CardRankList(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.card_id, self.model.bank_card_id, self.model.card_type, func.sum(self.model.total)).filter(
+        res = session.query(self.model.card_id, self.model.bank_card_id, self.model.card_type,
+                            func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
-            self.model.card_id, self.model.bank_card_id, self.model.card_type).order_by(func.sum(self.model.total).desc()).all()
+            self.model.card_id, self.model.bank_card_id, self.model.card_type).order_by(
+            func.sum(self.model.total).desc()).all()
         res = [(itm[0], itm[1], itm[2], itm[3] / 100.0) for itm in res]
         return res
+
+
+class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    总总览
+    """
+    model = FuelOrder
+
+    def get(self, request, *args, **kwargs):
+        st, et = self.get_date_period()
+        fuel_res = session.query(FuelOrder.super_cls_id,
+                                 func.sum(FuelOrder.amount)).filter(FuelOrder.belong_id == self.site.id,
+                                                                    FuelOrder.original_create_time.between(st,
+                                                                                                           et)).group_by(
+            FuelOrder.super_cls_id).all()
+        fuel_res = [{'cls_name': get_fuel_type(itm[0]), 'amount': itm[1]} for itm in fuel_res]
+        card_res = session.query(CardRecord.classification, func.sum(CardRecord.total)).filter(
+            CardRecord.belong_id == self.site.id, CardRecord.original_create_time.between(st, et),
+            CardRecord.classification.in_(('汽油', '柴油'))).group_by(CardRecord.classification).all()
+        total_res = session.query(func.sum(CardRecord.total)).filter(
+            CardRecord.belong_id == self.site.id, CardRecord.original_create_time.between(st, et),
+        ).all()
+        card_res = [{'cls_name': itm[0], 'total': itm[1] / 100.0} for itm in card_res]
+        card_total = 0.0
+        for itm in card_res:
+            card_total += itm['total']
+        card_res.append({'cls_name': '非油', 'total': total_res[0][0] / 100.0 - card_total})
+        return self.render_to_response(
+            {'fuel': fuel_res, 'card': card_res, 'unit': {'amount_unit': '升', 'total_unit': '元'}})

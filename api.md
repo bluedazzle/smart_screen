@@ -34,6 +34,64 @@
  1. 所有请求请带参数 `token={site.slug}` 或 set cookie 用以识别站点信息; eg:http://zhz.chafanbao.com/api/v1/fuel_charge_times?token=test
 
 
+## **总总览**
+
+```
+POST /api/v1/overview/
+```
+
+### **Parameters**
+
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "fuel":[
+            {
+                "amount":13910.97,
+                "cls_name":"汽油"
+            },
+            {
+                "amount":1267.32,
+                "cls_name":"柴油"
+            }
+        ],
+        "card":[
+            {
+                "total":48992.43,
+                "cls_name":"汽油"
+            },
+            {
+                "total":7494.42,
+                "cls_name":"柴油"
+            },
+            {
+                "total":1021.5,
+                "cls_name":"非油"
+            }
+        ],
+        "unit":{
+            "amount_unit":"升",
+            "total_unit":"元"
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 #油库
 ## **获取油罐信息**
 ```
@@ -1224,6 +1282,13 @@ GET /fuel/sequential
 
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
+* type(_Optional_|string)-环比类型
+
+|type 取值|含义|
+| --------------  | :---: |
+|month|月环比|
+|week|周环比|
+|day|日环比|
 
 ### **Return**
 
@@ -3314,6 +3379,14 @@ GET /goods/compare
 
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
+* type(_Optional_|string)-同比类型
+
+
+|type 取值|含义|
+| --------------  | :---: |
+|year|年同比|
+|month|月同比|
+|custom|自定义同比|
 
 ### **Return**
 
