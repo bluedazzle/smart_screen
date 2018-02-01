@@ -26,6 +26,7 @@ class SmartDetailView(DetailView):
     display_func = {}
     date_fmt = 'day'
     all_keys = None
+    unit_keys = {}
 
     def format_data(self, context, data):
         formated_data = []
@@ -36,6 +37,12 @@ class SmartDetailView(DetailView):
             formated_data.append(body)
         context['object_list'] = formated_data
         return formated_data
+
+    def fill_unit(self, context):
+        unit_dict = {}
+        for k, v in self.unit_keys.items():
+            unit_dict['{0}_unit'.format(k)] = v
+        context['unit'] = unit_dict
 
     def fill_data(self, data):
         keys = [itm[0] for itm in data]
@@ -72,6 +79,7 @@ class SmartDetailView(DetailView):
         context['end_time'] = et
         data = self.get_objects(context)
         self.format_data(context, data)
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -101,6 +109,14 @@ class FuelInventoryListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonRespons
 
 class FuelChargeTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
     model = models.InventoryRecord
+    unit_keys = {'times': '次'}
+
+    def fill_unit(self, context):
+        unit_dict = {}
+        for k, v in self.unit_keys.items():
+            unit_dict['{0}_unit'.format(k)] = v
+        context['unit'] = unit_dict
+        return unit_dict
 
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period('month')
@@ -109,11 +125,20 @@ class FuelChargeTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
             InventoryRecord.record_type == 2, InventoryRecord.original_create_time.between(st, et)).group_by(
             InventoryRecord.fuel_name).all()
         res_list = [{'fuel_name': itm[0], 'times': itm[1]} for itm in res]
-        return self.render_to_response({'fuel_charges_times': res_list})
+        ud = self.fill_unit({})
+        return self.render_to_response({'fuel_charges_times': res_list, 'unit': ud})
 
 
 class TankerSellTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
     model = models.FuelOrder
+    unit_keys = {'times': '次'}
+
+    def fill_unit(self, context):
+        unit_dict = {}
+        for k, v in self.unit_keys.items():
+            unit_dict['{0}_unit'.format(k)] = v
+        context['unit'] = unit_dict
+        return unit_dict
 
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period('day')
@@ -122,10 +147,20 @@ class TankerSellTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
             FuelOrder.pump_id, FuelOrder.fuel_type).all()
         res = sorted(res, key=lambda x: x[0])
         res_list = [{'tanker_id': itm[0], 'fuel_name': itm[1], 'times': itm[2]} for itm in res]
-        return self.render_to_response({'tanker_sell_times': res_list, 'start_time': st, 'end_time': et})
+        ud = self.fill_unit({})
+        return self.render_to_response({'tanker_sell_times': res_list, 'start_time': st, 'end_time': et, 'unit': ud})
 
 
 class FuelOrderPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
+    unit_keys = {'times': '次'}
+
+    def fill_unit(self, context):
+        unit_dict = {}
+        for k, v in self.unit_keys.items():
+            unit_dict['{0}_unit'.format(k)] = v
+        context['unit'] = unit_dict
+        return unit_dict
+
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period()
         res = session.query(FuelOrder.payment_type, func.sum(FuelOrder.amount)).filter(
@@ -134,7 +169,8 @@ class FuelOrderPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
                                                    et)).group_by(
             FuelOrder.payment_type).all()
         res_list = [{'payment_type': itm[0], 'times': itm[1]} for itm in res]
-        return self.render_to_response({'payments': res_list, 'start_time': st, 'end_time': et})
+        ud = self.fill_unit({})
+        return self.render_to_response({'payments': res_list, 'start_time': st, 'end_time': et, 'unit': ud})
 
 
 class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
@@ -198,22 +234,32 @@ class FuelCompositionView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
     """
     油品结构
     """
+    unit_keys = {'amount': '次'}
+
+    def fill_unit(self, context):
+        unit_dict = {}
+        for k, v in self.unit_keys.items():
+            unit_dict['{0}_unit'.format(k)] = v
+        context['unit'] = unit_dict
+        return unit_dict
 
     def get(self, request, *args, **kwargs):
         st, et = self.get_date_period('week')
         summary_res = session.query(FuelOrder.super_cls_id,
-                                    func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                            FuelOrder.original_create_time.between(st,
-                                                                                                   et)).group_by(
+                                    func.sum(FuelOrder.amount)).filter(FuelOrder.belong_id == self.site.id,
+                                                                       FuelOrder.original_create_time.between(st,
+                                                                                                              et)).group_by(
             FuelOrder.super_cls_id).all()
         detail_res = session.query(FuelOrder.fuel_type,
-                                   func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                           FuelOrder.original_create_time.between(st,
-                                                                                                  et)).group_by(
+                                   func.sum(FuelOrder.amount)).filter(FuelOrder.belong_id == self.site.id,
+                                                                      FuelOrder.original_create_time.between(st,
+                                                                                                             et)).group_by(
             FuelOrder.fuel_type).all()
-        summary_list = [{'fuel_type': get_fuel_type(itm[0]), 'amount': itm[1]} for itm in summary_res]
+        summary_list = [{'fuel_type': get_fuel_type(itm[0]), 'amount': itm[1]} for itm in
+                        summary_res]
         detail_list = [{'fuel_type': itm[0], 'amount': itm[1]} for itm in detail_res]
-        context = {'summary': summary_list, 'detail': detail_list, 'start_time': st, 'end_time': et}
+        ud = self.fill_unit({})
+        context = {'summary': summary_list, 'detail': detail_list, 'start_time': st, 'end_time': et, 'unit': ud}
         return self.render_to_response(context)
 
 
@@ -223,6 +269,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     """
     model = FuelOrder
     data_keys = ['fuel_type', 'hour', 'sales', 'total_price', 'amount']
+    unit_keys = {'sales': '升', 'total_price': '元', 'amount': '笔'}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -251,6 +298,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         context['end_time'] = et
         data = self.get_objects(context)
         self.format_data(context, data)
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -260,11 +308,12 @@ class GoodsPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
     """
     model = GoodsOrder
     data_keys = ['payment_type', 'amount']
+    unit_keys = {'amount': '元'}
 
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
-        res = session.query(self.model.payment_type, func.count("1")).filter(
+        res = session.query(self.model.payment_type, func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
             self.model.payment_type).all()
         return res
@@ -282,6 +331,7 @@ class GoodsPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
                 self.model.original_create_time.between(st, et)).all()
             cls_name = get_first_cls_name_by_ss_cls_ids(cls_list)
             itm['cls_name'] = [{"name": cls[0]} for cls in cls_name]
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -293,6 +343,7 @@ class GoodsClassificationSellView(CheckSiteMixin, StatusWrapMixin, JsonResponseM
     model = GoodsOrder
     data_keys = ["cls_name", "amount", 'total_income']
     display_func = {"cls_name": get_first_cls_name_by_id}
+    unit_keys = {'amount': '笔', 'total_income': '元'}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -310,6 +361,7 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
     model = GoodsOrder
     data_keys = ["name", "amount", "income", 'barcode']
     date_fmt = 'month'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     @staticmethod
     def search_inventory(its, barcode):
@@ -355,6 +407,7 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
         context['start_time'] = st
         context['end_time'] = et
         self.get_objects(context)
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -365,6 +418,7 @@ class GoodsGuestUnitPriceView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin
 
     model = GoodsOrder
     data_keys = ["hour", "amount", "income"]
+    unit_keys = {'amount': '笔', "income": "元"}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -386,6 +440,7 @@ class ConversionView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTim
 
     model = GoodsOrder
     data_keys = ["hour", "goods_total", "fuel_total", "conversion"]
+    unit_keys = {'goods_total': '笔', 'fuel_total': '笔'}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -522,6 +577,7 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
     data_keys = ["cls_id", "cls_name", "amount", "income"]
     display_func = {"cls_name": get_first_cls_name_by_id}
     date_fmt = 'week'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     def get(self, request, *args, **kwargs):
         context = {}
@@ -543,6 +599,7 @@ class GoodSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -588,6 +645,7 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
     data_keys = ["cls_id", "cls_name", "amount", "income"]
     display_func = {"cls_name": get_first_cls_name_by_id}
     date_fmt = 'year'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     def get(self, request, *args, **kwargs):
         context = {}
@@ -609,6 +667,7 @@ class GoodsCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -621,6 +680,7 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
     model = GoodsOrder
     data_keys = ["name", "amount", "income"]
     date_fmt = 'week'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         key = unicode(key).upper()
@@ -655,6 +715,7 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -667,6 +728,7 @@ class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonRespon
     model = GoodsOrder
     data_keys = ["name", "amount", "income"]
     date_fmt = 'month'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
@@ -697,6 +759,7 @@ class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonRespon
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -709,6 +772,7 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
     model = GoodsOrder
     data_keys = ["name", "amount", "income"]
     date_fmt = 'year'
+    unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
@@ -739,6 +803,7 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -782,6 +847,7 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
 
     model = FuelOrder
     date_fmt = 'yesterday'
+    unit_keys = {'amount': '升'}
 
     # display_func = {"fuel_name": get_fuel_type}
 
@@ -798,18 +864,19 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
         now_hour = datetime.datetime.now().hour
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = [fmt_str, "fuel_name", "amount"]
-        # fuel_types = session.query(self.model.fuel_type).filter(
-        # self.model.belong_id == self.site.id,
-        # self.model.original_create_time.between(st,
-        #                                         et)).group_by(
-        # self.model.fuel_type).order_by(
-        # self.model.fuel_type).all()
-        # fuel_types = [itm[0] for itm in fuel_types]
-        fuel_types = ['95号 车用汽油(Ⅴ)', '92号 车用汽油(Ⅴ)', '-20号 车用柴油(Ⅴ)', '98号 车用汽油(V)']
+        ast, aet = self.get_date_period_by_time(st, 'last_month')
+        fuel_types = session.query(self.model.fuel_type).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(ast,
+                                                    aet)).group_by(
+            self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        fuel_types = [itm[0] for itm in fuel_types]
+        # fuel_types = ['95号 车用汽油(Ⅴ)', '92号 车用汽油(Ⅴ)', '-20号 车用柴油(Ⅴ)', '98号 车用汽油(V)']
         fuel_predict_list = []
         for fuel_type in fuel_types:
             body = {}
-            last_day_fuels = session.query(fmt, self.model.fuel_type, func.count("1")).filter(
+            last_day_fuels = session.query(fmt, self.model.fuel_type, func.sum(self.model.amount)).filter(
                 self.model.belong_id == self.site.id, self.model.fuel_type == fuel_type,
                 self.model.original_create_time.between(st,
                                                         et)).group_by(
@@ -817,7 +884,7 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
                 fmt).all()
             lst = st - datetime.timedelta(days=7)
             let = et - datetime.timedelta(days=7)
-            last_seven_day_fuels = session.query(fmt, self.model.fuel_type, func.count("1")).filter(
+            last_seven_day_fuels = session.query(fmt, self.model.fuel_type, func.sum(self.model.amount)).filter(
                 self.model.belong_id == self.site.id, self.model.fuel_type == fuel_type,
                 self.model.original_create_time.between(lst,
                                                         let)).group_by(
@@ -855,6 +922,7 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
         context['start_time'] = st
         context['end_time'] = et
         data = self.get_objects(context)
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 
@@ -878,6 +946,7 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
     """
     model = FuelOrder
     display_func = {'fuel_type': get_fuel_type}
+    unit_keys = {'sell': '升', 'plan': '升'}
 
     def get_plan(self, fmt_str, cls, fmt, st):
         month_dict = {1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may', 6: 'jun', 7: 'jul', 8: 'aug', 9: 'sep',
@@ -943,6 +1012,7 @@ class CardRecordTypeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
     model = CardRecord
     data_keys = ['cls_name', 'card_type', 'card_type_id', 'amount']
     display_func = {'card_type': get_card_type}
+    unit_keys = {'amount': '笔'}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -962,6 +1032,7 @@ class CardRecordCompareView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
 
     model = CardRecord
     data_keys = ['cls_name', 'total_money']
+    unit_keys = {'total_money': '元'}
 
     def get_objects(self, context):
         st = context['start_time']
@@ -1074,3 +1145,23 @@ class TokenView(DetailView):
         resp = HttpResponseRedirect('/zhz/')
         resp.set_cookie(key='token', value=token, expires=expire)
         return resp
+
+
+class CardRankList(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin,
+                         SmartDetailView):
+    """
+    卡消费排行
+    """
+
+    model = CardRecord
+    data_keys = ['card_id', 'bank_card_id', 'card_type', 'money']
+    unit_keys = {'money': '元'}
+
+    def get_objects(self, context):
+        st = context['start_time']
+        et = context['end_time']
+        res = session.query(self.model.card_id, self.model.bank_card_id, self.model.card_type, func.sum(self.model.total)).filter(
+            self.model.belong_id == self.site.id, self.model.original_create_time.between(st, et)).group_by(
+            self.model.card_id, self.model.bank_card_id, self.model.card_type).order_by(func.sum(self.model.total).desc()).all()
+        res = [(itm[0], itm[1], itm[2], itm[3] / 100.0) for itm in res]
+        return res

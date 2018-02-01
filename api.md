@@ -4989,6 +4989,219 @@ GET /card/compare
 ```
 
 
+## **卡消费排行**
+
+```
+GET /card/ranks/
+```
+
+### **Parameters**
+
+* start_time(_Optional_|string)-开始时间
+* end_time(_Optional_|string)-结束时间
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "start_time":"2018-02-01 00:00:00",
+        "object_list":[
+            {
+                "card_type":2,
+                "money":4413.71,
+                "card_id":"9130180001320487",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":3206.99,
+                "card_id":"9130180001419410",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":3051.42,
+                "card_id":"9100000001515523",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":2240,
+                "card_id":"9130180000983094",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":900,
+                "card_id":"9130180001087919",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":900,
+                "card_id":"9130220000893343",
+                "bank_card_id":null
+            },
+            {
+                "card_type":1,
+                "money":801.79,
+                "card_id":"9030170001030594",
+                "bank_card_id":null
+            },
+            {
+                "card_type":0,
+                "money":625,
+                "card_id":"0",
+                "bank_card_id":"6259652800540489"
+            },
+            {
+                "card_type":2,
+                "money":603.43,
+                "card_id":"9130180000198209",
+                "bank_card_id":null
+            },
+            {
+                "card_type":0,
+                "money":600,
+                "card_id":"0",
+                "bank_card_id":"6228481948050844272"
+            },
+            {
+                "card_type":2,
+                "money":570,
+                "card_id":"9130180000558311",
+                "bank_card_id":null
+            },
+            {
+                "card_type":0,
+                "money":566.91,
+                "card_id":"0",
+                "bank_card_id":"6228481946020141969"
+            },
+            {
+                "card_type":0,
+                "money":530,
+                "card_id":"0",
+                "bank_card_id":"6259960228652384"
+            },
+            {
+                "card_type":1,
+                "money":515.84,
+                "card_id":"9030180001331899",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":513.58,
+                "card_id":"9130180000361391",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":509.69,
+                "card_id":"9130180000969288",
+                "bank_card_id":null
+            },
+            {
+                "card_type":1,
+                "money":506.29,
+                "card_id":"9030180001625577",
+                "bank_card_id":null
+            },
+            {
+                "card_type":0,
+                "money":500,
+                "card_id":"0",
+                "bank_card_id":"6259590000065214"
+            },
+            {
+                "card_type":0,
+                "money":500,
+                "card_id":"0",
+                "bank_card_id":"6214839720214899"
+            },
+            {
+                "card_type":1,
+                "money":494.62,
+                "card_id":"9030180001476467",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":488,
+                "card_id":"9100000001398512",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":486.64,
+                "card_id":"9130180001097809",
+                "bank_card_id":null
+            },
+            {
+                "card_type":1,
+                "money":485.22,
+                "card_id":"9030180001567291",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":485,
+                "card_id":"9130180000817632",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":476.83,
+                "card_id":"9130180001418808",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":472,
+                "card_id":"9130180000847551",
+                "bank_card_id":null
+            },
+            {
+                "card_type":1,
+                "money":466.04,
+                "card_id":"9030180001631517",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":463.4,
+                "card_id":"9130180000866553",
+                "bank_card_id":null
+            },
+            {
+                "card_type":2,
+                "money":460,
+                "card_id":"9130180001310731",
+                "bank_card_id":null
+            }
+        ],
+        "end_time":"2018-02-01 23:59:59",
+        "unit":{
+
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 ## **卡消费数据表**
 
 ```

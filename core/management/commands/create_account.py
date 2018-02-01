@@ -20,13 +20,13 @@ class Command(BaseCommand):
         try:
             site = Site.objects.get(slug=site)
         except Exception as e:
-            print '站点{0}不存在'.format(site)
+            print 'site {0} no exist'.format(site)
             return
         if Account.objects.filter(name=name).exists():
-            print '账号 {0} 已存在'.format(name)
+            print 'account {0} exist'.format(name)
             return
         account = Account(name=name)
         account.set_password(password)
         account.belong = site
         account.save()
-        print '创建账号成功！'
+        print 'create account succcess!'
