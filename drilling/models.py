@@ -201,6 +201,7 @@ class GoodsInventory(Base):
     name = Column(String)
     barcode = Column(String)
     itemcode = Column(String)
+    py = Column(String)
     unit = Column(String)
     amount = Column(Float)
     cost = Column(Float)

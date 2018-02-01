@@ -1279,8 +1279,9 @@ class MessageView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Li
 
     def get_queryset(self):
         start = datetime.datetime.now() - datetime.timedelta(minutes=30)
+        end = datetime.datetime.now() + datetime.timedelta(minutes=30)
         queryset = super(MessageView, self).get_queryset()
-        queryset = queryset.filter(original_create_time__gte=start, belong=self.site)
+        queryset = queryset.filter(original_create_time__gte=start, original_create_time__lte=end, belong=self.site)
         return queryset
 
 
