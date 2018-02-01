@@ -50,7 +50,7 @@ def init_periodic_tasks(sender, **kwargs):
             get_delivery_task.s(site),
         )
         sender.add_periodic_task(
-            crontab(hour=7, minute=30, day_of_week=1),
+            crontab(hour=4, minute=30),
             get_inventories_task.s(site),
         )
         sender.add_periodic_task(
