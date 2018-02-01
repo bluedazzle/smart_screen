@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import unicode_literals
 import datetime
 
 import logging
@@ -52,6 +53,16 @@ class SmartDetailView(DetailView):
             if key not in keys:
                 data.append((key, key) + (0,) * (len(self.data_keys) - 2))
         data = filter(lambda x: 2000 <= x[0] <= 2999, data)
+        data = sorted(data, key=lambda x: x[0])
+        return data
+
+    def fill_fuel_data(self, data):
+        keys = [itm[0] for itm in data]
+        self.all_keys = ['98号 车用汽油(V)', '95号 车用汽油(Ⅴ)', '92号 车用汽油(Ⅴ)', '0号 车用柴油(Ⅴ)', '-20号 车用柴油(Ⅴ)', '35号 车用柴油(Ⅴ)',
+                         '10号 车用柴油(Ⅴ)', '20号 车用柴油(Ⅴ)']
+        for key in self.all_keys:
+            if key not in keys:
+                data.append((key,) + (0,) * (len(self.data_keys) - 1))
         data = sorted(data, key=lambda x: x[0])
         return data
 
@@ -173,60 +184,161 @@ class FuelOrderPaymentView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, D
         return self.render_to_response({'payments': res_list, 'start_time': st, 'end_time': et, 'unit': ud})
 
 
-class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
-    """
-    油品销售环比
-    """
+# class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
+#     """
+#     油品销售环比
+#     """
+#
+#     def get_fuel_type(self, cid):
+#         obj = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
+#         return obj.name
+#
+#     def get(self, request, *args, **kwargs):
+#         st, et = self.get_date_period('week')
+#         res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
+#                                                                             FuelOrder.original_create_time.between(st,
+#                                                                                                                    et)).group_by(
+#             FuelOrder.super_cls_id).all()
+#         lst, let = self.get_date_period_by_time(st, 'last_week')
+#         last_res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
+#                                                                                  FuelOrder.original_create_time.between(
+#                                                                                      lst,
+#                                                                                      let)).group_by(
+#             FuelOrder.super_cls_id).all()
+#         res_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in res]
+#         last_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in last_res]
+#         context = {'current_data': {'contrast': res_list, 'start_time': st, 'end_time': et},
+#                    'last_data': {'contrast': last_list, 'start_time': lst, 'end_time': let}}
+#         return self.render_to_response(context)
 
-    def get_fuel_type(self, cid):
-        obj = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
-        return obj.name
+
+# class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
+#     """
+#     油品销售同比
+#     """
+#
+#     def get_fuel_type(self, cid):
+#         obj = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
+#         return obj.name
+#
+#     def get(self, request, *args, **kwargs):
+#         st, et = self.get_date_period('year')
+#         res = session.query(FuelOrder.super_cls_id, func.date_part('month', FuelOrder.original_create_time),
+#                             func.count('1')).filter(FuelOrder.belong_id == self.site.id,
+#                                                     FuelOrder.original_create_time.between(st,
+#                                                                                            et)).group_by(
+#             FuelOrder.super_cls_id, func.date_part('month', FuelOrder.original_create_time)).all()
+#         lst, let = self.get_date_period_by_time(st, 'last_year')
+#         last_res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
+#                                                                                  FuelOrder.original_create_time.between(
+#                                                                                      lst,
+#                                                                                      let)).group_by(
+#             FuelOrder.super_cls_id).all()
+#         res_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'month': itm[1], 'times': itm[2]} for itm in res]
+#         last_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in last_res]
+#         context = {'current_data': {'contrast': res_list, 'start_time': st, 'end_time': et},
+#                    'last_data': {'contrast': last_list, 'start_time': lst, 'end_time': let}}
+#         return self.render_to_response(context)
+
+
+class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+    """
+    油品环比
+    """
+    model = FuelOrder
+    data_keys = ["cls_name", "amount", "income"]
+    date_fmt = 'year'
+    unit_keys = {'amount': '升', 'income': '元'}
 
     def get(self, request, *args, **kwargs):
-        st, et = self.get_date_period('week')
-        res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                                            FuelOrder.original_create_time.between(st,
-                                                                                                                   et)).group_by(
-            FuelOrder.super_cls_id).all()
-        lst, let = self.get_date_period_by_time(st, 'last_week')
-        last_res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                                                 FuelOrder.original_create_time.between(
-                                                                                     lst,
-                                                                                     let)).group_by(
-            FuelOrder.super_cls_id).all()
-        res_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in res]
-        last_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in last_res]
-        context = {'current_data': {'contrast': res_list, 'start_time': st, 'end_time': et},
-                   'last_data': {'contrast': last_list, 'start_time': lst, 'end_time': let}}
+        context = {}
+        time_type = request.GET.get('type', 'week')
+        if time_type in ['month', 'week', 'day']:
+            self.date_fmt = time_type
+        st, et = self.get_date_period(self.date_fmt, True)
+        goods_res = session.query(self.model.fuel_type, func.sum(self.model.amount),
+                                  func.sum(self.model.total_price)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st, et)).group_by(self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        total_num, total_price = 0, 0
+        for itm in goods_res:
+            total_num += itm[1]
+            total_price += itm[2]
+        goods_res = self.fill_fuel_data(goods_res)
+        current_data = self.format_data(context, goods_res)
+        current_data.insert(0, {'cls_name': '汇总', 'amount': total_num, 'income': total_price})
+        if self.date_fmt == 'day':
+            lst, let = self.get_date_period_by_time(st, 'yesterday')
+        else:
+            lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        last_goods_res = session.query(self.model.fuel_type, func.sum(self.model.amount),
+                                       func.sum(self.model.total_price)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(lst, let)).group_by(self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        total_num, total_price = 0, 0
+        for itm in last_goods_res:
+            total_num += itm[1]
+            total_price += itm[2]
+        last_goods_res = self.fill_fuel_data(last_goods_res)
+        last_data = self.format_data(context, last_goods_res)
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
+                   'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
-
-class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
+class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
     """
-    油品销售同比
+    油品同比
     """
 
-    def get_fuel_type(self, cid):
-        obj = session.query(SecondClassification).filter(SecondClassification.id == cid).first()
-        return obj.name
+    model = FuelOrder
+    data_keys = ["cls_name", "amount", "income"]
+    date_fmt = 'year'
+    unit_keys = {'amount': '升', 'income': '元'}
 
     def get(self, request, *args, **kwargs):
-        st, et = self.get_date_period('year')
-        res = session.query(FuelOrder.super_cls_id, func.date_part('month', FuelOrder.original_create_time),
-                            func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                    FuelOrder.original_create_time.between(st,
-                                                                                           et)).group_by(
-            FuelOrder.super_cls_id, func.date_part('month', FuelOrder.original_create_time)).all()
-        lst, let = self.get_date_period_by_time(st, 'last_year')
-        last_res = session.query(FuelOrder.super_cls_id, func.count('1')).filter(FuelOrder.belong_id == self.site.id,
-                                                                                 FuelOrder.original_create_time.between(
-                                                                                     lst,
-                                                                                     let)).group_by(
-            FuelOrder.super_cls_id).all()
-        res_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'month': itm[1], 'times': itm[2]} for itm in res]
-        last_list = [{'fuel_type': self.get_fuel_type(itm[0]), 'times': itm[1]} for itm in last_res]
-        context = {'current_data': {'contrast': res_list, 'start_time': st, 'end_time': et},
-                   'last_data': {'contrast': last_list, 'start_time': lst, 'end_time': let}}
+        context = {}
+        time_type = request.GET.get('type', 'year')
+        if time_type in ['year', 'month', 'custom']:
+            self.date_fmt = time_type
+        if self.date_fmt == 'custom':
+            st, et = self.get_date_period(self.date_fmt)
+        else:
+            st, et = self.get_date_period(self.date_fmt, True)
+        goods_res = session.query(self.model.fuel_type, func.sum(self.model.amount),
+                                  func.sum(self.model.total_price)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(st, et)).group_by(self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        total_num, total_price = 0, 0
+        for itm in goods_res:
+            total_num += itm[1]
+            total_price += itm[2]
+        goods_res = self.fill_fuel_data(goods_res)
+        current_data = self.format_data(context, goods_res)
+        current_data.insert(0, {'cls_name': '汇总', 'amount': total_num, 'income': total_price})
+        if self.date_fmt == 'custom' or self.date_fmt == 'month':
+            lst, let = st.replace(year=st.year - 1), et.replace(year=et.year - 1)
+        else:
+            lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
+        last_goods_res = session.query(self.model.fuel_type, func.sum(self.model.amount),
+                                       func.sum(self.model.total_price)).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(lst, let)).group_by(self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        total_num, total_price = 0, 0
+        for itm in last_goods_res:
+            total_num += itm[1]
+            total_price += itm[2]
+        last_goods_res = self.fill_fuel_data(last_goods_res)
+        last_data = self.format_data(context, last_goods_res)
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
+                   'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
+        self.fill_unit(context)
         return self.render_to_response(context)
 
 

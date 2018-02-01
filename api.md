@@ -1557,6 +1557,14 @@ GET /fuel/compare
 
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
+* type(_Optional_|string)-同比类型
+
+
+|type 取值|含义|
+| --------------  | :---: |
+|year|年同比|
+|month|月同比|
+|custom|自定义同比|
 
 ### **Return**
 
@@ -3298,6 +3306,13 @@ GET /goods/sequential
 
 * start_time(_Optional_|string)-开始时间
 * end_time(_Optional_|string)-结束时间
+* type(_Optional_|string)-环比类型
+
+|type 取值|含义|
+| --------------  | :---: |
+|month|月环比|
+|week|周环比|
+|day|日环比|
 
 ### **Return**
 
