@@ -259,6 +259,6 @@ class Site(Base):
 engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_produce',
                        encoding='utf-8'.encode())
 
-DBSession = sessionmaker(bind=engine)
+DBSession = sessionmaker(bind=engine, autoflush=False)
 
 session = DBSession()

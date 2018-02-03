@@ -825,26 +825,26 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
     """
 
     model = GoodsOrder
-    data_keys = ["name", "amount", "income"]
+    data_keys = ["cls_name", "amount", "income"]
     date_fmt = 'week'
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         key = unicode(key).upper()
-        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.py.contains(key)).first()
+        res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
-            return res[0]
-        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.barcode == key).first()
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.barcode == key).first()
         if res:
-            return res[0]
-        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.name == key).first()
-        return res[0] if res else None
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.name == key).first()
+        return res if res else (None, None)
 
     def get(self, request, *args, **kwargs):
         key = request.GET.get('search')
         if not key:
             return self.render_to_response()
-        barcode = self.search_goods_by_key(key)
+        barcode, name = self.search_goods_by_key(key)
         if not barcode:
             return self.render_to_response()
         context = {}
@@ -853,12 +853,16 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(st, et)).group_by(self.model.name).all()
+        if not goods_res:
+            goods_res = [(name, 0, 0)]
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.name, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(lst, let)).group_by(self.model.name).all()
+        if not last_goods_res:
+            last_goods_res = [(name, 0, 0)]
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -873,26 +877,26 @@ class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonRespon
     """
 
     model = GoodsOrder
-    data_keys = ["name", "amount", "income"]
+    data_keys = ["cls_name", "amount", "income"]
     date_fmt = 'month'
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         key = unicode(key).upper()
-        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.py.contains(key)).first()
+        res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
-            return res[0]
-        res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.barcode == key).first()
         if res:
-            return res[0]
-        res = session.query(self.model.barcode).filter(self.model.name == key).first()
-        return res[0] if res else None
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.name == key).first()
+        return res if res else (None, None)
 
     def get(self, request, *args, **kwargs):
         key = request.GET.get('search')
         if not key:
             return self.render_to_response()
-        barcode = self.search_goods_by_key(key)
+        barcode, name = self.search_goods_by_key(key)
         if not barcode:
             return self.render_to_response()
         context = {}
@@ -901,12 +905,16 @@ class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonRespon
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(st, et)).group_by(self.model.name).all()
+        if not goods_res:
+            goods_res = [(name, 0, 0)]
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.name, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(lst, let)).group_by(self.model.name).all()
+        if not last_goods_res:
+            last_goods_res = [(name, 0, 0)]
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
@@ -921,26 +929,26 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
     """
 
     model = GoodsOrder
-    data_keys = ["name", "amount", "income"]
+    data_keys = ["cls_name", "amount", "income"]
     date_fmt = 'year'
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
         key = unicode(key).upper()
-        res = session.query(GoodsInventory.barcode).filter(GoodsInventory.py.contains(key)).first()
+        res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
-            return res[0]
-        res = session.query(self.model.barcode).filter(self.model.barcode == key).first()
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.barcode == key).first()
         if res:
-            return res[0]
-        res = session.query(self.model.barcode).filter(self.model.name == key).first()
-        return res[0] if res else None
+            return res
+        res = session.query(self.model.barcode, self.model.name).filter(self.model.name == key).first()
+        return res if res else (None, None)
 
     def get(self, request, *args, **kwargs):
         key = request.GET.get('search')
         if not key:
             return self.render_to_response()
-        barcode = self.search_goods_by_key(key)
+        barcode, name = self.search_goods_by_key(key)
         if not barcode:
             return self.render_to_response()
         context = {}
@@ -949,12 +957,16 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
                                   func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(st, et)).group_by(self.model.name).all()
+        if not goods_res:
+            goods_res = [(name, 0, 0)]
         current_data = self.format_data(context, goods_res)
         lst, let = self.get_date_period_by_time(st, 'last_{0}'.format(self.date_fmt))
         last_goods_res = session.query(self.model.name, func.count("1"),
                                        func.sum(self.model.total)).filter(
             self.model.belong_id == self.site.id, self.model.barcode == barcode,
             self.model.original_create_time.between(lst, let)).group_by(self.model.name).all()
+        if not last_goods_res:
+            last_goods_res = [(name, 0, 0)]
         last_data = self.format_data(context, last_goods_res)
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
