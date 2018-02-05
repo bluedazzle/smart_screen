@@ -112,22 +112,22 @@ class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
 
     def post(self, request, *args, **kwargs):
         # 1 年计划 2 月计划
-        plan_type = request.POST.get('plan_type', 1)
+        plan_type = int(request.POST.get('plan_type', 1))
         # 100101 100102
-        fuel_type = request.POST.get('fuel_type', 1)
-        total = request.POST.get('total', 0)
-        jan = request.POST.get('jan', 0)
-        feb = request.POST.get('feb', 0)
-        mar = request.POST.get('mar', 0)
-        apr = request.POST.get('apr', 0)
-        may = request.POST.get('may', 0)
-        jun = request.POST.get('jun', 0)
-        aug = request.POST.get('aug', 0)
-        sep = request.POST.get('sep', 0)
-        oct = request.POST.get('oct', 0)
-        nov = request.POST.get('nov', 0)
-        dec = request.POST.get('dec', 0)
-        year = request.POST.get('year')
+        fuel_type = int(request.POST.get('fuel_type', 100101))
+        total = float(request.POST.get('total', 0))
+        jan = float(request.POST.get('jan', 0))
+        feb = float(request.POST.get('feb', 0))
+        mar = float(request.POST.get('mar', 0))
+        apr = float(request.POST.get('apr', 0))
+        may = float(request.POST.get('may', 0))
+        jun = float(request.POST.get('jun', 0))
+        aug = float(request.POST.get('aug', 0))
+        sep = float(request.POST.get('sep', 0))
+        oct = float(request.POST.get('oct', 0))
+        nov = float(request.POST.get('nov', 0))
+        dec = float(request.POST.get('dec', 0))
+        year = int(request.POST.get('year'))
         if fuel_type not in [100101, 100102]:
             self.message = '油品类型不对'
             self.status_code = ERROR_DATA
