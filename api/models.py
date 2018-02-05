@@ -238,6 +238,7 @@ class FuelPlan(models.Model):
     nov = models.FloatField(default=0)
     dec = models.FloatField(default=0)
     total = models.FloatField(default=0)
+    belong = models.ForeignKey(Site, related_name='site_plans', null=True, blank=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.year, self.fuel_type.name)

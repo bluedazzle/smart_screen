@@ -27,7 +27,7 @@ def create_tank(tid, site_id, *args, **kwargs):
     obj.name = ''
     obj.belong_id = site_id
     obj.create_time = get_now_time_with_timezone()
-    for k, v in kwargs:
+    for k, v in kwargs.items():
         setattr(obj, k, v)
     session.add(obj)
     session.commit()

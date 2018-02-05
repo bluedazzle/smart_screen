@@ -6178,3 +6178,161 @@ POST /api/admin/upload/
   "msg": "数据缺失"
 }
 ```
+
+
+## **创建油品销售计划**
+
+```
+POST /api/admin/plan/
+```
+
+### **Parameters**
+* fuel_type(_Required_|integer)-油品类型
+* plan_type(_Required_|integer)-计划类型
+* total(_Optional_|Float)-年总量
+* jan(_Optional_|Float)-一月
+* feb(_Optional_|Float)-二月
+* mar(_Optional_|Float)-三月
+* apr(_Optional_|Float)-四月
+* may(_Optional_|Float)-五月
+* jun(_Optional_|Float)-六月
+* jul(_Optional_|Float)-七月
+* aug(_Optional_|Float)-八月
+* sep(_Optional_|Float)-九月
+* oct(_Optional_|Float)-十月
+* nov(_Optional_|Float)-十一月
+* dec(_Optional_|Float)-十二月
+
+|fuel_type|含义|
+| --------------  | :---: |
+|1001001|汽油|
+|1001002|柴油|
+
+|plan_type|含义|
+| --------------  | :---: |
+|1|年计划|
+|2|月计划|
+
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **油品销售计划列表**
+
+```
+GET /api/admin/plans/
+```
+
+### **Parameters**
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "page_obj":{
+
+        },
+        "is_paginated":false,
+        "fuelplan_list":[
+            {
+                "mar":1000,
+                "feb":1000,
+                "aug":1000,
+                "sep":1000,
+                "apr":1000,
+                "fuel_type_id":100102,
+                "jun":1000,
+                "jul":1000,
+                "oct":1000,
+                "jan":1000,
+                "may":1000,
+                "belong_id":1,
+                "year":2018,
+                "total":12000,
+                "nov":1000,
+                "dec":1000,
+                "id":2
+            },
+            {
+                "mar":1000,
+                "feb":1000,
+                "aug":1000,
+                "sep":1000,
+                "apr":1000,
+                "fuel_type_id":100101,
+                "jun":1000,
+                "jul":1000,
+                "oct":1000,
+                "jan":1000,
+                "may":1000,
+                "belong_id":1,
+                "year":2018,
+                "total":12000,
+                "nov":1000,
+                "dec":1000,
+                "id":1
+            }
+        ]
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
+## **删除油品销售计划**
+
+```
+DELETE /api/admin/plan/{pid}
+```
+
+### **Parameters**
+pid 为计划 id
+
+### **Return**
+
+成功
+```
+{
+    "body": {
+    },
+    "status": 1,
+    "msg": "success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```

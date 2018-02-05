@@ -22,5 +22,7 @@ urlpatterns = [
     url(r'^inventories/$', InventoryListView.as_view()),
     url(r'^inventory/(?P<iid>(\w)+)/$', UpdateInventoryView.as_view()),
     url(r'^site/$', SiteInfoView.as_view()),
-    url(r'^qr/$', QtRedirctView.as_view()),
+    url(r'^plans/$', FuelPlanListView.as_view()),
+    url(r'^plan/(?P<pid>(\w)+)/$', FuelPlanView.as_view()),
+    url(r'^plan/$', FuelPlanView.as_view()),
 ]

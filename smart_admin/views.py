@@ -19,9 +19,10 @@ from django.views.generic import View
 from SmartScreen.settings import STATIC_ROOT
 from drilling.utils import generate_hash
 from smart_admin.models import Account
-from api.models import GoodsInventory, Site
+from api.models import GoodsInventory, Site, FuelPlan
 from core.Mixin.CheckMixin import CheckAdminPermissionMixin
-from core.Mixin.StatusWrapMixin import StatusWrapMixin, INFO_NO_EXIST, ERROR_PASSWORD, ERROR_DATA, ERROR_UNKNOWN
+from core.Mixin.StatusWrapMixin import StatusWrapMixin, INFO_NO_EXIST, ERROR_PASSWORD, ERROR_DATA, ERROR_UNKNOWN, \
+    INFO_EXISTED, ERROR_PERMISSION_DENIED
 from core.dss.Mixin import MultipleJsonResponseMixin, JsonResponseMixin
 
 
@@ -76,10 +77,101 @@ class SiteInfoView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
 
     def post(self, request, *args, **kwargs):
         content = request.POST.get('content')
-        pictures = request.POST.get('picutres')
+        pictures = request.POST.get('pictures')
         self.site.info = content
         self.site.pictures = pictures
         self.site.save()
+        return self.render_to_response()
+
+
+class FuelPlanListView(CheckAdminPermissionMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    model = FuelPlan
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        queryset = super(FuelPlanListView, self).get_queryset().filter(belong=self.site).order_by('-year')
+        return queryset
+
+
+class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
+    model = FuelPlan
+    http_method_names = ['post', 'delete']
+
+    def delete(self, request, *args, **kwargs):
+        res = FuelPlan.objects.filter(id=kwargs.get('pid'))
+        if res.exists():
+            res = res[0]
+            if res.belong == self.site:
+                res.delete()
+                return self.render_to_response()
+            self.message = '权限不足'
+            self.status_code = ERROR_PERMISSION_DENIED
+        self.message = '计划不存在'
+        self.status_code = INFO_NO_EXIST
+        return self.render_to_response()
+
+    def post(self, request, *args, **kwargs):
+        # 1 年计划 2 月计划
+        plan_type = request.POST.get('plan_type', 1)
+        # 100101 100102
+        fuel_type = request.POST.get('fuel_type', 1)
+        total = request.POST.get('total', 0)
+        jan = request.POST.get('jan', 0)
+        feb = request.POST.get('feb', 0)
+        mar = request.POST.get('mar', 0)
+        apr = request.POST.get('apr', 0)
+        may = request.POST.get('may', 0)
+        jun = request.POST.get('jun', 0)
+        aug = request.POST.get('aug', 0)
+        sep = request.POST.get('sep', 0)
+        oct = request.POST.get('oct', 0)
+        nov = request.POST.get('nov', 0)
+        dec = request.POST.get('dec', 0)
+        year = request.POST.get('year')
+        if fuel_type not in [100101, 100102]:
+            self.message = '油品类型不对'
+            self.status_code = ERROR_DATA
+            return self.render_to_response()
+        if not year:
+            self.status_code = ERROR_DATA
+            self.message = '年份缺失'
+            return self.render_to_response()
+        res = FuelPlan.objects.filter(year=year, fuel_type_id=fuel_type).all()
+        if res.exists():
+            self.status_code = INFO_EXISTED
+            self.message = '计划已存在'
+            return self.render_to_response()
+        fp = FuelPlan(belong=self.site, fuel_type_id=fuel_type)
+        if plan_type == 1:
+            month_plan = round(total / 12.0)
+            fp.jan = month_plan
+            fp.feb = month_plan
+            fp.mar = month_plan
+            fp.apr = month_plan
+            fp.may = month_plan
+            fp.jul = month_plan
+            fp.jun = month_plan
+            fp.aug = month_plan
+            fp.sep = month_plan
+            fp.nov = month_plan
+            fp.dec = month_plan
+            fp.oct = month_plan
+        else:
+            fp.jan = jan
+            fp.feb = feb
+            fp.mar = mar
+            fp.apr = apr
+            fp.may = may
+            fp.jul = jul
+            fp.jun = jun
+            fp.aug = aug
+            fp.sep = sep
+            fp.nov = nov
+            fp.dec = dec
+            fp.oct = oct
+            total = jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec
+        fp.total = total
+        fp.save()
         return self.render_to_response()
 
 

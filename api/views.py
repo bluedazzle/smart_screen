@@ -387,7 +387,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         st = context['start_time']
         et = context['end_time']
         fmt_str, fmt = self.get_time_fmt(st, et)
-        self.data_keys = ['fuel_type', fmt_str, 'amount', 'sales', 'total_price']
+        self.data_keys = ['fuel_type', fmt_str, 'sales', 'total_price', 'amount']
         res = session.query(FuelOrder.fuel_type, fmt,
                             func.sum(FuelOrder.amount), func.sum(FuelOrder.total_price), func.count("1")).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
@@ -1122,7 +1122,7 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             # month_str = month_dict.get(month)
             # year = datetime.datetime.now().year
             # cls = models.SecondClassification.objects.filter(id=cls)[0]
-            plan = models.FuelPlan.objects.filter(year=fmt, fuel_type_id=cls)
+            plan = models.FuelPlan.objects.filter(year=fmt, fuel_type_id=cls, belong=self.site)
             if not plan.exists():
                 return 0
             plan = plan[0]
@@ -1132,7 +1132,7 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             month_str = month_dict.get(fmt)
             year = st.year
             # cls = models.SecondClassification.objects.filter(id=cls)[0]
-            plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls)
+            plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls, belong=self.site)
             if not plan.exists():
                 return 0
             plan = plan[0]
