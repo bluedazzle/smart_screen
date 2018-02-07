@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 
 import datetime
 
+import logging
+
 from drilling.db.interbase import init_interbase_connect
 from drilling.models import session, FuelOrder, DeliveryRecord, Receiver, Supplier
 from drilling.utils import get_site_by_slug, get_clean_data, get_fuel_order_by_hash, generate_hash, datetime_to_string, \
@@ -27,6 +29,7 @@ tillitem.hose_id=fuel_pumps_hose.hose_id and tillitem.STATUSTYPE =1 and timeopen
 virtual_hose_id,timeopen DESC'''.format(st, et)
     ib_session.execute(sql)
     orders = ib_session.fetchall()
+    nums = 0
     for order in orders:
         till_id, original_create_time, fuel_type, price, amount, total_price, pump_id, dept, barcode = order
         fuel_type = get_clean_data(fuel_type)
@@ -41,6 +44,8 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
         create_fuel_order(till_id=till_id, original_create_time=original_create_time, fuel_type=fuel_type, price=price,
                           total_price=total_price, amount=amount, pump_id=pump_id, hash=unique_str, belong_id=site.id,
                           classification_id=dept, barcode=barcode, super_cls_id=int(super_dept))
+        nums += 1
+    logging.info('=============create fuel order {0} site {1}=============='.format(nums, site.name))
     get_fuel_order_payment(site)
 
 

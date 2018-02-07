@@ -302,6 +302,7 @@ def get_card_record(site, start_time=None, end_time=None):
     where status in (2,3,5,23) and tradeType in (10,11,13,30,21) and recordtime BETWEEN '{0}' and '{1}'
     order by recordtime desc'''.format(st, et)
     res = ms_session.execute(sql).fetchall()
+    nums = 0
     for itm in res:
         unique_id, balance, details, pump_id, card_id, bank_card_id, card_type, eps_unique_id, original_create_time = itm
         exist = check_card_record(unique_id)
@@ -314,11 +315,14 @@ def get_card_record(site, start_time=None, end_time=None):
                                bank_card_id=bank_card_id, detail=detail, pump_id=pump_id, balance=balance, total=total,
                                card_type=card_type, classification=cls, eps_unique_id=eps_unique_id, belong_id=site.id,
                                original_create_time=original_create_time)
+            nums += 1
         if card_type in (1, 2):
             abnormal_type, reason = abnormal_card_check(card_id)
             if abnormal_type:
                 create_abnormal_record(abnormal_type, card_id=card_id, card_type=card_type, reason=reason,
                                        belong_id=site.id)
+    logging.info('=============create card record {0} site {1}=============='.format(nums, site.name))
+
 
 
 if __name__ == '__main__':

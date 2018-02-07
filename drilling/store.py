@@ -54,6 +54,7 @@ WHERE
 TILL.TIMECLOSE DESC'''.format(st, et)
     ib_session.execute(sql)
     orders = ib_session.fetchall()
+    nums = 0
     for order in orders:
         sale_date, pos_id, till_id, shift, original_create_time, dept, barcode, name, unit, price, total, amount, _ = order
         dept_str = unicode(dept)
@@ -70,12 +71,12 @@ TILL.TIMECLOSE DESC'''.format(st, et)
         create_goods_order(till_id=till_id, original_create_time=original_create_time, classification_id=dept,
                            price=price, total=total, amount=amount, barcode=barcode, hash=unique_str, name=name,
                            belong_id=site.id, super_cls_id=int(dept_str[:4]))
+        nums += 1
         gi = get_goods_inventory_by_barcode(barcode, site)
         if gi:
             gi.last_sell_time = add_timezone_to_naive_time(original_create_time)
             session.commit()
-
-
+    logging.info('=============create store order {0} site {1}=============='.format(nums, site.name))
     get_goods_order_payment(site)
 
 

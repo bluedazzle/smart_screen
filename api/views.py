@@ -246,9 +246,9 @@ class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
     油品环比
     """
     model = FuelOrder
-    data_keys = ["cls_name", "amount", "income"]
+    data_keys = ["cls_name", "income", "amount"]
     date_fmt = 'year'
-    unit_keys = {'amount': '升', 'income': '元'}
+    unit_keys = {'amount': '元', 'income': '升'}
 
     def get(self, request, *args, **kwargs):
         context = {}
@@ -289,15 +289,16 @@ class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
         self.fill_unit(context)
         return self.render_to_response(context)
 
+
 class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
     """
     油品同比
     """
 
     model = FuelOrder
-    data_keys = ["cls_name", "amount", "income"]
+    data_keys = ["cls_name", "income", "amount"]
     date_fmt = 'year'
-    unit_keys = {'amount': '升', 'income': '元'}
+    unit_keys = {'amount': '元', 'income': '升'}
 
     def get(self, request, *args, **kwargs):
         context = {}
