@@ -141,7 +141,7 @@ class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
             self.status_code = INFO_EXISTED
             self.message = '计划已存在'
             return self.render_to_response()
-        fp = FuelPlan(belong=self.site, fuel_type_id=fuel_type)
+        fp = FuelPlan(belong=self.site, fuel_type_id=fuel_type, year=year)
         if plan_type == 1:
             month_plan = round(total / 12.0)
             fp.jan = month_plan
