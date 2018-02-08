@@ -1101,7 +1101,8 @@ class DayTimeView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, ListView):
     datetime_type = 'string'
 
     def get(self, request, *args, **kwargs):
-        ir = session.query(InventoryRecord).filter(InventoryRecord.record_type == 3).order_by(
+        ir = session.query(InventoryRecord).filter(InventoryRecord.record_type == 3,
+                                                   InventoryRecord.belong_id == self.site.id).order_by(
             InventoryRecord.original_create_time.desc()).first()
         end_time = ir.original_create_time + datetime.timedelta(days=1)
         return self.render_to_response({'start_time': ir.original_create_time, 'end_time': end_time})
@@ -1141,7 +1142,7 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             return month_plan_num
         month_str = month_dict.get(st.month)
         year = st.year
-        plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls)
+        plan = models.FuelPlan.objects.filter(year=year, fuel_type_id=cls, belong=self.site)
         if not plan.exists():
             return 0
         plan = plan[0]
@@ -1165,7 +1166,7 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             fmt).all()
         res = []
         for data in fuel_res:
-            res.append((data[0], data[1], data[2] / 1000.0, self.get_plan(fmt_str, data[1], data[0], st)))
+            res.append((data[0], data[1], data[2], self.get_plan(fmt_str, data[1], data[0], st)))
         self.data_keys = [fmt_str, 'fuel_type', 'sell', 'plan']
         # res = [(itm[0][0], itm[0][1], (itm[1][1] / 1000.0), itm[0][1] / (itm[1][1] / 1000.0)) for itm in combine]
         return res
@@ -1226,7 +1227,7 @@ class CardRecordListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMi
         search = self.request.GET.get('search', None)
         queryset = super(CardRecordListView, self).get_queryset().order_by('-original_create_time')
         if search:
-            queryset = queryset.filter(card_id=search).order_by('-original_create_time')
+            queryset = queryset.filter(card_id=search, belong=self.site).order_by('-original_create_time')
         return queryset
 
 
@@ -1261,7 +1262,7 @@ class CardOverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
         st, et = self.get_date_period(self.date_fmt)
         try:
             total, amount = session.query(func.sum(self.model.total), func.count(1)).filter(
-                self.model.original_create_time.between(st, et)).all()[0]
+                self.model.original_create_time.between(st, et), self.model.belong_id == self.site.id).all()[0]
         except Exception as e:
             logging.exception('ERROR in card overview reason {0}'.format(e))
             total, amount = 0, 0

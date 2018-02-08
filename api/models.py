@@ -251,9 +251,9 @@ class CardRecord(BaseModel):
         (2, '车队卡'),
     )
 
-    unique_id = models.IntegerField(unique=True)
+    unique_id = models.CharField(max_length=256, unique=True)
     # eps id
-    parent_id = models.IntegerField()
+    parent_id = models.CharField(max_length=256)
     card_id = models.CharField(max_length=128, null=True, blank=True)
     bank_card_id = models.CharField(max_length=128, null=True, blank=True)
     # 银行流水

@@ -11,7 +11,7 @@ from sqlalchemy import func
 
 from drilling.models import session, CardRecord
 from drilling.utils import get_today_st_et, get_today_night, get_week_st_et, create_abnormal_record, datetime_to_string, \
-    get_site_by_slug, check_card_record, create_card_record
+    get_site_by_slug, check_card_record, create_card_record, generate_hash
 
 
 def abnormal_card_check(card_id):
@@ -305,13 +305,16 @@ def get_card_record(site, start_time=None, end_time=None):
     nums = 0
     for itm in res:
         unique_id, balance, details, pump_id, card_id, bank_card_id, card_type, eps_unique_id, original_create_time = itm
-        exist = check_card_record(unique_id)
+        unique_str = generate_hash(unicode(pump_id), datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'),
+                                   unicode(card_id), unicode(bank_card_id), unicode(eps_unique_id),
+                                   unicode(unique_id), unicode(site.id))
+        exist = check_card_record(unique_str)
         if exist:
             continue
         detail_list = details_handle(details)
         for index, dt in enumerate(detail_list):
             cls, detail, total = dt
-            create_card_record(unique_id='{0}{1}'.format(unique_id, index), parent_id=unique_id, card_id=card_id,
+            create_card_record(unique_id='{0}{1}'.format(unique_str, index), parent_id=unique_str, card_id=card_id,
                                bank_card_id=bank_card_id, detail=detail, pump_id=pump_id, balance=balance, total=total,
                                card_type=card_type, classification=cls, eps_unique_id=eps_unique_id, belong_id=site.id,
                                original_create_time=original_create_time)
@@ -324,6 +327,5 @@ def get_card_record(site, start_time=None, end_time=None):
     logging.info('=============create card record {0} site {1}=============='.format(nums, site.name))
 
 
-
 if __name__ == '__main__':
-    get_card_record('test', datetime.datetime(2017, 8, 1), datetime.datetime(2017, 8, 2))
+    get_card_record('air', datetime.datetime(2018, 2, 8), datetime.datetime(2018, 2, 9))
