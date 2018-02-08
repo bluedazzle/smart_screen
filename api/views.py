@@ -1165,8 +1165,18 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             fmt, self.model.super_cls_id).order_by(
             fmt).all()
         res = []
+        dens_list = {100101: 0.725, 100102: 0.835}
         for data in fuel_res:
-            res.append((data[0], data[1], data[2], self.get_plan(fmt_str, data[1], data[0], st)))
+            if fmt_str == 'day' or fmt_str == 'hour':
+                act = data[2]
+                plan = self.get_plan(fmt_str, data[1], data[0], st)
+                plan = plan * 1000 / dens_list.get(data[1], 0.725)
+            else:
+                act = round(data[2] * dens_list.get(data[1], 0.725) / 1000.0)
+                plan = self.get_plan(fmt_str, data[1], data[0], st)
+                self.unit_keys = {'sell': '吨', 'plan': '吨'}
+
+            res.append((data[0], data[1], act, plan))
         self.data_keys = [fmt_str, 'fuel_type', 'sell', 'plan']
         # res = [(itm[0][0], itm[0][1], (itm[1][1] / 1000.0), itm[0][1] / (itm[1][1] / 1000.0)) for itm in combine]
         return res
