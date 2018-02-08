@@ -51,7 +51,7 @@ def init_all():
     site_list = session.query(Site).filter(Site.slug == 'air').all()
     for site in site_list:
         # init_base_info(site.slug)
-        init_st = add_timezone_to_naive_time(datetime.datetime(2017, 1, 1))
+        init_st = add_timezone_to_naive_time(datetime.datetime(2018, 2, 7))
         init_et = add_timezone_to_naive_time(datetime.datetime.now())
         detla = datetime.timedelta(days=7)
         et = init_st
