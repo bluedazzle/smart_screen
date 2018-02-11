@@ -290,7 +290,7 @@ def details_handle(details):
 
 def get_card_record(site, start_time=None, end_time=None):
     if not start_time:
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now() - datetime.timedelta(hours=3)
         end_time = start_time + datetime.timedelta(days=1)
     st = datetime_to_string(start_time)
     et = datetime_to_string(end_time)

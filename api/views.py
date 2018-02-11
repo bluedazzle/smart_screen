@@ -17,7 +17,7 @@ from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin, ERR
 from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
 from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory, \
     CardRecord
-from drilling.utils import get_today_st_et, get_week_st_et
+from drilling.utils import get_today_st_et, get_week_st_et, add_timezone_to_naive_time
 from api.utils import get_fuel_type, get_first_cls_name_by_ss_cls_ids, get_first_cls_name_by_id, get_all_super_cls_id, \
     get_all_goods_super_cls_id, get_card_type
 
@@ -28,6 +28,13 @@ class SmartDetailView(DetailView):
     date_fmt = 'day'
     all_keys = None
     unit_keys = {}
+    dens_list = {100101: 0.770, 100102: 0.85}
+    str_dens_list = {'柴油': 0.85, '92': 0.759, '95': 0.77, '98': 0.77}
+
+    def get_str_dens(self, den_str):
+        for k, v in self.str_dens_list.items():
+            if k in den_str:
+                return v
 
     def format_data(self, context, data):
         formated_data = []
@@ -65,6 +72,17 @@ class SmartDetailView(DetailView):
                 data.append((key,) + (0,) * (len(self.data_keys) - 1))
         data = sorted(data, key=lambda x: x[0])
         return data
+
+    def convert_fuel_data(self, data, fmt):
+        if fmt == 'day':
+            return data
+        output = []
+        for itm in data:
+            output.append((itm[0], itm[1] * self.get_str_dens(itm[0]) / 1000.0, itm[2]))
+        self.unit_keys = {'amount': '元', 'income': '吨'}
+        return output
+
+
 
     def get_time_fmt(self, st, et):
         period = et - st
@@ -261,13 +279,14 @@ class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.fuel_type).order_by(
             self.model.fuel_type).all()
+        goods_res = self.convert_fuel_data(goods_res, time_type)
         total_num, total_price = 0, 0
         for itm in goods_res:
             total_num += itm[1]
             total_price += itm[2]
         goods_res = self.fill_fuel_data(goods_res)
         current_data = self.format_data(context, goods_res)
-        current_data.insert(0, {'cls_name': '汇总', 'amount': total_num, 'income': total_price})
+        current_data.insert(0, {'cls_name': '汇总', 'amount': total_price, 'income': total_num})
         if self.date_fmt == 'day':
             lst, let = self.get_date_period_by_time(st, 'yesterday')
         else:
@@ -277,13 +296,14 @@ class FuelSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Dat
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(lst, let)).group_by(self.model.fuel_type).order_by(
             self.model.fuel_type).all()
+        last_goods_res = self.convert_fuel_data(last_goods_res, time_type)
         total_num, total_price = 0, 0
         for itm in last_goods_res:
             total_num += itm[1]
             total_price += itm[2]
         last_goods_res = self.fill_fuel_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
-        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_price, 'income': total_num})
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
         self.fill_unit(context)
@@ -314,13 +334,14 @@ class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(st, et)).group_by(self.model.fuel_type).order_by(
             self.model.fuel_type).all()
+        goods_res = self.convert_fuel_data(goods_res, time_type)
         total_num, total_price = 0, 0
         for itm in goods_res:
             total_num += itm[1]
             total_price += itm[2]
         goods_res = self.fill_fuel_data(goods_res)
         current_data = self.format_data(context, goods_res)
-        current_data.insert(0, {'cls_name': '汇总', 'amount': total_num, 'income': total_price})
+        current_data.insert(0, {'cls_name': '汇总', 'amount': total_price, 'income': total_num})
         if self.date_fmt == 'custom' or self.date_fmt == 'month':
             lst, let = st.replace(year=st.year - 1), et.replace(year=et.year - 1)
         else:
@@ -331,12 +352,13 @@ class FuelCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Da
             self.model.original_create_time.between(lst, let)).group_by(self.model.fuel_type).order_by(
             self.model.fuel_type).all()
         total_num, total_price = 0, 0
+        last_goods_res = self.convert_fuel_data(last_goods_res, time_type)
         for itm in last_goods_res:
             total_num += itm[1]
             total_price += itm[2]
         last_goods_res = self.fill_fuel_data(last_goods_res)
         last_data = self.format_data(context, last_goods_res)
-        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_num, 'income': total_price})
+        last_data.insert(0, {'cls_name': '汇总', 'cls_id': 0, 'amount': total_price, 'income': total_num})
         context = {'current_data': {'start_time': st, 'end_time': et, "object_list": current_data},
                    'last_data': {'start_time': lst, 'end_time': let, 'object_list': last_data}}
         self.fill_unit(context)
@@ -493,7 +515,7 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
         cls_list = [itm[0] for itm in cls_list]
         cls_res_list = []
         for cls in cls_list:
-            cls_res = session.query(self.model.name, func.count("1"), func.sum(self.model.price),
+            cls_res = session.query(self.model.name, func.count(self.model.amount), func.sum(self.model.total),
                                     self.model.barcode).filter(
                 self.model.belong_id == self.site.id, self.model.super_cls_id == cls,
                 self.model.original_create_time.between(st, et)).group_by(
@@ -1165,14 +1187,13 @@ class FuelSellPlanView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateT
             fmt, self.model.super_cls_id).order_by(
             fmt).all()
         res = []
-        dens_list = {100101: 0.725, 100102: 0.835}
         for data in fuel_res:
             if fmt_str == 'day' or fmt_str == 'hour':
                 act = data[2]
                 plan = self.get_plan(fmt_str, data[1], data[0], st)
-                plan = plan * 1000 / dens_list.get(data[1], 0.725)
+                plan = plan * 1000 / self.dens_list.get(data[1], 0.770)
             else:
-                act = round(data[2] * dens_list.get(data[1], 0.725) / 1000.0)
+                act = round(data[2] * self.dens_list.get(data[1], 0.770) / 1000.0)
                 plan = self.get_plan(fmt_str, data[1], data[0], st)
                 self.unit_keys = {'sell': '吨', 'plan': '吨'}
 
@@ -1356,7 +1377,9 @@ class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandl
     model = FuelOrder
 
     def get(self, request, *args, **kwargs):
-        st, et = self.get_date_period()
+        now = datetime.datetime.now()
+        st = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day))
+        et = add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59))
         fuel_res = session.query(FuelOrder.super_cls_id,
                                  func.sum(FuelOrder.amount)).filter(FuelOrder.belong_id == self.site.id,
                                                                     FuelOrder.original_create_time.between(st,
@@ -1369,10 +1392,10 @@ class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandl
         total_res = session.query(func.sum(CardRecord.total)).filter(
             CardRecord.belong_id == self.site.id, CardRecord.original_create_time.between(st, et),
         ).all()
-        card_res = [{'cls_name': itm[0], 'total': itm[1] / 100.0} for itm in card_res]
+        card_res = [{'cls_name': itm[0], 'total': round(itm[1] / 100.0)} for itm in card_res]
         card_total = 0.0
         for itm in card_res:
             card_total += itm['total']
-        card_res.append({'cls_name': '非油', 'total': total_res[0][0] / 100.0 - card_total})
+        card_res.append({'cls_name': '非油', 'total': round(total_res[0][0] / 100.0 - card_total)})
         return self.render_to_response(
             {'fuel': fuel_res, 'card': card_res, 'unit': {'amount_unit': '升', 'total_unit': '元'}})

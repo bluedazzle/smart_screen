@@ -122,6 +122,7 @@ class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
         apr = float(request.POST.get('apr', 0))
         may = float(request.POST.get('may', 0))
         jun = float(request.POST.get('jun', 0))
+        jul = float(request.POST.get('jul', 0))
         aug = float(request.POST.get('aug', 0))
         sep = float(request.POST.get('sep', 0))
         oct = float(request.POST.get('oct', 0))
@@ -196,18 +197,24 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
-        try:
-            from PIL import Image
-            img_data = request.FILES.get('image')
-            img = Image.open(img_data)
-            name = generate_hash(img_data.name, unicode(time.time()))
-            img.save('{0}image/{1}.png'.format(STATIC_ROOT, name), "PNG")
-            return self.render_to_response({'url': '/static/image/{0}.png'.format(name)})
-        except Exception as e:
-            logging.exception('ERROR in upload image reason {0}'.format(e))
-            self.message = '未知错误'
-            self.status_code = ERROR_UNKNOWN
-            return self.render_to_response()
+        # try:
+        #     from PIL import Image
+        img_data = request.FILES.get('image')
+        # img = Image.open(img_data)
+        name = generate_hash(img_data.name, unicode(time.time()))
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        default_storage.save('{0}image/{1}.png'.format(STATIC_ROOT, name), ContentFile(img_data.read()))
+        # f = open('{0}image/{1}.png'.format(STATIC_ROOT, name), "wb")
+        # f.write(img_data)
+        # f.close()
+        # img.save('{0}image/{1}.png'.formaat(STATIC_ROOT, name), "PNG")
+        return self.render_to_response({'url': '/static/image/{0}.png'.format(name)})
+        # except Exception as e:
+        #     logging.exception('ERROR in upload image reason {0}'.format(e))
+        #     self.message = '未知错误'
+        #     self.status_code = ERROR_UNKNOWN
+        #     return self.render_to_response()
 
 
 class QtRedirctView(TemplateView):

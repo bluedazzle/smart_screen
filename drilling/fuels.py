@@ -14,7 +14,7 @@ from drilling.utils import get_site_by_slug, get_clean_data, get_fuel_order_by_h
 
 def get_fuel_order(site, start_time=None, end_time=None):
     if not start_time:
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now() - datetime.timedelta(hours=3)
         end_time = start_time + datetime.timedelta(days=1)
     st = datetime_to_string(start_time)
     et = datetime_to_string(end_time)
@@ -115,7 +115,7 @@ def get_rev(site):
 
 def get_delivery(site, start_time=None, end_time=None):
     if not start_time:
-        start_time = datetime.datetime.now()
+        start_time = datetime.datetime.now() - datetime.timedelta(hours=3)
         end_time = start_time + datetime.timedelta(days=1)
     st = datetime_to_string(start_time)
     et = datetime_to_string(end_time)
