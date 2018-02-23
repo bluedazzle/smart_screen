@@ -418,11 +418,12 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
             FuelOrder.fuel_type, fmt).order_by(fmt).all()
         fuel_types = set([itm[0] for itm in res])
         res = sorted(res, key=lambda x: x[1])
-        if st.date() == now.date() and et.date() == now.date():
-            self.fill_day(fuel_types, res, True)
-        else:
-            self.fill_day(fuel_types, res)
-        res = sorted(res, key=lambda x: x[1])
+        if fmt_str == 'hour':
+            if st.date() == now.date() and et.date() == now.date():
+                self.fill_day(fuel_types, res, True)
+            else:
+                self.fill_day(fuel_types, res)
+            res = sorted(res, key=lambda x: x[1])
         return res
 
     def fill_day(self, fuel_types, res, fresh=False):
