@@ -409,14 +409,39 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     def get_objects(self, context):
         st = context['start_time']
         et = context['end_time']
+        now = datetime.datetime.now()
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = ['fuel_type', fmt_str, 'sales', 'total_price', 'amount']
         res = session.query(FuelOrder.fuel_type, fmt,
                             func.sum(FuelOrder.amount), func.sum(FuelOrder.total_price), func.count("1")).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
             FuelOrder.fuel_type, fmt).order_by(fmt).all()
+        fuel_types = set([itm[0] for itm in res])
+        res = sorted(res, key=lambda x: x[1])
+        if st.date() == now.date() and et.date() == now.date():
+            self.fill_day(fuel_types, res, True)
+        else:
+            self.fill_day(fuel_types, res)
         res = sorted(res, key=lambda x: x[1])
         return res
+
+    def fill_day(self, fuel_types, res, fresh=False):
+        now_hour = 23
+        if fresh:
+            now_hour = datetime.datetime.today().hour
+        for i in xrange(0, now_hour + 1):
+            for fuel in fuel_types:
+                if not self.search_day(res, fuel, i):
+                    res.append((fuel, i, 0, 0, 0))
+
+    def search_day(self, res, fuel, hour):
+        for order in res:
+            if order[0] == fuel and order[1] == hour:
+                return True
+            if hour < order[1]:
+                return False
+        return False
+
 
     def format_data(self, context, data):
         formated_data = []
