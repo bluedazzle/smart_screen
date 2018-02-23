@@ -997,6 +997,22 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
         return self.render_to_response(context)
 
 
+class SearchListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    """
+    模糊搜索
+    """
+
+    model = models.GoodsInventory
+    paginate_by = 10
+    include_attr = ['name', 'barcode']
+
+    def get_queryset(self):
+        key = self.request.GET.get('search')
+        queryset = super(SearchListView, self).get_queryset()
+        queryset = queryset.filter(py__icontains=key, belong_id=self.site.id)
+        return queryset
+
+
 class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, DateTimeHandleMixin, ListView):
     """
     滞销商品
@@ -1342,7 +1358,7 @@ class TokenView(DetailView):
     def get(self, request, *args, **kwargs):
         import time
         token = request.GET.get('token')
-        expire = cookie_date(time.time() + 86400)
+        expire = cookie_date(time.time() + 86400 * 365)
         resp = HttpResponseRedirect('/zhz/')
         resp.set_cookie(key='token', value=token, expires=expire)
         return resp

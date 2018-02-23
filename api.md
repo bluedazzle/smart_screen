@@ -3261,6 +3261,101 @@ GET /goods/product/effect
 }
 ```
 
+
+## **商品搜索**
+
+```
+GET /goods/search/item/
+```
+
+### **Parameters**
+
+* search(_Required_|string)-搜索条件
+
+### **Return**
+
+成功
+```
+{
+    "body":{
+        "goodsinventory_list":[
+            {
+                "barcode":"70219191",
+                "name":"乐虎 牛磺酸强化型功能饮料瓶装 380ML"
+            },
+            {
+                "barcode":"70259656",
+                "name":"绿箭 脆皮软心薄荷柠檬薄荷味 80G"
+            },
+            {
+                "barcode":"70241119",
+                "name":"圣湖 浓缩酸牛奶 180G"
+            },
+            {
+                "barcode":"70000579",
+                "name":"红牛 维生素功能饮料（原味型） 250ml"
+            },
+            {
+                "barcode":"70000590",
+                "name":"麒麟 午后奶茶原味 500ml"
+            },
+            {
+                "barcode":"70001159",
+                "name":"红牛 维生素功能饮料（牛磺酸强化型） 250m"
+            },
+            {
+                "barcode":"70004310",
+                "name":"德芙 丝滑牛奶巧克力 80G"
+            },
+            {
+                "barcode":"70004421",
+                "name":"雀巢 威化奶香 20G*24"
+            },
+            {
+                "barcode":"70010148",
+                "name":"红牛 高级鞋油"
+            },
+            {
+                "barcode":"70038093",
+                "name":"南孚 耐能电池2粒装(黑耐) R20P"
+            }
+        ],
+        "page_obj":{
+            "current":1,
+            "next":2,
+            "total":4,
+            "page_range":[
+                {
+                    "page":1
+                },
+                {
+                    "page":2
+                },
+                {
+                    "page":3
+                },
+                {
+                    "page":4
+                }
+            ],
+            "previous":null
+        },
+        "is_paginated":true
+    },
+    "status":1,
+    "msg":"success"
+}
+```
+失败
+```
+{
+  "body": {},
+  "status": 4,
+  "msg": "数据缺失"
+}
+```
+
+
 ## **非油总览**
 
 ```

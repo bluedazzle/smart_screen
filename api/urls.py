@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^goods/search/month/sequential/$', GoodsSearchMonthSequentialView.as_view()),
     url(r'^goods/search/sequential/$', GoodsSearchSequentialView.as_view()),
     url(r'^goods/search/compare/$', GoodsSearchCompareYearView.as_view()),
+    url(r'^goods/search/item/$', SearchListView.as_view()),
     url(r'^goods/overview/$', GoodsOverView.as_view()),
     url(r'^tool/daytime/$', DayTimeView.as_view()),
     url(r'^card/overview/$', CardOverView.as_view()),
