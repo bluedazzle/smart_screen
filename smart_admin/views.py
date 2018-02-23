@@ -137,7 +137,7 @@ class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
             self.status_code = ERROR_DATA
             self.message = '年份缺失'
             return self.render_to_response()
-        res = FuelPlan.objects.filter(year=year, fuel_type_id=fuel_type).all()
+        res = FuelPlan.objects.filter(year=year, fuel_type_id=fuel_type, belong=self.site).all()
         if res.exists():
             self.status_code = INFO_EXISTED
             self.message = '计划已存在'
