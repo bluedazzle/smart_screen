@@ -25,7 +25,7 @@ def get_tank_value(site):
             logging.info('{0}：no value result for site {1} tank {2}'.format('get_tank_value', site.name, tank_id))
             break
         tank = get_tank_by_tank_id(tank_id, site.id)
-        tank.current = res[3]
+        tank.current = res[3] if res[3] else 0
         tank.original_create_time = add_timezone_to_naive_time(res[-1])
         logging.info('INFO read value for site {0} tank {1} success'.format(site.name, tank_id))
     session.commit()
