@@ -117,7 +117,8 @@ class TankListInfoView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
 
     def set_extra(self, obj):
         status = '正常'
-        percentage = round(obj.current / float(obj.max_value) * 100, 2)
+        percentage = '{0} 升'.format(obj.current)
+        # percentage = round(obj.current / float(obj.max_value) * 100, 2)
         if obj.current <= obj.min_value:
             status = '液位过低'
         if obj.current >= obj.max_value:
@@ -412,11 +413,19 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         now = datetime.datetime.now()
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = ['fuel_type', fmt_str, 'sales', 'total_price', 'amount']
+        ast, aet = self.get_date_period_by_time(st, 'last_month')
+        fuel_types = session.query(self.model.fuel_type).filter(
+            self.model.belong_id == self.site.id,
+            self.model.original_create_time.between(ast,
+                                                    aet)).group_by(
+            self.model.fuel_type).order_by(
+            self.model.fuel_type).all()
+        fuel_types = [itm[0] for itm in fuel_types]
         res = session.query(FuelOrder.fuel_type, fmt,
                             func.sum(FuelOrder.amount), func.sum(FuelOrder.total_price), func.count("1")).filter(
             FuelOrder.belong_id == self.site.id, FuelOrder.original_create_time.between(st, et)).group_by(
             FuelOrder.fuel_type, fmt).order_by(fmt).all()
-        fuel_types = set([itm[0] for itm in res])
+        # fuel_types = set([itm[0] for itm in res])
         res = sorted(res, key=lambda x: x[1])
         if fmt_str == 'hour':
             if st.date() == now.date() and et.date() == now.date():
@@ -541,7 +550,7 @@ class GoodsSellRankView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Date
         cls_list = [itm[0] for itm in cls_list]
         cls_res_list = []
         for cls in cls_list:
-            cls_res = session.query(self.model.name, func.count(self.model.amount), func.sum(self.model.total),
+            cls_res = session.query(self.model.name, func.sum(self.model.amount), func.sum(self.model.total),
                                     self.model.barcode).filter(
                 self.model.belong_id == self.site.id, self.model.super_cls_id == cls,
                 self.model.original_create_time.between(st, et)).group_by(
