@@ -117,9 +117,9 @@ class TankListInfoView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
 
     def set_extra(self, obj):
         status = '正常'
-        percentage = '{0} 升'.format(obj.current)
         current = obj.current if obj.current else 0
-        percentage = round(current / float(obj.max_value) * 100, 2)
+        percentage = '{0} 升'.format(obj.current)
+        # percentage = round(current / float(obj.max_value) * 100, 2)
         if obj.current <= obj.min_value:
             status = '液位过低'
         if obj.current >= obj.max_value:
