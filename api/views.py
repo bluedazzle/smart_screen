@@ -433,7 +433,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
                 self.fill_day(fuel_types, res, True)
             else:
                 self.fill_day(fuel_types, res)
-            res = sorted(res, key=lambda x: x[1])
+        res = sorted(res, key=lambda x: x[0])
         return res
 
     def fill_day(self, fuel_types, res, fresh=False):
@@ -1114,6 +1114,7 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
             self.model.fuel_type).order_by(
             self.model.fuel_type).all()
         fuel_types = [itm[0] for itm in fuel_types]
+        fuel_types = sorted(fuel_types, key=lambda x: x)
         # fuel_types = ['95号 车用汽油(Ⅴ)', '92号 车用汽油(Ⅴ)', '-20号 车用柴油(Ⅴ)', '98号 车用汽油(V)']
         fuel_predict_list = []
         for fuel_type in fuel_types:
@@ -1445,9 +1446,21 @@ class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandl
             CardRecord.belong_id == self.site.id, CardRecord.original_create_time.between(st, et),
         ).all()
         card_res = [{'cls_name': itm[0], 'total': round(itm[1] / 100.0)} for itm in card_res]
+        if len(card_res) == 1:
+            if card_res[0].get('cls_name') == '汽油':
+                card_res.append({'cls_name': '柴油', 'total': 0.0})
+            else:
+                card_res.append({'cls_name': '汽油', 'total': 0.0})
+        if len(card_res) == 0:
+            for cls in ['柴油', '汽油']:
+                card_res.append({'cls_name': cls, 'total': 0.0})
         card_total = 0.0
         for itm in card_res:
             card_total += itm['total']
-        card_res.append({'cls_name': '非油', 'total': round(total_res[0][0] / 100.0 - card_total)})
+        if not total_res[0][0]:
+            money = 0.0
+        else:
+            money = total_res[0][0]
+        card_res.append({'cls_name': '非油', 'total': round(money / 100.0 - card_total)})
         return self.render_to_response(
             {'fuel': fuel_res, 'card': card_res, 'unit': {'amount_unit': '升', 'total_unit': '元'}})
