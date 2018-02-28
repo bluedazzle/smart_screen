@@ -74,15 +74,13 @@ class SmartDetailView(DetailView):
         return data
 
     def convert_fuel_data(self, data, fmt):
-        if fmt == 'day':
+        if fmt == 'hour':
             return data
         output = []
         for itm in data:
             output.append((itm[0], itm[1] * self.get_str_dens(itm[0]) / 1000.0, itm[2]))
         self.unit_keys = {'amount': '元', 'income': '吨'}
         return output
-
-
 
     def get_time_fmt(self, st, et):
         period = et - st
@@ -133,9 +131,14 @@ class TankListInfoView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
         return queryset
 
 
-class FuelInventoryListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+class FuelInventoryListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, DateTimeHandleMixin, ListView):
     model = models.InventoryRecord
     paginate_by = 10
+
+    def get_queryset(self):
+        # st, et = self.get_date_period('month')
+        queryset = super(FuelInventoryListView, self).get_queryset().order_by('-original_create_time')
+        return queryset
 
 
 class FuelChargeTimesView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, DetailView):
@@ -433,7 +436,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
                 self.fill_day(fuel_types, res, True)
             else:
                 self.fill_day(fuel_types, res)
-        res = sorted(res, key=lambda x: x[0])
+        res = sorted(res, key=lambda x: x[1])
         return res
 
     def fill_day(self, fuel_types, res, fresh=False):
@@ -452,7 +455,6 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
             if hour < order[1]:
                 return False
         return False
-
 
     def format_data(self, context, data):
         formated_data = []
