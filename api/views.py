@@ -417,7 +417,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         now = datetime.datetime.now()
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = ['fuel_type', fmt_str, 'sales', 'total_price', 'amount']
-        ast, aet = self.get_date_period_by_time(st, 'last_month')
+        ast, aet = self.get_date_period_by_time(st, 'last_week')
         fuel_types = session.query(self.model.fuel_type).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(ast,
@@ -1108,7 +1108,7 @@ class FuelSellPredict(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTi
         now_hour = datetime.datetime.now().hour
         fmt_str, fmt = self.get_time_fmt(st, et)
         self.data_keys = [fmt_str, "fuel_name", "amount"]
-        ast, aet = self.get_date_period_by_time(st, 'last_month')
+        ast, aet = self.get_date_period_by_time(st, 'last_week')
         fuel_types = session.query(self.model.fuel_type).filter(
             self.model.belong_id == self.site.id,
             self.model.original_create_time.between(ast,
