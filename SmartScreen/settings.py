@@ -57,6 +57,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'SmartScreen.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,7 +85,7 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.mysql',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ss_produce',
+        'NAME': 'ss_06',
         'USER': 'rapospectre',
         'PASSWORD': '123456qq',
         'HOST': '127.0.0.1',
@@ -115,3 +116,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = './static/'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+from core.cache import config_client_redis_zhz
+config_client_redis_zhz()

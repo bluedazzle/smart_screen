@@ -14,7 +14,7 @@ from sqlalchemy import func
 from api import models
 from core.Mixin.CheckMixin import CheckSiteMixin
 from core.Mixin.StatusWrapMixin import StatusWrapMixin, DateTimeHandleMixin, ERROR_PASSWORD
-from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
+from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin, RespCacheMixin
 from drilling.models import session, InventoryRecord, FuelOrder, SecondClassification, GoodsOrder, GoodsInventory, \
     CardRecord
 from drilling.utils import get_today_st_et, get_week_st_et, add_timezone_to_naive_time
@@ -1075,7 +1075,9 @@ class UnsoldView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, Dat
 
     def get_queryset(self):
         queryset = super(UnsoldView, self).get_queryset().exclude(amount=0.0)
-        unsold_day = self.request.GET.get('unsold_day', None)
+        unsold_day = self.request.GET.get('unsold_day', 180)
+        if not unsold_day:
+            unsold_day = 180
         if unsold_day:
             unsold_time = self.get_unsold_datetime(unsold_day)
             queryset = queryset.filter(last_sell_time__gt=unsold_time, belong=self.site)
@@ -1425,7 +1427,7 @@ class CardRankList(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeH
         return res
 
 
-class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView):
+class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandleMixin, SmartDetailView, RespCacheMixin):
     """
     总总览
     """

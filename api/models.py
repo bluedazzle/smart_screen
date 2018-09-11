@@ -27,6 +27,7 @@ class Site(BaseModel):
     pictures = models.TextField(default='', null=True, blank=True)
     info = models.TextField(default='', null=True, blank=True)
     lock = models.IntegerField(default=60)
+    check = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name

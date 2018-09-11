@@ -8,12 +8,34 @@ from django.core.paginator import EmptyPage
 
 from .Serializer import serializer
 from .TimeFormatFactory import TimeFormatFactory
+from core.cache import client_redis_zhz
 
 
 try:
     from django.http import HttpResponse
 except ImportError:
     raise RuntimeError('django is required in django simple serializer')
+
+
+class RespCacheMixin(object):
+    def render_to_response(self, context={}, **response_kwargs):
+        context_dict = self.context_serialize(context)
+        json_context = self.json_serializer(context_dict)
+        path = self.request.path
+        site = self.site.slug
+        key = '{0}_{1}'.format(path, site)
+        if not client_redis_zhz.get(key):
+            client_redis_zhz.setex(key, json_context, 30)
+        return HttpResponse(json_context, content_type='application/json', **response_kwargs)
+
+    def get(self, request, *args, **kwargs):
+        path = self.request.path
+        site = self.site.slug
+        key = '{0}_{1}'.format(path, site)
+        cache_data = client_redis_zhz.get(key)
+        if cache_data:
+            return HttpResponse(cache_data, content_type='application/json')
+        return super(RespCacheMixin, self).get(request, *args, **kwargs)
 
 
 class JsonResponseMixin(object):

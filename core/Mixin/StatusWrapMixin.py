@@ -64,6 +64,7 @@ class DateTimeHandleMixin(object):
     now = datetime.datetime.now()
     yesterday = now - datetime.timedelta(days=1)
     st_format = {'day': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day)),
+                 'stage': add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day)),
                  'yesterday': add_timezone_to_naive_time(
                      datetime.datetime(yesterday.year, yesterday.month, yesterday.day)),
                  'week': add_timezone_to_naive_time(now - datetime.timedelta(days=now.weekday())),
@@ -89,10 +90,24 @@ class DateTimeHandleMixin(object):
     def replace_time_to_start(time_obj):
         return time_obj.replace(hour=0, minute=0, second=0)
 
+    @staticmethod
+    def get_day_stage_time():
+        from api.models import InventoryRecord
+        ir = InventoryRecord.objects.filter(original_create_time__hour__in=(15, 16, 17)).order_by(
+            '-original_create_time').all()
+        if ir.exists():
+            ir = ir[0]
+            return ir.original_create_time
+        now = datetime.datetime.now()
+        return add_timezone_to_naive_time(datetime.datetime(now.year, now.month, now.day, 23, 59, 59))
+
     def get_date_period(self, fmt='day', compare=False):
         st = self.request.GET.get('start_time')
         et = self.request.GET.get('end_time')
-        if not (st or et):
+        if fmt == 'stage':
+            st = self.replace_time_to_start(self.st_format.get('day'))
+            et = self.replace_time_to_end(self.et_format.get('stage'))
+        elif not (st or et):
             st = self.replace_time_to_start(self.st_format.get(fmt))
             et = self.replace_time_to_end(self.et_format.get(fmt))
         else:

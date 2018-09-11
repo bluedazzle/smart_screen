@@ -254,9 +254,10 @@ class Site(Base):
     slug = Column(String)
     fuel_server = Column(String)
     bos_server = Column(String)
+    check = Column(Boolean)
 
 
-engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_produce',
+engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
                        encoding='utf-8'.encode())
 
 DBSession = sessionmaker(bind=engine, autoflush=False)
