@@ -255,6 +255,10 @@ class Site(Base):
     fuel_server = Column(String)
     bos_server = Column(String)
     check = Column(Boolean)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    lock = Column(Integer)
 
 
 engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',

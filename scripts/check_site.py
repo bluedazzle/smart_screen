@@ -18,17 +18,19 @@ def check_fuel(ip):
             return res
         return False
     except Exception as e:
+        logging.exception('ERROR {0}'.format(e))
         return False
 
 
 def check_eps(ip):
     try:
         ms_session = init_mysql_connect(ip)
-        res = ms_session.execute('select * from tbl_epstrade limit 10').fetchall()
+        res = ms_session.execute('select * from tbl_epstrade limit 1').fetchall()
         if res:
             return res
         return False
     except Exception as e:
+        logging.exception('ERROR {0}'.format(e))
         return False
 
 
@@ -44,6 +46,6 @@ def check_site():
 
 
 if __name__ == '__main__':
-    print check_fuel('10.97.226.98')
-    print check_eps('10.97.226.97')
+    print check_fuel('10.97.226.97')
+    print check_eps('10.97.226.98')
     # check_site()

@@ -18,7 +18,7 @@ class BaseModel(models.Model):
 
 class Site(BaseModel):
     name = models.CharField(max_length=40, default='')
-    slug = models.CharField(max_length=10, unique=True)
+    slug = models.CharField(max_length=30, unique=True)
     # office 系统
     fuel_server = models.GenericIPAddressField()
     # eps 系统
