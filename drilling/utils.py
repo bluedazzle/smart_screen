@@ -8,6 +8,7 @@ import logging
 
 import math
 import pytz
+import redis
 from xpinyin import Pinyin
 
 from drilling.models import session, Site, FuelTank, InventoryRecord, FuelOrder, Classification, SecondClassification, \
@@ -19,6 +20,13 @@ PINYIN = Pinyin()
 def get_site_by_slug(slug):
     obj = session.query(Site).filter(Site.slug == slug).first()
     return obj if obj else None
+
+
+def update_site_status(slug, msg):
+    cache = redis.StrictRedis(db=2)
+    now = get_now_time_with_timezone()
+    encode_msg = '{0}|$|{1: %Y-%m-%d %H:%M:%S}'.format(msg, now)
+    cache.set('site_{0}'.format(slug), encode_msg)
 
 
 def create_tank(tid, site_id, *args, **kwargs):

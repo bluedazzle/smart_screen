@@ -11,7 +11,7 @@ from drilling.utils import get_site_by_slug, datetime_to_string, get_clean_data,
     update_second_classification, update_third_classification, generate_hash, get_goods_order_by_hash, \
     create_fuel_order, \
     create_goods_order, update_goods_inventory, get_goods_inventory_by_barcode, add_timezone_to_naive_time, \
-    query_by_pagination, get_py
+    query_by_pagination, get_py, update_site_status
 
 
 def get_store_order(site, start_time=None, end_time=None):
@@ -78,6 +78,7 @@ TILL.TIMECLOSE DESC'''.format(st, et)
             session.commit()
     logging.info('=============create store order {0} site {1}=============='.format(nums, site.name))
     get_goods_order_payment(site)
+    update_site_status(site, '商品订单更新')
 
 
 def get_third_classify(site):
@@ -185,6 +186,7 @@ ORDER BY
                                third_cls_id=t_cls, py=get_py(name),
                                second_cls_id=s_cls, cls_id=f_cls, amount=amount, belong_id=site.id)
     logging.info('SUCCESS update goods inventory total {0}'.format(total))
+    update_site_status(site, '商品库存更新')
 
 
 if __name__ == '__main__':

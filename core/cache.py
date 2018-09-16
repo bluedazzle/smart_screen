@@ -8,4 +8,4 @@ client_redis_zhz = None
 
 def config_client_redis_zhz():
     global client_redis_zhz
-    client_redis_zhz = redis.StrictRedis(db=1)
+    client_redis_zhz = redis.StrictRedis(db=2)

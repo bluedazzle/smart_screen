@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals
 
+from drilling.db.session import OilSession
 from sqlalchemy import Column, String, DateTime, Integer, Boolean, create_engine, Float
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -261,9 +262,34 @@ class Site(Base):
     lock = Column(Integer)
 
 
-engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
-                       encoding='utf-8'.encode())
+class CeleryLog(Base):
+    __tablename__ = 'super_admin_celerylog'
 
-DBSession = sessionmaker(bind=engine, autoflush=False)
+    id = Column(Integer, primary_key=True)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    task_id = Column(String)
+    status = Column(Integer)
+    task_type = Column(Integer)
+    err_info = Column(String)
+    belong_id = Column(Integer)
 
-session = DBSession()
+
+class Task(Base):
+    __tablename__ = 'super_admin_task'
+
+    id = Column(Integer, primary_key=True)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    original_create_time = Column(DateTime)
+    task_id = Column(String)
+    name = Column(String)
+    belong_id = Column(Integer)
+
+# engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
+#                        encoding='utf-8'.encode())
+#
+# DBSession = sessionmaker(bind=engine, autoflush=False)
+
+session = OilSession

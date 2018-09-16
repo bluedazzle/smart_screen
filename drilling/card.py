@@ -11,7 +11,7 @@ from sqlalchemy import func
 
 from drilling.models import session, CardRecord
 from drilling.utils import get_today_st_et, get_today_night, get_week_st_et, create_abnormal_record, datetime_to_string, \
-    get_site_by_slug, check_card_record, create_card_record, generate_hash
+    get_site_by_slug, check_card_record, create_card_record, generate_hash, update_site_status
 
 
 def abnormal_card_check(card_id):
@@ -325,6 +325,7 @@ def get_card_record(site, start_time=None, end_time=None):
                 create_abnormal_record(abnormal_type, card_id=card_id, card_type=card_type, reason=reason,
                                        belong_id=site.id)
     logging.info('=============create card record {0} site {1}=============='.format(nums, site.name))
+    update_site_status(site, '卡信息更新')
 
 
 if __name__ == '__main__':

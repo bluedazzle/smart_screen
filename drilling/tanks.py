@@ -10,7 +10,8 @@ import datetime
 from drilling.db.interbase import init_interbase_connect
 from drilling.models import session
 from drilling.utils import get_site_by_slug, get_tank_by_tank_id, add_timezone_to_naive_time, get_all_tanks_by_site, \
-    get_clean_data, create_record, generate_hash, get_record_by_hash, get_latest_settlement_record, datetime_to_string
+    get_clean_data, create_record, generate_hash, get_record_by_hash, get_latest_settlement_record, datetime_to_string, \
+    update_site_status
 
 
 def get_tank_value(site):
@@ -29,6 +30,7 @@ def get_tank_value(site):
         tank.original_create_time = add_timezone_to_naive_time(res[-1])
         logging.info('INFO read value for site {0} tank {1} success'.format(site.name, tank_id))
     session.commit()
+    update_site_status(site, '油库读数更新成功')
 
 
 def get_tank_temperature(site):
@@ -49,6 +51,7 @@ def get_tank_temperature(site):
         tank.original_create_time = add_timezone_to_naive_time(res[1])
         logging.info('INFO read temperature for site {0} tank {1} success'.format(site.name, tank_id))
     session.commit()
+    update_site_status(site, '油库温度更新成功')
 
 
 def get_tank_info(site):
@@ -66,6 +69,7 @@ def get_tank_info(site):
         obj.min_value = min_value
         obj.grade_id = grade_id
     session.commit()
+    update_site_status(site, '油库基本信息更新成功')
 
 
 def get_tank_grade(site):
@@ -84,6 +88,7 @@ def get_tank_grade(site):
             'INFO read tank fuel type for site {0} tank {1} success, new fuel: {2}'.format(site.name, tank.tank_id,
                                                                                            tank.name))
     session.commit()
+    update_site_status(site, '油库种类更新成功')
 
 
 def get_inventory_record(site, start_time=None, end_time=None):
@@ -243,6 +248,8 @@ AND FPH.TANK1_ID = {1}'''.format(record.shift_control_id, tank_id)
             record.loss_amount = record.tanker_act_out_amount - record.tank_out_amount
         logging.info('INFO update record {0: %Y-%m-%d %H:%M:%S} success!'.format(record.original_create_time))
         session.commit()
+    update_site_status(site, '班结记录更新成功')
+
 
 
 if __name__ == '__main__':

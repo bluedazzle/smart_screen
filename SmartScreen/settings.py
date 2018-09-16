@@ -15,6 +15,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+from core.util import conf, is_debug
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -23,10 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '%vz**!nor%+dudditj*#2js-sfy#j-h9u2o##$#%#p((x8$4h9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = is_debug
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -37,17 +37,18 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    # 'corsheaders',
     'core',
     'api',
     'smart_admin',
+    'super_admin',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -56,7 +57,6 @@ MIDDLEWARE_CLASSES = (
 )
 
 ROOT_URLCONF = 'SmartScreen.urls'
-
 
 TEMPLATES = [
     {
@@ -77,7 +77,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'SmartScreen.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
@@ -85,14 +84,13 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.mysql',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ss_06',
-        'USER': 'rapospectre',
-        'PASSWORD': '123456qq',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': conf.smart_screen_name,
+        'USER': conf.smart_screen_user,
+        'PASSWORD': conf.smart_screen_password,
+        'HOST': conf.smart_screen_host,
+        'PORT': conf.smart_screen_port,
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -118,4 +116,9 @@ STATIC_ROOT = './static/'
 CORS_ORIGIN_ALLOW_ALL = True
 
 from core.cache import config_client_redis_zhz
+
 config_client_redis_zhz()
+
+from drilling.db.session import config_oil_session
+
+config_oil_session(conf)

@@ -9,7 +9,7 @@ from drilling.db.interbase import init_interbase_connect
 from drilling.models import session, FuelOrder, DeliveryRecord, Receiver, Supplier
 from drilling.utils import get_site_by_slug, get_clean_data, get_fuel_order_by_hash, generate_hash, datetime_to_string, \
     create_fuel_order, update_sup, update_rev, get_obj_by_hash, create_object, get_object_by_id, get_rev_by_rid, \
-    get_sup_by_sid, query_by_pagination
+    get_sup_by_sid, query_by_pagination, update_site_status
 
 
 def get_fuel_order(site, start_time=None, end_time=None):
@@ -47,6 +47,8 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
         nums += 1
     logging.info('=============create fuel order {0} site {1}=============='.format(nums, site.name))
     get_fuel_order_payment(site)
+    update_site_status(site, '油品订单更新')
+
 
 
 # def get_fuel_order_payment(site):
@@ -141,6 +143,8 @@ Order By EXTREF'''.format(st, et)
         if rec and sup:
             create_object(DeliveryRecord, supplier=sup.name, receiver=rec.name, truck_number=number, belong_id=site.id,
                           original_create_time=original_create_time, hash=unique_str, modify_time=original_create_time)
+    update_site_status(site, '油品配送记录更新')
+
 
 
 if __name__ == '__main__':
