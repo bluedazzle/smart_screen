@@ -17,8 +17,8 @@ from super_admin.models import Task
 
 
 class SiteListView(TemplateView):
-    template_name = 'admin/site.html'
+    template_name = 'super_admin/site.html'
 
 
 class TaskListView(TemplateView):
-    template_name = 'admin/task.html'
+    template_name = 'super_admin/task.html'
