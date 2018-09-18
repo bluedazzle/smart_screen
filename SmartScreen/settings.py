@@ -113,6 +113,8 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = './static/'
 
+STATIC_MEDIA = './static/'
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 from core.cache import config_client_redis_zhz

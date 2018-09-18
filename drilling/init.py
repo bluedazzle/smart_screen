@@ -136,7 +136,7 @@ def init_in_test(slug, task_id=None):
                 count += 1
                 percent = round(count / times, 2) * 100
                 update_init_progress(task_id, percent, '任务执行中')
-                time.sleep(0.1)
+                time.sleep(0.5)
                 if st > init_et:
                     break
         end = datetime.datetime.now()

@@ -15,11 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 
-from super_admin.views import *
+from super_admin import views, apis
 
 urlpatterns = [
-    url(r'^sites/$', SiteListView.as_view()),
-    url(r'^site/overview/$', SiteOverviewView.as_view()),
-    url(r'^tasks/$', TaskListView.as_view()),
-    url(r'^task/$', TaskView.as_view()),
+    url(r'^api/sites/$', apis.SiteListView.as_view()),
+    url(r'^api/site/overview/$', apis.SiteOverviewView.as_view()),
+    url(r'^api/tasks/$', apis.TaskListView.as_view()),
+    url(r'^api/task/$', apis.TaskView.as_view()),
+
+    url(r'^view/sites/$', views.SiteListView.as_view()),
+    url(r'^view/tasks/$', views.TaskListView.as_view()),
 ]

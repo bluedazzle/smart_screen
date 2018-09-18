@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from SmartScreen import settings
 from api.views import TokenView
 
 urlpatterns = [
@@ -24,4 +25,5 @@ urlpatterns = [
     url(r'^api/admin/', include('smart_admin.urls')),
     url(r'^super/admin/', include('super_admin.urls')),
     url(r'^$', TokenView.as_view()),
+    url(r'^s/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_MEDIA}),
 ]
