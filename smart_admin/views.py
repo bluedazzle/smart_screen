@@ -217,5 +217,14 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
         #     return self.render_to_response()
 
 
-class QtRedirctView(TemplateView):
-    template_name = 'qr.html'
+class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, View):
+    http_method_names = ['post']
+
+    def post(self, request, *args, **kwargs):
+        import xlrd
+
+        file_data = request.FILES.get('excel')
+        book = xlrd.open_workbook(file_contents=file_data.read(), encoding_override='utf-8')
+        sheet = book.sheet_by_index(0)
+        print sheet.row_values(0)
+        return self.render_to_response({})

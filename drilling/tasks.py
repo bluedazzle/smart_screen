@@ -14,6 +14,7 @@ from celery.schedules import crontab
 from celery import Celery
 
 from drilling.card import get_card_record
+from drilling.db.session import with_session
 from drilling.fuels import get_fuel_order, get_delivery
 from drilling.init import init_all, init_in_test
 from drilling.models import session, Site, CeleryLog
@@ -41,7 +42,11 @@ class OilTask(Task):
         log.belong_id = site.id
         log.original_create_time = now
         session.add(log)
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session task {0} reason {1}'.format(task_id, e))
+            session.rollback()
         return super(OilTask, self).on_success(retval, task_id, args, kwargs)
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
@@ -58,7 +63,11 @@ class OilTask(Task):
         log.err_info = exc
         log.belong_id = site.id
         session.add(log)
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session task {0} reason {1}'.format(task_id, e))
+            session.rollback()
         return super(OilTask, self).on_failure(exc, task_id, args, kwargs, einfo)
 
 
@@ -98,6 +107,7 @@ def init_periodic_tasks(sender, **kwargs):
         )
 
 
+@with_session
 @app.task()
 def get_tank_info_task(site):
     task_info = 'get tank info {0}'.format(site)
@@ -109,6 +119,7 @@ def get_tank_info_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_inventory_record_task(site):
     task_info = 'get inventory record {0}'.format(site)
@@ -117,6 +128,7 @@ def get_inventory_record_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_fuel_order_task(site):
     task_info = 'get fuel order {0}'.format(site)
@@ -125,6 +137,7 @@ def get_fuel_order_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_delivery_task(site):
     task_info = 'get delivery {0}'.format(site)
@@ -133,6 +146,7 @@ def get_delivery_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_store_order_task(site):
     task_info = 'get store order {0}'.format(site)
@@ -141,6 +155,7 @@ def get_store_order_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_inventories_task(site):
     task_info = 'get store order {0}'.format(site)
@@ -149,6 +164,7 @@ def get_inventories_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task()
 def get_card_record_task(site):
     task_info = 'get card record {0}'.format(site)
@@ -157,6 +173,7 @@ def get_card_record_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task(base=OilTask, bind=True)
 def init_task(self, site):
     task_info = 'init task site {0}'.format(site)
@@ -165,6 +182,7 @@ def init_task(self, site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
+@with_session
 @app.task(base=OilTask, bind=True)
 def init_test(self, site):
     task_info = 'init task site {0}'.format(site)

@@ -88,7 +88,11 @@ def get_fuel_order_payment(site):
                 order.payment_code = payment_code
                 order.payment_type = get_clean_data(payment_type)
                 order.catch_payment = True
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+            session.rollback()
 
 
 def get_sup(site):

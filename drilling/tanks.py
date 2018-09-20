@@ -8,6 +8,7 @@ import copy
 import datetime
 
 from drilling.db.interbase import init_interbase_connect
+from drilling.db.session import with_session
 from drilling.models import session
 from drilling.utils import get_site_by_slug, get_tank_by_tank_id, add_timezone_to_naive_time, get_all_tanks_by_site, \
     get_clean_data, create_record, generate_hash, get_record_by_hash, get_latest_settlement_record, datetime_to_string, \
@@ -29,7 +30,11 @@ def get_tank_value(site):
         tank.current = res[3] if res[3] else 0
         tank.original_create_time = add_timezone_to_naive_time(res[-1])
         logging.info('INFO read value for site {0} tank {1} success'.format(site.name, tank_id))
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+        session.rollback()
     update_site_status(site, '油库读数更新成功')
 
 
@@ -50,7 +55,11 @@ def get_tank_temperature(site):
         tank.temperature = res[0]
         tank.original_create_time = add_timezone_to_naive_time(res[1])
         logging.info('INFO read temperature for site {0} tank {1} success'.format(site.name, tank_id))
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+        session.rollback()
     update_site_status(site, '油库温度更新成功')
 
 
@@ -68,7 +77,11 @@ def get_tank_info(site):
         obj.max_value = max_value
         obj.min_value = min_value
         obj.grade_id = grade_id
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+        session.rollback()
     update_site_status(site, '油库基本信息更新成功')
 
 
@@ -87,7 +100,11 @@ def get_tank_grade(site):
         logging.info(
             'INFO read tank fuel type for site {0} tank {1} success, new fuel: {2}'.format(site.name, tank.tank_id,
                                                                                            tank.name))
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+        session.rollback()
     update_site_status(site, '油库种类更新成功')
 
 
@@ -219,7 +236,11 @@ AND FTH.ITEMDOCTYPE_ID IN (1, 7, 8, 10, 11)'''.format(start_time=st, end_time=et
             volum_sum = volum_sum + receive_amount
         obj_dict = {'record': obj, 'tank_id': tank_id}
         record_obj_list.append(copy.copy(obj_dict))
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+        session.rollback()
     for data in record_obj_list:
         record = data.get('record')
         tank_id = data.get('tank_id')
@@ -247,9 +268,12 @@ AND FPH.TANK1_ID = {1}'''.format(record.shift_control_id, tank_id)
         if record.record_type == 3:
             record.loss_amount = record.tanker_act_out_amount - record.tank_out_amount
         logging.info('INFO update record {0: %Y-%m-%d %H:%M:%S} success!'.format(record.original_create_time))
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+            session.rollback()
     update_site_status(site, '班结记录更新成功')
-
 
 
 if __name__ == '__main__':

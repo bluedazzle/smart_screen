@@ -24,7 +24,7 @@ from core.util import conf, is_debug
 SECRET_KEY = '%vz**!nor%+dudditj*#2js-sfy#j-h9u2o##$#%#p((x8$4h9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = is_debug
+DEBUG = True
 
 ALLOWED_HOSTS = []
 

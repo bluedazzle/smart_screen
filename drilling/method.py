@@ -43,7 +43,11 @@ def refresh_goods_gpm():
             profit = order.price - inventory.cost
             order.gpm = profit / order.price
             order.cost = inventory.cost
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session site {0} reason {1}'.format('null', e))
+            session.rollback()
     logging.info('INFO finish refresh goods gpm')
 
 

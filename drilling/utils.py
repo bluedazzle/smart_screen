@@ -22,11 +22,11 @@ def get_site_by_slug(slug):
     return obj if obj else None
 
 
-def update_site_status(slug, msg):
+def update_site_status(site, msg):
     cache = redis.StrictRedis(db=2)
     now = get_now_time_with_timezone()
     encode_msg = '{0}|$|{1: %Y-%m-%d %H:%M:%S}'.format(msg, now)
-    cache.set('site_{0}'.format(slug), encode_msg)
+    cache.set('site_{0}'.format(site.slug), encode_msg)
 
 
 def create_tank(tid, site_id, *args, **kwargs):
@@ -38,7 +38,11 @@ def create_tank(tid, site_id, *args, **kwargs):
     for k, v in kwargs.items():
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(site_id, e))
+        session.rollback()
     return obj
 
 
@@ -52,7 +56,11 @@ def create_record(**kwargs):
             v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
     return obj
 
@@ -66,7 +74,11 @@ def create_card_record(**kwargs):
             v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create card record {0} success'.format(obj.original_create_time))
 
 
@@ -83,7 +95,11 @@ def create_fuel_order(**kwargs):
             v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create fuel order {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
 
 
@@ -95,7 +111,11 @@ def create_object(obj_class, **kwargs):
             v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create obj {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
 
 
@@ -107,7 +127,11 @@ def create_goods_order(**kwargs):
             v = add_timezone_to_naive_time(v)
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create goods order {0: %Y-%m-%d %H:%M:%S} success'.format(obj.original_create_time))
 
 
@@ -229,7 +253,11 @@ def update_sup(sid, site, **kwargs):
     for k, v in kwargs.items():
         setattr(res, k, v)
     session.add(res)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return res
 
 
@@ -242,7 +270,11 @@ def update_rev(rid, site, **kwargs):
     for k, v in kwargs.items():
         setattr(res, k, v)
     session.add(res)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return res
 
 
@@ -256,7 +288,11 @@ def update_classification(cid, **kwargs):
         setattr(res, k, v)
     res.original_create_time = get_now_time_with_timezone()
     session.add(res)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return res
 
 
@@ -270,7 +306,11 @@ def update_second_classification(cid, **kwargs):
         setattr(res, k, v)
     res.original_create_time = get_now_time_with_timezone()
     session.add(res)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return res
 
 
@@ -287,7 +327,11 @@ def update_third_classification(cid, **kwargs):
     if second_cls:
         res.grandparent_id = second_cls.parent_id
     session.add(res)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return res
 
 
@@ -302,7 +346,11 @@ def update_goods_inventory(hash_str, **kwargs):
         setattr(gi, k, v)
     gi.modify_time = get_now_time_with_timezone()
     session.add(gi)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     return gi
 
 
@@ -334,7 +382,11 @@ def create_abnormal_record(abnormal_type, **kwargs):
     for k, v in kwargs.items():
         setattr(obj, k, v)
     session.add(obj)
-    session.commit()
+    try:
+        session.commit()
+    except Exception as e:
+        logging.exception('ERROR in commit session site {0} reason {1}'.format(kwargs.get('belong_id'), e))
+        session.rollback()
     logging.info('INFO create abnormal record {0: %Y-%m-%d %H:%M:%S} success'.format(obj.create_time))
     return obj
 

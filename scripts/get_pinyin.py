@@ -35,7 +35,11 @@ def get_pinyin():
     for results in query_by_pagination(session, GoodsInventory):
         for itm in results:
             itm.py = p.get_initials(itm.name, '').replace(' ', '')
-        session.commit()
+        try:
+            session.commit()
+        except Exception as e:
+            logging.exception('ERROR in commit session site {0} reason {1}'.format('null', e))
+            session.rollback()
 
 if __name__ == '__main__':
     get_pinyin()

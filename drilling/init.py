@@ -29,37 +29,37 @@ def init_base_info(site, task_id):
     get_tank_value(site)
     get_tank_temperature(site)
     get_tank_grade(site)
-    logging.info('{0}:成功获取油罐信息'.format(site).encode('utf-8'))
+    logging.info('{0}:成功获取油罐信息'.format(site))
 
     get_sup(site)
     get_rev(site)
-    logging.info('{0}: 成功获取运送基本信息'.format(site).encode('utf-8'))
+    logging.info('{0}: 成功获取运送基本信息'.format(site))
 
     get_first_classify(site)
     get_second_classify(site)
     get_third_classify(site)
-    logging.info('{0}: 成功获取分类基本信息'.format(site).encode('utf-8'))
+    logging.info('{0}: 成功获取分类基本信息'.format(site))
 
     get_inventories(site)
-    logging.info('{0}: 成功获取库存基本信息'.format(site).encode('utf-8'))
+    logging.info('{0}: 成功获取库存基本信息'.format(site))
     update_init_progress(task_id, 1, '成功获取基本信息')
 
 
 def init_day_record(site, st, et, task_id, percent):
     get_inventory_record(site, st, et)
-    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油库记录'.format(site, st, et).encode('utf-8')
+    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油库记录'.format(site, st, et)
     update_init_progress(task_id, percent, msg)
     get_delivery(site, st, et)
-    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et).encode('utf-8')
+    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}送货记录'.format(site, st, et)
     update_init_progress(task_id, percent, msg)
     get_fuel_order(site, st, et)
-    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et).encode('utf-8')
+    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}油品订单'.format(site, st, et)
     update_init_progress(task_id, percent, msg)
     get_store_order(site, st, et)
-    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et).encode('utf-8')
+    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}非油订单'.format(site, st, et)
     update_init_progress(task_id, percent, msg)
     get_card_record(site, st, et)
-    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}卡数据'.format(site, st, et).encode('utf-8')
+    msg = '{0}: 成功获取{1: %Y-%m-%d}~{2: %Y-%m-%d}卡数据'.format(site, st, et)
     update_init_progress(task_id, percent, msg)
 
 
@@ -67,7 +67,7 @@ def init_all(slug, task_id=None):
     try:
         begin = datetime.datetime.now()
         now = get_now_time_with_timezone()
-        logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin).encode('utf-8'))
+        logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin))
         site = session.query(Site).filter(Site.slug == slug).first()
         if site:
             task = Task()
@@ -78,7 +78,11 @@ def init_all(slug, task_id=None):
             task.original_create_time = now
             task.modify_time = now
             session.add(task)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as e:
+                logging.exception('ERROR in commit session site {0} reason {1}'.format(slug, e))
+                session.rollback()
 
             init_base_info(site.slug, task_id)
             init_st = add_timezone_to_naive_time(datetime.datetime(2016, 12, 15))
@@ -110,7 +114,7 @@ def init_in_test(slug, task_id=None):
     try:
         begin = datetime.datetime.now()
         now = get_now_time_with_timezone()
-        logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin).encode('utf-8'))
+        logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin))
         site = session.query(Site).filter(Site.slug == slug).first()
         if site:
             task = Task()
@@ -121,7 +125,11 @@ def init_in_test(slug, task_id=None):
             task.original_create_time = now
             task.modify_time = now
             session.add(task)
-            session.commit()
+            try:
+                session.commit()
+            except Exception as e:
+                logging.exception('ERROR in commit session site {0} reason {1}'.format(slug, e))
+                session.rollback()
 
             init_st = add_timezone_to_naive_time(datetime.datetime(2016, 12, 15))
             init_et = add_timezone_to_naive_time(datetime.datetime.now())

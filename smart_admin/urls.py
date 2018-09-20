@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^plans/$', FuelPlanListView.as_view()),
     url(r'^plan/(?P<pid>(\w)+)/$', FuelPlanView.as_view()),
     url(r'^plan/$', FuelPlanView.as_view()),
+    url(r'^excel/$', ExcelUploadView.as_view()),
 ]

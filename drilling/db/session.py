@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapper
 from sqlalchemy.orm import scoped_session
 
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
+from functools import wraps
 
 
 class Model(object):
@@ -144,3 +145,12 @@ def config_oil_session(conf, pool_recycle=60):
                             int(conf.smart_screen_port), conf.smart_screen_name, pool_recycle=pool_recycle, )
     engines = {'utf8mb4': engine, 'default': engine}
     OilSession.configure(bind=engine, engines=engines, autocommit=False, autoflush=False, expire_on_commit=False)
+
+
+def with_session(func):
+    @wraps(func)
+    def _wrapped(*args, **kwargs):
+        response = func(*args, **kwargs)
+        OilSession.remove()
+        return response
+    return _wrapped
