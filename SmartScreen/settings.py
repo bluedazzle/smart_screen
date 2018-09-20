@@ -54,7 +54,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'SmartScreen.core.middleware.db.DBSessionMiddleware',
+    'core.middleware.db.DBSessionMiddleware',
 )
 
 ROOT_URLCONF = 'SmartScreen.urls'

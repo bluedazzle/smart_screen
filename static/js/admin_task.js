@@ -10,6 +10,17 @@ var vm = new Vue({
         first: true
     },
     methods: {
+        cancelTask: function (task_id) {
+            var url = generateUrl('super/admin/api/task/cancel/') + '&id=' + task_id;
+            this.$http.get(url, function (data) {
+                if(data.status == 1){
+                    $.scojs_message('任务终止成功', $.scojs_message.TYPE_OK);
+                }else{
+                    $.scojs_message(data.msg, $.scojs_message.TYPE_ERROR);
+                }
+            });
+            this.getData(1);
+        },
         getData: function (page) {
             var url = generateUrl('super/admin/api/tasks/') + '&page=' + page;
             this.$http.get(url, function (data) {
@@ -35,11 +46,6 @@ var vm = new Vue({
                 that.getData(page);
                 }, 5000);
         },
-        initSiteData: function () {
-                                    $('.progress').progress();
-        }
-
-
     },
     created: function () {
         if (this.timeOut) {

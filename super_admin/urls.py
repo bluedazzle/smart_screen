@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^api/site/overview/$', apis.SiteOverviewView.as_view()),
     url(r'^api/tasks/$', apis.TaskListView.as_view()),
     url(r'^api/task/$', apis.TaskView.as_view()),
+    url(r'^api/task/cancel/$', apis.TaskCancelView.as_view()),
 
     url(r'^view/sites/$', views.SiteListView.as_view()),
     url(r'^view/tasks/$', views.TaskListView.as_view()),

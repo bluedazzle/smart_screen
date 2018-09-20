@@ -8,10 +8,11 @@ from django.views.generic import ListView
 
 from api.models import Site
 from core.Mixin.CheckMixin import CheckSiteMixin
-from core.Mixin.StatusWrapMixin import StatusWrapMixin, ERROR_DATA
+from core.Mixin.StatusWrapMixin import StatusWrapMixin, ERROR_DATA, ERROR_UNKNOWN
 from core.cache import client_redis_zhz
 from core.dss.Mixin import JsonResponseMixin, MultipleJsonResponseMixin
 from drilling.const import TaskStatus
+from drilling.init import update_init_progress
 from drilling.tasks import init_task, init_test
 from super_admin.models import Task
 
@@ -82,3 +83,18 @@ class TaskListView(StatusWrapMixin, MultipleJsonResponseMixin, ListView):
             setattr(obj, 'status_display', TaskStatus.get_display_name(int(status)))
             setattr(obj, 'percent', percent)
             setattr(obj, 'msg', msg)
+
+
+class TaskCancelView(StatusWrapMixin, JsonResponseMixin, DetailView):
+    model = Task
+
+    def get(self, request, *args, **kwargs):
+        from celery import current_app, app
+        task_id = request.GET.get('id')
+        if task_id:
+            current_app.control.revoke(task_id, terminate=True)
+            update_init_progress(task_id, 100, '任务被终止', TaskStatus.finish)
+            return self.render_to_response({})
+        self.message = '终止失败'
+        self.status_code = ERROR_UNKNOWN
+        return self.render_to_response({})

@@ -107,8 +107,8 @@ def init_periodic_tasks(sender, **kwargs):
         )
 
 
-@with_session
 @app.task()
+@with_session
 def get_tank_info_task(site):
     task_info = 'get tank info {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -119,8 +119,8 @@ def get_tank_info_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_inventory_record_task(site):
     task_info = 'get inventory record {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -128,8 +128,8 @@ def get_inventory_record_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_fuel_order_task(site):
     task_info = 'get fuel order {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -137,8 +137,8 @@ def get_fuel_order_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_delivery_task(site):
     task_info = 'get delivery {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -146,8 +146,8 @@ def get_delivery_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_store_order_task(site):
     task_info = 'get store order {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -155,8 +155,8 @@ def get_store_order_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_inventories_task(site):
     task_info = 'get store order {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -164,8 +164,8 @@ def get_inventories_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task()
+@with_session
 def get_card_record_task(site):
     task_info = 'get card record {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -173,8 +173,8 @@ def get_card_record_task(site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task(base=OilTask, bind=True)
+@with_session
 def init_task(self, site):
     task_info = 'init task site {0}'.format(site)
     logging.info('START {0}'.format(task_info))
@@ -182,8 +182,8 @@ def init_task(self, site):
     logging.info('SUCCESS {0}'.format(task_info))
 
 
-@with_session
 @app.task(base=OilTask, bind=True)
+@with_session
 def init_test(self, site):
     task_info = 'init task site {0}'.format(site)
     logging.info('START {0}'.format(task_info))

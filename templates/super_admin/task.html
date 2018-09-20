@@ -13,7 +13,8 @@
                 <th class="two wide ">任务名称</th>
                 <th class="one wide ">状态</th>
                 <th class="two wide ">创建时间</th>
-                <th class="ten wide ">进度</th>
+                <th class="one wide ">操作</th>
+                <th class="nine wide ">进度</th>
             </tr>
             </thead>
             <tbody>
@@ -28,6 +29,12 @@
                 <td>${ task.status_display }}</td>
                 <td>${ task.create_time }}</td>
                 <td>
+                    <button class="ui small red labeled icon button" :class="{'disabled': task.status != 2}"
+                            @click="cancelTask(task.task_id)"><i
+                            class="icon delete"></i>终止
+                    </button>
+                </td>
+                <td>
                     <div data-percent="${ task.percent }}" class="ui active progress success"
                          id="px${ task.id }}">
                         <div class="bar">
@@ -41,10 +48,6 @@
             <tfoot>
             <tr>
                 <th colspan="6">
-                    <button class="ui small green labeled icon button"
-                            @click="initSiteData()"><i
-                            class="icon smile"></i>初始化
-                    </button>
                     <div class="ui right floated pagination menu">
                         <a class="icon item" :class="{'disabled': pageObj.previous == undefined}"
                            @click="getData(pageObj.previous)">
