@@ -264,7 +264,7 @@ class CardRecord(BaseModel):
     # 实扣金额
     total = models.FloatField(default=0.0)
     card_type = models.IntegerField(default=0, choices=card_type_choices)
-    classification = models.CharField(max_length='50', null=True, blank=True)
+    classification = models.CharField(max_length=50, null=True, blank=True)
     detail = models.CharField(max_length=50, null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_card_records')
 
