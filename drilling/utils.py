@@ -208,6 +208,9 @@ def get_goods_inventory_by_barcode(barcode, site):
 
 
 def add_timezone_to_naive_time(time_obj):
+    if not time_obj:
+        logging.warning('WARNING in add tzinfo to time, reason: time_obj is None ')
+        return get_now_time_with_timezone()
     if time_obj.tzinfo:
         return time_obj
     tz = pytz.timezone('Asia/Shanghai')
@@ -354,7 +357,7 @@ def update_goods_inventory(hash_str, **kwargs):
     return gi
 
 
-def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limit=1000):
+def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0, limit=1000):
     total_page = int(math.ceil(total / float(limit)))
     start = 0
     if start_offset:
@@ -365,7 +368,7 @@ def query_by_pagination(session, obj, total, order_by='id', start_offset=0, limi
         result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(
             offset).all()
         logging.info(
-            'Current {0}->{1}/{2} {3}%'.format(offset, offset + limit, total, float(offset + limit) / total * 100))
+            '{0}: Current {1}->{2}/{3} {4}%'.format(site.slug, offset, offset + limit, total, float(offset + limit) / total * 100))
         yield result
 
 

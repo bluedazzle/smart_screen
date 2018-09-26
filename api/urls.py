@@ -55,4 +55,6 @@ urlpatterns = [
     url(r'^login/$', LoginView.as_view()),
     url(r'^messages/$', MessageView.as_view()),
     url(r'^overview/$', OverView.as_view()),
+    url(r'^fin/$', OverView.as_view()),
+
 ]

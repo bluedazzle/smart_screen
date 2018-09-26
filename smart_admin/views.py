@@ -18,7 +18,7 @@ from django.views.generic import View
 
 from SmartScreen.settings import STATIC_ROOT
 from drilling.utils import generate_hash
-from smart_admin.models import Account
+from smart_admin.models import Account, Excel
 from api.models import GoodsInventory, Site, FuelPlan
 from core.Mixin.CheckMixin import CheckAdminPermissionMixin
 from core.Mixin.StatusWrapMixin import StatusWrapMixin, INFO_NO_EXIST, ERROR_PASSWORD, ERROR_DATA, ERROR_UNKNOWN, \
@@ -217,14 +217,77 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
         #     return self.render_to_response()
 
 
-class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, View):
+class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
     http_method_names = ['post']
+    model = Excel
+    sheet = None
+    col_dict = {'BD': 53, 'AA': 25, 'BF': 55, 'BG': 56, 'AW': 47, 'AN': 38, 'BC': 52, 'BL': 61, 'BM': 62, 'BN': 63,
+                'AV': 46, 'BA': 50, 'AC': 27, 'AJ': 34, 'BK': 60, 'BT': 69, 'AY': 48, 'BV': 71, 'AB': 26, 'BE': 54,
+                'BQ': 66, 'BR': 67, 'BS': 68, 'AE': 29, 'BJ': 59, 'BY': 73, 'BZ': 74, 'AD': 28, 'AZ': 49, 'AG': 31,
+                'BB': 51, 'AF': 30, 'AM': 37, 'BO': 64, 'AI': 33, 'AH': 32, 'AK': 35, 'A': 0, 'C': 2, 'B': 1, 'E': 4,
+                'D': 3, 'G': 6, 'F': 5, 'I': 8, 'H': 7, 'K': 10, 'J': 9, 'M': 12, 'L': 11, 'O': 14, 'N': 13, 'Q': 16,
+                'P': 15, 'S': 18, 'R': 17, 'U': 20, 'T': 19, 'W': 22, 'V': 21, 'Y': 23, 'Z': 24, 'BW': 72, 'BH': 57,
+                'AL': 36, 'AQ': 41, 'AP': 40, 'AO': 39, 'AS': 43, 'AR': 42, 'BU': 70, 'BP': 65, 'AU': 45, 'BI': 58,
+                'AT': 44}
+
+    def get_value_from_excel(self, row, col, last):
+        if not self.sheet:
+            return None
+        value = float(self.sheet.cell_value(row, col))
+        current_value = value - last
+        return current_value
 
     def post(self, request, *args, **kwargs):
         import xlrd
 
         file_data = request.FILES.get('excel')
+        year = int(request.POST.get('year'))
+        month = int(request.POST.get('month'))
+        queryset = Excel.objects.filter(year=year).order_by('month').all()
+        obj = None
+        if queryset.exists():
+            obj = queryset[0]
+            if obj.month + 1 < month:
+                self.message = '请先上传{0}月数据'.format(obj.month + 1)
+                self.status_code = ERROR_DATA
+                return self.render_to_response({})
+            elif month <= obj.month:
+                self.message = '覆盖{0}月数据成功'.format(month)
+
         book = xlrd.open_workbook(file_contents=file_data.read(), encoding_override='utf-8')
         sheet = book.sheet_by_index(0)
-        print sheet.row_values(0)
+        self.sheet = sheet
+        keys = Excel().__dict__.keys()
+
+        def filter_param(x):
+            filter_list = ['_state', 'belong_id', 'month', 'year', 'id']
+            return not (x in filter_list)
+
+        def get_excel_row(name):
+            row = name.split('_')[-1].upper()
+            return self.col_dict.get(row)
+
+        keys = filter(filter_param, keys)
+
+        # 获取站点信息
+        for index, slug in enumerate(self.sheet.col_values(1)[9:]):
+            site = None
+            row = index + 9
+            if not slug:
+                continue
+            try:
+                site = Site.objects.get(slug=slug)
+                obj = Excel.objects.filter(belong=site, year=year, month=month - 1).all()
+                if obj.exists():
+                    obj = obj[0]
+            except Exception as e:
+                logging.exception('ERROR in get excel data reason site {0} not exist'.format(slug))
+                continue
+            excel = Excel(belong=site, year=year, month=month)
+            for key in keys:
+                last = 0.0
+                if obj:
+                    last = getattr(obj, key)
+                setattr(excel, key, self.get_value_from_excel(row, get_excel_row(key), last))
+            excel.save()
         return self.render_to_response({})

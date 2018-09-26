@@ -126,9 +126,9 @@ def get_first_classify(site):
 
 
 def get_goods_order_payment(site):
-    orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False).all()
+    orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False, GoodsOrder.belong_id == site.id).all()
     total = len(orders)
-    for orders in query_by_pagination(session, GoodsOrder, total, limit=100):
+    for orders in query_by_pagination(site, session, GoodsOrder, total, limit=100):
         ib_session = init_interbase_connect(site.fuel_server)
         till_list = [unicode(order.till_id) for order in orders]
         if not till_list:

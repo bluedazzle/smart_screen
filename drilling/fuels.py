@@ -69,9 +69,9 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 
 
 def get_fuel_order_payment(site):
-    orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False).all()
+    orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id).all()
     total = len(orders)
-    for orders in query_by_pagination(session, FuelOrder, total, limit=100):
+    for orders in query_by_pagination(site, session, FuelOrder, total, limit=100):
         ib_session = init_interbase_connect(site.fuel_server)
         tills = ','.join([unicode(i.till_id) for i in orders])
         if not tills:

@@ -18,3 +18,14 @@ class Account(AbstractBaseUser):
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
+
+
+class Excel(models.Model):
+    belong = models.ForeignKey(Site, related_name='site_excels')
+    year = models.IntegerField(default=2018)
+    month = models.IntegerField(default=1)
+
+    gas_sell_cost_t = models.FloatField(default=0.0)
+
+    def __unicode__(self):
+        return '{0}: {1}年-{2}月'.format(self.belong.name, self.year, self.month)
