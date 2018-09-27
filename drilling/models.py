@@ -287,6 +287,33 @@ class Task(Base):
     name = Column(String)
     belong_id = Column(Integer)
 
+
+class Excel(Base):
+    __tablename__ = 'smart_admin_excel'
+
+    id = Column(Integer, primary_key=True)
+    create_time = Column(DateTime)
+    modify_time = Column(DateTime)
+    year = Column(Integer)
+    month = Column(Integer)
+    belong_id = Column(Integer)
+    gas_sell_cost_u = Column(Float)
+    diesel_sell_cost_v = Column(Float)
+    daily_repair_ad = Column(Float)
+    oil_loss_ai = Column(Float)
+    goods_sell_cost_bi = Column(Float)
+    depreciation_cost_ao = Column(Float)
+    salary_cost_ao = Column(Float)
+    water_ele_cost_af = Column(Float)
+    other_cost_aq = Column(Float)
+    oil_gross_profit_w = Column(Float)
+    total_profit_gaddi = Column(Float)
+    oil_profit_g = Column(Float)
+    goods_profit_i = Column(Float)
+    ton_oil_g_profit_wdivn = Column(Float)
+    ton_gas_g_profit_xdivo = Column(Float)
+    per_oil_amount_m = Column(Float)
+
 # engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
 #                        encoding='utf-8'.encode())
 #
