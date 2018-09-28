@@ -7,6 +7,12 @@ from drilling.db.interbase import init_interbase_connect
 from drilling.db.mysql import init_mysql_connect
 from drilling.models import Site, session
 
+from core.util import conf
+
+from drilling.db.session import config_oil_session
+
+config_oil_session(conf)
+
 
 def check_fuel(ip):
     try:

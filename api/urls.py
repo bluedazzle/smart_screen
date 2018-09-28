@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from api.views import *
+from api.fin import *
 
 urlpatterns = [
     url(r'^tanks/$', TankListInfoView.as_view()),
@@ -55,6 +56,33 @@ urlpatterns = [
     url(r'^login/$', LoginView.as_view()),
     url(r'^messages/$', MessageView.as_view()),
     url(r'^overview/$', OverView.as_view()),
-    url(r'^fin/$', OverView.as_view()),
+    url(r'^fin/income/osa/$', OilSellAmountView.as_view()),
+    url(r'^fin/income/osm/$', OilSellMoneyView.as_view()),
+    url(r'^fin/income/gsm/$', GoodsSellMoneyView.as_view()),
+    url(r'^fin/cost/gsc/$', GasSellCostView.as_view()),
+    url(r'^fin/cost/dsc/$', DieselSellCostView.as_view()),
+    url(r'^fin/cost/gdsc/$', GoodsSellCostView.as_view()),
+    url(r'^fin/cost/dc/$', DepreciationCostView.as_view()),
+    url(r'^fin/cost/sc/$', SalaryCostView.as_view()),
+    url(r'^fin/cost/dr/$', DailyRepairView.as_view()),
+    url(r'^fin/cost/wec/$', WaterEleCostView.as_view()),
+    url(r'^fin/cost/ol/$', OilLossView.as_view()),
+    url(r'^fin/cost/oc/$', OtherCostView.as_view()),
+    url(r'^fin/cost/tc/$', TotalCostView.as_view()),
+    url(r'^fin/profit/ogp/$', OilGrossProfitView.as_view()),
+    url(r'^fin/profit/tp/$', TotalProfitView.as_view()),
+    url(r'^fin/profit/op/$', OilProfitView.as_view()),
+    url(r'^fin/profit/gp/$', GoodsProfitView.as_view()),
+    url(r'^fin/support/togp/$', TonOilGrossProfitView.as_view()),
+    url(r'^fin/support/tggp/$', TonGasGrossProfitView.as_view()),
+    url(r'^fin/support/tdgp/$', TonDieselGrossProfitView.as_view()),
+    url(r'^fin/support/toc/$', TonOilCostView.as_view()),
+    url(r'^fin/support/top/$', TonOilProfitView.as_view()),
+    url(r'^fin/support/poa/$', PerOilAmountView.as_view()),
+    url(r'^fin/support/pop/$', PerOilProfitView.as_view()),
+    url(r'^fin/support/pgp/$', PerGoodsProfitView.as_view()),
+    url(r'^fin/support/dsa/$', DailySellAmountView.as_view()),
+    url(r'^fin/support/dagm/$', DailyAverageGoodsMoney.as_view()),
+    url(r'^fin/use/bv/$', BalanceView.as_view()),
 
 ]

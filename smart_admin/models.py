@@ -41,6 +41,10 @@ class Excel(models.Model):
     ton_oil_g_profit_wdivn = models.FloatField(default=0.0)
     ton_gas_g_profit_xdivo = models.FloatField(default=0.0)
     per_oil_amount_m = models.FloatField(default=0.0)
+    ton_die_g_profit_ydivp = models.FloatField(default=0.0)
+    ton_oil_cost_aadivn = models.FloatField(default=0.0)
+    ton_oil_profit_j = models.FloatField(default=0.0)
+    daliy_sell_amount_l = models.FloatField(default=0.0)
 
     def __unicode__(self):
         return '{0}: {1}年-{2}月'.format(self.belong.name, self.year, self.month)

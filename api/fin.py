@@ -32,6 +32,7 @@ class SmartFinDetailView(DetailView):
     unit_keys = {}
     dens_list = {100101: 0.770, 100102: 0.85}
     str_dens_list = {'柴油': 0.85, '92': 0.759, '95': 0.77, '98': 0.77}
+    api_name = ''
 
     def get_str_dens(self, den_str):
         for k, v in self.str_dens_list.items():
@@ -87,17 +88,17 @@ class SmartFinDetailView(DetailView):
     def get_time_fmt(self, st, et):
         period = et - st
         if period <= datetime.timedelta(days=1):
-            return 'hour', func.date_part('hour', self.model.original_create_time)
+            return 'hour', None
             # return 'hour'
         elif datetime.timedelta(days=1) < period < datetime.timedelta(days=31):
             # return 'day'
-            return 'day', func.date_part('day', self.model.original_create_time)
+            return 'day', None
 
         elif period > datetime.timedelta(days=365):
-            return 'year', func.date_part('year', self.model.original_create_time)
+            return 'year', None
 
         else:
-            return 'month', func.date_part('month', self.model.original_create_time)
+            return 'month', None
 
             # return 'month'
 
@@ -110,23 +111,27 @@ class SmartFinDetailView(DetailView):
         context['year'] = int(self.request.GET.get('year', 0))
         now = datetime.datetime.now()
         if context['target'] == 'month':
-            context['st'] = add_timezone_to_naive_time(datetime.datetime(context['year'], 1, 1))
-            context['et'] = add_timezone_to_naive_time(datetime.datetime(context['year'], 12, 31))
-            context['lst'] = add_timezone_to_naive_time(datetime.datetime(context['year'] - 1, 1, 1))
-            context['lst'] = add_timezone_to_naive_time(datetime.datetime(context['year'] - 1, 12, 31))
+            context['start_time'] = add_timezone_to_naive_time(datetime.datetime(context['year'], 1, 1))
+            context['end_time'] = add_timezone_to_naive_time(datetime.datetime(context['year'], 12, 31))
+            context['last_start_time'] = add_timezone_to_naive_time(datetime.datetime(context['year'] - 1, 1, 1))
+            context['last_end_time'] = add_timezone_to_naive_time(datetime.datetime(context['year'] - 1, 12, 31))
         else:
-            context['st'] = add_timezone_to_naive_time(datetime.datetime(2000, 1, 1))
-            context['et'] = add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31))
-            context['lst'] = add_timezone_to_naive_time(datetime.datetime(2000, 1, 1))
-            context['let'] = add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31))
+            context['start_time'] = add_timezone_to_naive_time(datetime.datetime(2000, 1, 1))
+            context['end_time'] = add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31))
+            context['last_start_time'] = add_timezone_to_naive_time(datetime.datetime(2000, 1, 1))
+            context['last_end_time'] = add_timezone_to_naive_time(datetime.datetime(now.year, 12, 31))
         return context
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, self.column).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
     def get_original_time_data(self, context, st, et, belong=None):
         fmt_str, fmt = self.get_time_fmt(st, et)
         belong = self.site.id if not belong else self.site.id
         group_condition = self.model.month if fmt_str == 'month' else self.model.year
-        res = session.query(group_condition, self.column).filter(
-            self.model.belong_id == belong).group_by(group_condition)
+        res = self.get_from_db(belong, group_condition, fmt_str)
         if fmt_str == 'month':
             res = res.filter(self.model.year == context['year']).all()
         else:
@@ -155,7 +160,7 @@ class SmartFinDetailView(DetailView):
     @staticmethod
     def cal_month_data(now, last):
         res = []
-        for k, v in now:
+        for k, v in now.items():
             tq = last.get(k, 0)
             sy = now.get(k - 1, 0)
             itm_dict = {'month': k, 'current': v, 'tq': tq, 'last_month': sy, 'tb': v - tq, 'hb': v - sy}
@@ -166,7 +171,7 @@ class SmartFinDetailView(DetailView):
     @staticmethod
     def cal_year_data(now, last, ys):
         res = []
-        for k, v in now:
+        for k, v in now.items():
             tq = last.get(k - 1, 0)
             ys = ys.get(k, 0) if ys else 0
             itm_dict = {'year': k, 'current': v, 'tq': tq, 'yszj': v - ys, 'tqzj': v - tq}
@@ -177,7 +182,7 @@ class SmartFinDetailView(DetailView):
     @staticmethod
     def cal_month_comp_site_data(site, comp):
         res = []
-        for k, v in site:
+        for k, v in site.items():
             comp_current = comp.get(k, 0)
             itm_dict = {'month': k, 'current': comp_current, 'yddb': v - comp_current}
             res.append(itm_dict)
@@ -187,7 +192,7 @@ class SmartFinDetailView(DetailView):
     @staticmethod
     def cal_year_comp_site_data(site, comp):
         res = []
-        for k, v in site:
+        for k, v in site.items():
             comp_current = comp.get(k, 0)
             itm_dict = {'year': k, 'current': comp_current, 'nddb': v - comp_current}
             res.append(itm_dict)
@@ -230,6 +235,7 @@ class SmartFinDetailView(DetailView):
         result = self.get_data(context)
         # 处理返回数据单位等
         self.fill_unit(context)
+        context['api_name'] = self.api_name
         return self.render_to_response(context)
 
 
@@ -239,6 +245,7 @@ class OilSellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
     model = FuelOrder
     column = FuelOrder.amount
     unit_keys = {'current': '升'}
+    api_name = '油品销售数量'
 
     fuel_dict = {98: '98号 车用汽油(V)', 95: '95号 车用汽油(Ⅴ)',
                  92: '92号 车用汽油(Ⅴ)', 0: '0号 车用柴油(Ⅴ)',
@@ -248,9 +255,10 @@ class OilSellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
     def get_original_time_data(self, context, st, et, belong=None):
         fmt_str, fmt = self.get_time_fmt(st, et)
         belong = self.site.id if not belong else self.site.id
+        # import pudb;pu.db
         group_condition = fmt
-        res = session.query(group_condition, self.column).filter(
-            self.model.fuel_type == self.fuel_dict.get(context.get('fuel_type')),
+        res = session.query(group_condition, func.sum(self.model.amount)).filter(
+            # self.model.fuel_type == self.fuel_dict.get(context.get('fuel_type')),
             self.model.original_create_time.between(st, et),
             self.model.belong_id == belong).group_by(group_condition).all()
         res_dict = {}
@@ -262,8 +270,9 @@ class OilSellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
 # 油品销售收入
 class OilSellMoneyView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = FuelOrder
-    column = FuelOrder.total_price
+    column = model.total_price
     unit_keys = {'current': '元'}
+    api_name = '油品销售收入'
 
     fuel_dict = {98: '98号 车用汽油(V)', 95: '95号 车用汽油(Ⅴ)',
                  92: '92号 车用汽油(Ⅴ)', 0: '0号 车用柴油(Ⅴ)',
@@ -274,33 +283,68 @@ class OilSellMoneyView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
         fmt_str, fmt = self.get_time_fmt(st, et)
         belong = self.site.id if not belong else self.site.id
         group_condition = fmt
-        res = session.query(group_condition, self.column).filter(
-            self.model.fuel_type == self.fuel_dict.get(context.get('fuel_type')),
+        res = session.query(group_condition, func.sum(self.model.total_price)).filter(
+            # self.model.fuel_type == self.fuel_dict.get(context.get('fuel_type')),
             self.model.original_create_time.between(st, et),
             self.model.belong_id == belong).group_by(group_condition).all()
         res_dict = {}
         for itm in res:
             res_dict[itm[0]] = itm[1]
         return res_dict
+
+    def get_time_fmt(self, st, et):
+        period = et - st
+        if period <= datetime.timedelta(days=1):
+            return 'hour', func.date_part('hour', self.model.original_create_time)
+            # return 'hour'
+        elif datetime.timedelta(days=1) < period < datetime.timedelta(days=31):
+            # return 'day'
+            return 'day', func.date_part('day', self.model.original_create_time)
+
+        elif period > datetime.timedelta(days=365):
+            return 'year', func.date_part('year', self.model.original_create_time)
+
+        else:
+            return 'month', func.date_part('month', self.model.original_create_time)
+
+            # return 'month'
 
 
 # 非油销售收入
 class GoodsSellMoneyView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = GoodsOrder
-    column = GoodsOrder.total
+    column = model.total
     unit_keys = {'current': '元'}
+    api_name = '非油销售收入'
 
     def get_original_time_data(self, context, st, et, belong=None):
         fmt_str, fmt = self.get_time_fmt(st, et)
         belong = self.site.id if not belong else self.site.id
         group_condition = fmt
-        res = session.query(group_condition, self.column).filter(
+        res = session.query(group_condition, func.sum(self.model.total)).filter(
             self.model.original_create_time.between(st, et),
             self.model.belong_id == belong).group_by(group_condition).all()
         res_dict = {}
         for itm in res:
             res_dict[itm[0]] = itm[1]
         return res_dict
+
+    def get_time_fmt(self, st, et):
+        period = et - st
+        if period <= datetime.timedelta(days=1):
+            return 'hour', func.date_part('hour', self.model.original_create_time)
+            # return 'hour'
+        elif datetime.timedelta(days=1) < period < datetime.timedelta(days=31):
+            # return 'day'
+            return 'day', func.date_part('day', self.model.original_create_time)
+
+        elif period > datetime.timedelta(days=365):
+            return 'year', func.date_part('year', self.model.original_create_time)
+
+        else:
+            return 'month', func.date_part('month', self.model.original_create_time)
+
+            # return 'month'
 
 
 # 成本指标
@@ -309,6 +353,12 @@ class GasSellCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartF
     model = Excel
     column = Excel.gas_sell_cost_u
     unit_keys = {'current': '元'}
+    api_name = '汽油销售成本'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.gas_sell_cost_u)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 柴油销售成本
@@ -316,6 +366,12 @@ class DieselSellCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Sma
     model = Excel
     column = Excel.diesel_sell_cost_v
     unit_keys = {'current': '元'}
+    api_name = '柴油销售成本'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.diesel_sell_cost_v)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 非油销售成本
@@ -323,6 +379,12 @@ class GoodsSellCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
     model = Excel
     column = Excel.goods_sell_cost_bi
     unit_keys = {'current': '元'}
+    api_name = '非油销售成本'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.goods_sell_cost_bi)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 折旧损耗
@@ -330,6 +392,12 @@ class DepreciationCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, S
     model = Excel
     column = Excel.depreciation_cost_ao
     unit_keys = {'current': '元'}
+    api_name = '折旧损耗'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.depreciation_cost_ao)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 员工薪酬
@@ -337,6 +405,12 @@ class SalaryCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
     model = Excel
     column = Excel.salary_cost_ao
     unit_keys = {'current': '元'}
+    api_name = '员工薪酬'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.salary_cost_ao)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 日常维修费用
@@ -344,6 +418,12 @@ class DailyRepairView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartF
     model = Excel
     column = Excel.daily_repair_ad
     unit_keys = {'current': '元'}
+    api_name = '日常维修费用'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.daily_repair_ad)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 水电暖费
@@ -351,6 +431,12 @@ class WaterEleCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
     model = Excel
     column = Excel.water_ele_cost_af
     unit_keys = {'current': '元'}
+    api_name = '水电暖费'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.water_ele_cost_af)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 油品损溢
@@ -358,6 +444,12 @@ class OilLossView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDe
     model = Excel
     column = Excel.oil_loss_ai
     unit_keys = {'current': '吨'}
+    api_name = '油品损溢'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.oil_loss_ai)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 其他费用
@@ -365,6 +457,12 @@ class OtherCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFin
     model = Excel
     column = Excel.other_cost_aq
     unit_keys = {'current': '元'}
+    api_name = '其他费用'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.other_cost_aq)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 费用总额
@@ -373,12 +471,16 @@ class TotalCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFin
     model = Excel
     column = [Excel.other_cost_aq, Excel.water_ele_cost_af, Excel.daily_repair_ad, Excel.salary_cost_ao,
               Excel.depreciation_cost_ao, Excel.goods_sell_cost_bi, Excel.gas_sell_cost_u, Excel.diesel_sell_cost_v]
+    api_name = '费用总额'
 
     def get_original_time_data(self, context, st, et, belong=None):
         fmt_str, fmt = self.get_time_fmt(st, et)
         belong = self.site.id if not belong else self.site.id
         group_condition = self.model.month if fmt_str == 'month' else self.model.year
-        res = session.query(group_condition, self.column).filter(
+        res = session.query(group_condition,
+                            func.sum(
+                                Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ao +
+                                Excel.depreciation_cost_ao + Excel.goods_sell_cost_bi + Excel.gas_sell_cost_u + Excel.diesel_sell_cost_v)).filter(
             self.model.belong_id == belong).group_by(group_condition)
         if fmt_str == 'month':
             res = res.filter(self.model.year == context['year']).all()
@@ -396,6 +498,12 @@ class OilGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Sma
     model = Excel
     column = Excel.oil_gross_profit_w
     unit_keys = {'current': '元'}
+    api_name = '成品油毛利'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.oil_gross_profit_w)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 利润总额
@@ -403,6 +511,12 @@ class TotalProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartF
     model = Excel
     column = Excel.total_profit_gaddi
     unit_keys = {'current': '元'}
+    api_name = '利润总额'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.total_profit_gaddi)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 成品油利润
@@ -410,6 +524,12 @@ class OilProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFin
     model = Excel
     column = Excel.oil_profit_g
     unit_keys = {'current': '元'}
+    api_name = '成品油利润'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.oil_profit_g)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 非油利润
@@ -417,6 +537,12 @@ class GoodsProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartF
     model = Excel
     column = Excel.goods_profit_i
     unit_keys = {'current': '元'}
+    api_name = '非油利润'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.goods_profit_i)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 辅助指标
@@ -425,6 +551,12 @@ class TonOilGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     model = Excel
     column = Excel.ton_oil_g_profit_wdivn
     unit_keys = {'current': '元'}
+    api_name = '吨油毛利'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.ton_oil_g_profit_wdivn)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 汽油毛利
@@ -432,13 +564,25 @@ class TonGasGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     model = Excel
     column = Excel.ton_gas_g_profit_xdivo
     unit_keys = {'current': '元'}
+    api_name = '汽油毛利'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.ton_gas_g_profit_xdivo)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
-# 汽油毛利
+# 柴油毛利
 class TonDieselGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
     column = Excel.ton_die_g_profit_ydivp
     unit_keys = {'current': '元'}
+    api_name = '柴油毛利'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.ton_die_g_profit_ydivp)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 吨油费用
@@ -446,6 +590,12 @@ class TonOilCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
     model = Excel
     column = Excel.ton_oil_cost_aadivn
     unit_keys = {'current': '元'}
+    api_name = '吨油费用'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.ton_oil_cost_aadivn)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 吨油利润
@@ -453,6 +603,12 @@ class TonOilProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
     model = Excel
     column = Excel.ton_oil_profit_j
     unit_keys = {'current': '元'}
+    api_name = '吨油利润'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.ton_oil_profit_j)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 人均销量
@@ -460,16 +616,112 @@ class PerOilAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
     model = Excel
     column = Excel.per_oil_amount_m
     unit_keys = {'current': '元'}
+    api_name = '人均销量'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.per_oil_amount_m)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
 # 人均利润
 # todo
 class PerOilProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
-    column = Excel.per_oil_profit_
+    column = Excel.total_profit_gaddi
+    average = True
     unit_keys = {'current': '元'}
+    api_name = '人均利润'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.total_profit_gaddi)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
 
 
-# todo 人均非油
+# 人均非油收入
+class PerGoodsProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
+    model = GoodsOrder
+    column = GoodsOrder.total
+    unit_keys = {'current': '元'}
+    average = True
+    api_name = '人均非油收入'
+
+    def get_original_time_data(self, context, st, et, belong=None):
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        belong = self.site.id if not belong else self.site.id
+        group_condition = fmt
+        res = session.query(group_condition, func.sum(self.model.total)).filter(
+            self.model.original_create_time.between(st, et),
+            self.model.belong_id == belong).group_by(group_condition).all()
+        res_dict = {}
+        for itm in res:
+            res_dict[itm[0]] = itm[1]
+        return res_dict
 
 
+# 单站日销量
+class DailySellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
+    model = Excel
+    column = Excel.daliy_sell_amount_l
+    unit_keys = {'current': '元'}
+    api_name = '单站日销量'
+
+    def get_from_db(self, belong, group_condition, fmt_str):
+        res = session.query(group_condition, func.sum(self.model.daliy_sell_amount_l)).filter(
+            self.model.belong_id == belong).group_by(group_condition)
+        return res
+
+
+# 单店日均非油收入
+class DailyAverageGoodsMoney(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
+    model = GoodsOrder
+    column = GoodsOrder.total
+    unit_keys = {'current': '元'}
+    api_name = '单店日均非油收入'
+
+    def get_original_time_data(self, context, st, et, belong=None):
+        fmt_str, fmt = self.get_time_fmt(st, et)
+        belong = self.site.id if not belong else self.site.id
+        group_condition = fmt
+        res = session.query(group_condition, self.column).filter(
+            self.model.original_create_time.between(st, et),
+            self.model.belong_id == belong).group_by(group_condition).all()
+        res_dict = {}
+        for itm in res:
+            res_dict[itm[0]] = itm[1]
+        return res_dict
+
+    def get_time_fmt(self, st, et):
+        period = et - st
+        if period <= datetime.timedelta(days=1):
+            return 'hour', func.date_part('hour', self.model.original_create_time)
+            # return 'hour'
+        elif datetime.timedelta(days=1) < period < datetime.timedelta(days=31):
+            # return 'day'
+            return 'day', func.date_part('day', self.model.original_create_time)
+
+        elif period > datetime.timedelta(days=365):
+            return 'year', func.date_part('year', self.model.original_create_time)
+
+        else:
+            return 'month', func.date_part('month', self.model.original_create_time)
+
+            # return 'month'
+
+
+# 盈亏平衡点
+class BalanceView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
+    api_name = '盈亏平衡点'
+
+    def get(self, request, *args, **kwargs):
+        total_cost = \
+            session.query(Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ao +
+                          Excel.depreciation_cost_ao + Excel.goods_sell_cost_bi + Excel.gas_sell_cost_u + Excel.diesel_sell_cost_v).filter(
+                Excel.belong_id == self.site.id).order_by(Excel.year.desc(), Excel.month.desc()).first()[0]
+        ton_profit = \
+            session.query(Excel.ton_oil_g_profit_wdivn).filter(Excel.belong_id == self.site.id).order_by(
+                Excel.year.desc(),
+                Excel.month.desc()).first()[
+                0]
+        return self.render_to_response({'balance': total_cost / ton_profit, 'api_name': self.api_name})

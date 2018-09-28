@@ -9,6 +9,12 @@ from xpinyin import Pinyin
 
 from drilling.models import Site, session
 
+from core.util import conf
+
+from drilling.db.session import config_oil_session
+
+config_oil_session(conf)
+
 
 def get_site_from_csv():
     p = Pinyin()

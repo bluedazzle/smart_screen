@@ -221,14 +221,14 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
     http_method_names = ['post']
     model = Excel
     sheet = None
-    col_dict = {'BD': 53, 'AA': 25, 'BF': 55, 'BG': 56, 'AW': 47, 'AN': 38, 'BC': 52, 'BL': 61, 'BM': 62, 'BN': 63,
-                'AV': 46, 'BA': 50, 'AC': 27, 'AJ': 34, 'BK': 60, 'BT': 69, 'AY': 48, 'BV': 71, 'AB': 26, 'BE': 54,
-                'BQ': 66, 'BR': 67, 'BS': 68, 'AE': 29, 'BJ': 59, 'BY': 73, 'BZ': 74, 'AD': 28, 'AZ': 49, 'AG': 31,
-                'BB': 51, 'AF': 30, 'AM': 37, 'BO': 64, 'AI': 33, 'AH': 32, 'AK': 35, 'A': 0, 'C': 2, 'B': 1, 'E': 4,
-                'D': 3, 'G': 6, 'F': 5, 'I': 8, 'H': 7, 'K': 10, 'J': 9, 'M': 12, 'L': 11, 'O': 14, 'N': 13, 'Q': 16,
-                'P': 15, 'S': 18, 'R': 17, 'U': 20, 'T': 19, 'W': 22, 'V': 21, 'Y': 23, 'Z': 24, 'BW': 72, 'BH': 57,
-                'AL': 36, 'AQ': 41, 'AP': 40, 'AO': 39, 'AS': 43, 'AR': 42, 'BU': 70, 'BP': 65, 'AU': 45, 'BI': 58,
-                'AT': 44}
+    col_dict = {'BD': 55, 'AA': 26, 'BF': 57, 'BG': 58, 'AW': 48, 'AN': 39, 'BC': 54, 'BL': 63, 'BM': 64, 'BN': 65,
+                'AV': 47, 'BA': 52, 'AC': 28, 'AJ': 35, 'BK': 62, 'BT': 71, 'AY': 50, 'BV': 73, 'AB': 27, 'BE': 56,
+                'BQ': 68, 'BR': 69, 'AX': 49, 'AE': 30, 'BJ': 61, 'BX': 75, 'BY': 76, 'BZ': 77, 'AD': 29, 'AZ': 51,
+                'AG': 32, 'BS': 70, 'BB': 53, 'AF': 31, 'AM': 38, 'BO': 66, 'AI': 34, 'AH': 33, 'AK': 36, 'A': 0,
+                'C': 2, 'B': 1, 'E': 4, 'D': 3, 'G': 6, 'F': 5, 'I': 8, 'H': 7, 'K': 10, 'J': 9, 'M': 12, 'L': 11,
+                'O': 14, 'N': 13, 'Q': 16, 'P': 15, 'S': 18, 'R': 17, 'U': 20, 'T': 19, 'W': 22, 'V': 21, 'Y': 24,
+                'X': 23, 'Z': 25, 'BW': 74, 'BH': 59, 'AL': 37, 'AQ': 42, 'AP': 41, 'AO': 40, 'AS': 44, 'AR': 43,
+                'BU': 72, 'BP': 67, 'AU': 46, 'BI': 60, 'AT': 45}
 
     def get_value_from_excel(self, row, col, last):
         if not self.sheet:
@@ -243,7 +243,7 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
         file_data = request.FILES.get('excel')
         year = int(request.POST.get('year'))
         month = int(request.POST.get('month'))
-        queryset = Excel.objects.filter(year=year).order_by('month').all()
+        queryset = Excel.objects.filter(year=year).order_by('-month').all()
         obj = None
         if queryset.exists():
             obj = queryset[0]
@@ -253,6 +253,11 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
                 return self.render_to_response({})
             elif month <= obj.month:
                 self.message = '覆盖{0}月数据成功'.format(month)
+                Excel.objects.filter(year=year, month=month).delete()
+        elif month != 1:
+            self.message = '请先上传1月数据'
+            self.status_code = ERROR_DATA
+            return self.render_to_response({})
 
         book = xlrd.open_workbook(file_contents=file_data.read(), encoding_override='utf-8')
         sheet = book.sheet_by_index(0)
@@ -265,7 +270,12 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
 
         def get_excel_row(name):
             row = name.split('_')[-1].upper()
-            return self.col_dict.get(row)
+            cal_list = ['ADD', 'DIV', 'MIN']
+            for cal in cal_list:
+                if cal in row:
+                    rows = row.split(cal)
+                    return [self.col_dict.get(itm) for itm in rows], cal
+            return self.col_dict.get(row), None
 
         keys = filter(filter_param, keys)
 
@@ -276,6 +286,8 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
             if not slug:
                 continue
             try:
+                if isinstance(slug, (float, int)):
+                    slug = '{0}'.format(int(slug))
                 site = Site.objects.get(slug=slug)
                 obj = Excel.objects.filter(belong=site, year=year, month=month - 1).all()
                 if obj.exists():
@@ -288,6 +300,18 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
                 last = 0.0
                 if obj:
                     last = getattr(obj, key)
-                setattr(excel, key, self.get_value_from_excel(row, get_excel_row(key), last))
+                data, cal = get_excel_row(key)
+                s = 0.0
+                if cal:
+                    if cal == 'ADD':
+                        for itm in data:
+                            s += self.get_value_from_excel(row, itm, 0)
+                        s -= last
+                    else:
+                        s = self.get_value_from_excel(row, data[0], 0) / self.get_value_from_excel(row, data[1], 0)
+                else:
+                    last = 0 if data == 9 else last
+                    s = self.get_value_from_excel(row, data, last)
+                setattr(excel, key, s)
             excel.save()
         return self.render_to_response({})

@@ -292,8 +292,6 @@ class Excel(Base):
     __tablename__ = 'smart_admin_excel'
 
     id = Column(Integer, primary_key=True)
-    create_time = Column(DateTime)
-    modify_time = Column(DateTime)
     year = Column(Integer)
     month = Column(Integer)
     belong_id = Column(Integer)
@@ -313,6 +311,10 @@ class Excel(Base):
     ton_oil_g_profit_wdivn = Column(Float)
     ton_gas_g_profit_xdivo = Column(Float)
     per_oil_amount_m = Column(Float)
+    ton_die_g_profit_ydivp = Column(Float)
+    ton_oil_cost_aadivn = Column(Float)
+    ton_oil_profit_j = Column(Float)
+    daliy_sell_amount_l = Column(Float)
 
 # engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
 #                        encoding='utf-8'.encode())
