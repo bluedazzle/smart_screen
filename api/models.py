@@ -29,6 +29,36 @@ class Site(BaseModel):
     lock = models.IntegerField(default=60)
     check = models.BooleanField(default=False)
 
+    members = models.IntegerField(default=0)
+    depreciation_cost = models.FloatField(default=0.0)
+    salary_cost = models.FloatField(default=0.0)
+    daily_repair = models.FloatField(default=0.0)
+    water_ele_cost = models.FloatField(default=0.0)
+    oil_loss = models.FloatField(default=0.0)
+    other_cost = models.FloatField(default=0.0)
+    total_cost = models.FloatField(default=0.0)
+    oil_gross_profit = models.FloatField(default=0.0)
+    oil_profit = models.FloatField(default=0.0)
+    goods_profit = models.FloatField(default=0.0)
+    total_profit = models.FloatField(default=0.0)
+    ton_oil_cost = models.FloatField(default=0.0)
+    ton_oil_g_profit = models.FloatField(default=0.0)
+    per_oil_amount = models.FloatField(default=0.0)
+    per_profit = models.FloatField(default=0.0)
+    per_goods_income = models.FloatField(default=0.0)
+    cost_control = models.TextField(default='', null=True, blank=True)
+    promote = models.TextField(default='', null=True, blank=True)
+    advice = models.TextField(default='', null=True, blank=True)
+
+    gas_92 = models.FloatField(default=0.0)
+    gas_95 = models.FloatField(default=0.0)
+    gas_98 = models.FloatField(default=0.0)
+    die_35 = models.FloatField(default=0.0)
+    die_20 = models.FloatField(default=0.0)
+    die_10 = models.FloatField(default=0.0)
+    die_0 = models.FloatField(default=0.0)
+    die_d20 = models.FloatField(default=0.0)
+
     def __unicode__(self):
         return self.name
 

@@ -6431,3 +6431,70 @@ pid 为计划 id
   "msg": "数据缺失"
 }
 ```
+
+## **更新预算信息**
+
+```
+POST /api/admin/budget/
+```
+
+### **Parameters**
+* members(_Required_|integer)-加油站人数
+* depreciation_cost(_Required_|Float)- 折旧损耗
+* salary_cost(_Required_|Float)-员工薪酬
+* water_ele_cost(_Required_|Float)-水电暖费
+* daily_repair(_Required_|Float)-日常维修
+* oil_loss(_Required_|Float)-油品损耗
+* other_cost(_Required_|Float)-其他费用
+* oil_gross_profit(_Required_|Float)-成品油毛利
+* oil_profit(_Required_|Float)-成品油利润
+* goods_profit(_Required_|Float)-非油利润
+* ton_oil_cost(_Required_|Float)-吨油费用
+* ton_oil_g_profit(_Required_|Float)-吨油利润
+* per_oil_amount(_Required_|Float)-人均销量
+* per_profit(_Required_|Float)-人均利润
+* per_goods_income(_Required_|Float)-人均非油收入
+* cost_control(_Required_|String)-费用控制方向
+* promote(_Required_|String)-促销效果分析
+* advice(_Required_|String)-其他管理建议
+
+### **Return**
+```
+{
+    "body":{
+        "object":{
+            "daily_repair":0,
+            "depreciation_cost":"8888",
+            "lock":0,
+            "per_profit":0,
+            "month":"3",
+            "salary_cost":"2828",
+            "water_ele_cost":0,
+            "create_time":"2018-02-02 21:50:29",
+            "check":false,
+            "goods_profit":0,
+            "total_cost":40040,
+            "pictures":"/static/image/aba3a49051155eb39f9ec294fae3f765.png,/static/image/e201248d56fa6b80ce98aa101c0f8ac2.png,/static/image/47c2a8cfaef4d7d194798caf6dc5dc84.png,/static/image/5db36e0d35b5045cfafe5a1a12e47ed6.png,/static/image/240193b230d725805ba540644e3adede.png,/static/image/7c552854e43abdb7455a2c0b051ca7ee.png,/static/image/b48001a9939f9a387221fb8fa26546d9.png",
+            "per_oil_amount":0,
+            "oil_loss":0,
+            "id":2,
+            "ton_oil_g_profit":0,
+            "per_goods_income":0,
+            "other_cost":"28324",
+            "original_create_time":"2018-02-02 21:50:29",
+            "bos_server":"10.97.223.2",
+            "members":"11",
+            "oil_profit":0,
+            "info":"五四加油站隶属于西宁分公司城西经营部，始建于1956年12月20日，占地面积1500平方米，是青海省的第一座加油站，主要经营92#，95#，98#高标号清洁汽油。加油站现有员工16名，本站员工全为市场化员工，平均年龄29岁，是一支充满活力、凝聚力较强的青年团队。",
+            "total_profit":0,
+            "name":"五四加油站",
+            "ton_oil_cost":0,
+            "modify_time":"2018-09-29 17:10:16",
+            "fuel_server":"10.97.223.1",
+            "oil_gross_profit":0
+        }
+    },
+    "status":1,
+    "msg":"success"
+}
+```

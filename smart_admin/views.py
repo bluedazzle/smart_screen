@@ -70,7 +70,8 @@ class InventoryListView(CheckAdminPermissionMixin, StatusWrapMixin, MultipleJson
 class SiteInfoView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, DetailView):
     model = Site
     http_method_names = ['get', 'post']
-    include_attr = ['name', 'slug', 'info', 'pictures', 'lock']
+
+    # include_attr = ['name', 'slug', 'info', 'pictures', 'lock']
 
     def get(self, request, *args, **kwargs):
         return self.render_to_response({'site': self.site})
@@ -215,6 +216,34 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
         #     self.message = '未知错误'
         #     self.status_code = ERROR_UNKNOWN
         #     return self.render_to_response()
+
+
+class UpdateBudgetView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, UpdateView):
+    http_method_names = ['post']
+    exclude_attr = ['slug']
+
+    def sum_value(self, value_list=[]):
+        req_dict = self.request.POST
+        count = 0.0
+        for itm in value_list:
+            count += float(req_dict.get(itm, 0.0))
+        return count
+
+    def post(self, request, *args, **kwargs):
+        req_dict = request.POST
+        try:
+            req_dict.pop('slug')
+            req_dict.pop('total_cost')
+            req_dict.pop('total_profit')
+        except Exception as e:
+            pass
+        for k, v in req_dict.iteritems():
+            setattr(self.site, k, v)
+        self.site.total_cost = self.sum_value(
+            ['depreciation_cost', 'salary_cost', 'daily_repair', 'water_ele_cost', 'other_cost'])
+        self.site.total_profit = self.sum_value(['oil_profit', 'goods_profit'])
+        self.site.save()
+        return self.render_to_response({'object': self.site})
 
 
 class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin, DetailView):

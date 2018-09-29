@@ -261,6 +261,33 @@ class Site(Base):
     original_create_time = Column(DateTime)
     lock = Column(Integer)
 
+    depreciation_cost = Column(Float, default=0.0)
+    members = Column(Integer, default=0)
+    salary_cost = Column(Float, default=0.0)
+    daily_repair = Column(Float, default=0.0)
+    water_ele_cost = Column(Float, default=0.0)
+    oil_loss = Column(Float, default=0.0)
+    other_cost = Column(Float, default=0.0)
+    total_cost = Column(Float, default=0.0)
+    oil_gross_profit = Column(Float, default=0.0)
+    oil_profit = Column(Float, default=0.0)
+    goods_profit = Column(Float, default=0.0)
+    total_profit = Column(Float, default=0.0)
+    ton_oil_cost = Column(Float, default=0.0)
+    ton_oil_g_profit = Column(Float, default=0.0)
+    per_oil_amount = Column(Float, default=0.0)
+    per_profit = Column(Float, default=0.0)
+    per_goods_income = Column(Float, default=0.0)
+
+    gas_92 = Column(Float, default=0.0)
+    gas_95 = Column(Float, default=0.0)
+    gas_98 = Column(Float, default=0.0)
+    die_35 = Column(Float, default=0.0)
+    die_20 = Column(Float, default=0.0)
+    die_10 = Column(Float, default=0.0)
+    die_0 = Column(Float, default=0.0)
+    die_d20 = Column(Float, default=0.0)
+
 
 class CeleryLog(Base):
     __tablename__ = 'super_admin_celerylog'
@@ -315,6 +342,7 @@ class Excel(Base):
     ton_oil_cost_aadivn = Column(Float)
     ton_oil_profit_j = Column(Float)
     daliy_sell_amount_l = Column(Float)
+
 
 # engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',
 #                        encoding='utf-8'.encode())
