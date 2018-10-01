@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import datetime
 
 import logging
+import threading
 
 from drilling.db.interbase import init_interbase_connect
 from drilling.models import session, FuelOrder, DeliveryRecord, Receiver, Supplier
@@ -50,7 +51,6 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
     update_site_status(site, '油品订单更新')
 
 
-
 # def get_fuel_order_payment(site):
 #     orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False).all()
 #     ib_session = init_interbase_connect(site.fuel_server)
@@ -69,30 +69,48 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 
 
 def get_fuel_order_payment(site):
-    orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id).all()
-    total = len(orders)
-    for orders in query_by_pagination(site, session, FuelOrder, total, limit=100):
-        ib_session = init_interbase_connect(site.fuel_server)
-        tills = ','.join([unicode(i.till_id) for i in orders])
-        if not tills:
-            return
-        sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
-    PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
-    PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
-        ib_session.execute(sql)
-        res = ib_session.fetchall()
-        for itm in res:
-            till_id, payment_code, payment_type = itm
-            order = session.query(FuelOrder).filter(FuelOrder.till_id == till_id).first()
-            if order:
-                order.payment_code = payment_code
-                order.payment_type = get_clean_data(payment_type)
-                order.catch_payment = True
-        try:
-            session.commit()
-        except Exception as e:
-            logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
-            session.rollback()
+    t_orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id).all()
+    total = len(t_orders)
+    thread_nums = 5
+    thread_list = []
+    slice_num = total / thread_nums
+    offset = 0
+
+    def get_payment(thread_name, site, session, obj, total, start_offset=0, limit=100):
+        for orders in query_by_pagination(site, session, obj, total, limit=limit, name=thread_name,
+                                          start_offset=start_offset):
+            ib_session = init_interbase_connect(site.fuel_server)
+            tills = ','.join([unicode(i.till_id) for i in orders])
+            if not tills:
+                return
+            sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
+        PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
+        PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
+            ib_session.execute(sql)
+            res = ib_session.fetchall()
+            for itm in res:
+                till_id, payment_code, payment_type = itm
+                order = session.query(FuelOrder).filter(FuelOrder.till_id == till_id).first()
+                if order:
+                    order.payment_code = payment_code
+                    order.payment_type = get_clean_data(payment_type)
+                    order.catch_payment = True
+            try:
+                session.commit()
+            except Exception as e:
+                logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+                session.rollback()
+
+    for i in range(thread_nums):
+        t = threading.Thread(target=get_payment, args=(i, site, session, FuelOrder, total, offset, 100))
+        offset += slice_num
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.start()
+
+    for t in thread_list:
+        t.join()
 
 
 def get_sup(site):
@@ -148,7 +166,6 @@ Order By EXTREF'''.format(st, et)
             create_object(DeliveryRecord, supplier=sup.name, receiver=rec.name, truck_number=number, belong_id=site.id,
                           original_create_time=original_create_time, hash=unique_str, modify_time=original_create_time)
     update_site_status(site, '油品配送记录更新')
-
 
 
 if __name__ == '__main__':

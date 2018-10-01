@@ -357,7 +357,7 @@ def update_goods_inventory(hash_str, **kwargs):
     return gi
 
 
-def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0, limit=1000):
+def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0, limit=1000, name='default'):
     total_page = int(math.ceil(total / float(limit)))
     start = 0
     if start_offset:
@@ -368,7 +368,8 @@ def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0
         result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(
             offset).all()
         logging.info(
-            '{0}: Current {1}->{2}/{3} {4}%'.format(site.slug, offset, offset + limit, total, float(offset + limit) / total * 100))
+            'Thread {0} {1}: Current {2}->{3}/{4} {5}%'.format(name, site.slug, offset, offset + limit, total,
+                                                               float(offset + limit) / total * 100))
         yield result
 
 

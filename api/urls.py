@@ -83,6 +83,7 @@ urlpatterns = [
     url(r'^fin/support/pgp/$', PerGoodsProfitView.as_view()),
     url(r'^fin/support/dsa/$', DailySellAmountView.as_view()),
     url(r'^fin/support/dagm/$', DailyAverageGoodsMoney.as_view()),
-    url(r'^fin/use/bv/$', BalanceView.as_view()),
+        url(r'^fin/use/bv/$', BalanceView.as_view()),
+    url(r'^fin/compare/list/$', CompareListView.as_view()),
 
 ]

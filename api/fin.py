@@ -265,7 +265,10 @@ class OilSellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
 
     def handle_request(self):
         context = super(OilSellAmountView, self).handle_request()
-        context['fuel_type'] = int(self.request.GET.get('fuel_type', 92))
+        try:
+            context['fuel_type'] = int(self.request.GET.get('fuel_type', 92))
+        except Exception as e:
+            context['fuel_type'] = 92
         self.ys_column = self.fuel_column_dict.get(context['fuel_type'], 'gas_92')
         return context
 
@@ -319,7 +322,10 @@ class OilSellMoneyView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
 
     def handle_request(self):
         context = super(OilSellMoneyView, self).handle_request()
-        context['fuel_type'] = int(self.request.GET.get('fuel_type'))
+        try:
+            context['fuel_type'] = int(self.request.GET.get('fuel_type', 92))
+        except Exception as e:
+            context['fuel_type'] = 92
         self.ys_column = self.fuel_column_dict.get(context['fuel_type'], 'gas_92')
         return context
 
@@ -802,3 +808,14 @@ class BalanceView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDe
         return self.render_to_response(
             {'balance': total_cost / ton_profit, 'api_name': self.api_name, 'advice': self.site.advice,
              'cost_control': self.site.cost_control, 'promote': self.site.promote})
+
+
+# 对标站
+class CompareListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):
+    api_name = '对标站'
+    model = models.Site
+    include_attr = ['id', 'name', 'slug']
+
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        return queryset

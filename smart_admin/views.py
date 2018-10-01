@@ -262,7 +262,11 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
     def get_value_from_excel(self, row, col, last):
         if not self.sheet:
             return None
-        value = float(self.sheet.cell_value(row, col))
+        try:
+            value = float(self.sheet.cell_value(row, col))
+        except Exception as e:
+            logging.exception('ERROR in get_value_from_excel reason {0}'.format(e))
+            value = 0.0
         current_value = value - last
         return current_value
 
@@ -337,7 +341,12 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
                             s += self.get_value_from_excel(row, itm, 0)
                         s -= last
                     else:
-                        s = self.get_value_from_excel(row, data[0], 0) / self.get_value_from_excel(row, data[1], 0)
+                        if self.get_value_from_excel(row, data[0], 0) and self.get_value_from_excel(row, data[1], 0):
+                            s = self.get_value_from_excel(row, data[0], 0) / self.get_value_from_excel(row, data[1], 0)
+                        elif self.get_value_from_excel(row, data[0], 0):
+                            s = self.get_value_from_excel(row, data[0], 0)
+                        else:
+                            s = 0.0
                 else:
                     last = 0 if data == 9 else last
                     s = self.get_value_from_excel(row, data, last)

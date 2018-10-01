@@ -240,3 +240,48 @@ fuel_type 取值： （左侧为可取值，右侧为含义）
 #### 指标运用
 
 ##### GET /api/v1/fin/use/bv/ 盈亏平衡点
+
+
+
+
+## **对标站列表**
+
+```
+GET /api/v1/fin/compare/list/
+```
+
+### **Parameters**
+
+### **Return**
+
+### 成功
+
+```
+{
+    "body":{
+        "page_obj":{
+
+        },
+        "is_paginated":false,
+        "site_list":[
+            {
+                "slug":"air",
+                "id":3,
+                "name":"曹家堡服务区加油站"
+            },
+            {
+                "slug":"54",
+                "id":2,
+                "name":"五四加油站"
+            },
+            {
+                "slug":"mf",
+                "id":1,
+                "name":"马坊加油站"
+            }
+        ]
+    },
+    "status":1,
+    "msg":"success"
+}
+```
