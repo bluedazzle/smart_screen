@@ -31,7 +31,7 @@ class Excel(models.Model):
     oil_loss_ai = models.FloatField(default=0.0)
     goods_sell_cost_bi = models.FloatField(default=0.0)
     depreciation_cost_ao = models.FloatField(default=0.0)
-    salary_cost_ao = models.FloatField(default=0.0)
+    salary_cost_ab = models.FloatField(default=0.0)
     water_ele_cost_af = models.FloatField(default=0.0)
     other_cost_aq = models.FloatField(default=0.0)
     oil_gross_profit_w = models.FloatField(default=0.0)

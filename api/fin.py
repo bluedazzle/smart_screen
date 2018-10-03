@@ -34,6 +34,7 @@ class SmartFinDetailView(DetailView):
     str_dens_list = {0: 0.85, 92: 0.759, 95: 0.77, 98: 0.77}
     api_name = ''
     average = False
+    ton = False
 
     def get_str_dens(self, den_str):
         return self.str_dens_list.get(den_str, 0.85)
@@ -135,15 +136,21 @@ class SmartFinDetailView(DetailView):
         group_condition = self.model.month if fmt_str == 'month' else self.model.year
         res = self.get_from_db(belong, group_condition, fmt_str)
         if fmt_str == 'month':
-            res = res.filter(self.model.year == context['year']).all()
+            res = res.filter(self.model.year == st.year).all()
         else:
-            res = res.all()
+            m = session.query(Excel.month).filter(Excel.belong_id == self.site.id).order_by(Excel.year.desc(), Excel.month.desc()).first()[0]
+            res = res.filter(self.model.month >= m).all()
         res_dict = {}
         for itm in res:
             if self.average and self.site.members:
-                res_dict[itm[0]] = itm[1] / self.site.members
+                res_dict[itm[0]] = round(itm[1] / self.site.members, 2)
+            elif self.ton and fmt_str == 'year':
+                if itm[0] == 2018:
+                    res_dict[itm[0]] = round(itm[1] / 9, 2)
+                else:
+                    res_dict[itm[0]] = round(itm[1] / 12, 2)
             else:
-                res_dict[itm[0]] = itm[1]
+                res_dict[itm[0]] = round(itm[1], 2)
         return res_dict
 
     def get_original_ys_data(self, context, st, et):
@@ -160,7 +167,7 @@ class SmartFinDetailView(DetailView):
             res = session.query(Excel.year).filter(Excel.belong_id == self.site.id).all()
         res_dict = {}
         for itm in res:
-            res_dict[itm[0]] = ys
+            res_dict[itm[0]] = round(ys, 2)
         return res_dict
 
     @staticmethod
@@ -169,7 +176,8 @@ class SmartFinDetailView(DetailView):
         for k, v in now.items():
             tq = last.get(k, 0)
             sy = now.get(k - 1, 0)
-            itm_dict = {'month': k, 'current': v, 'tq': tq, 'last_month': sy, 'tb': v - tq, 'hb': v - sy}
+            itm_dict = {'month': k, 'current': round(v), 'tq': round(tq), 'last_month': round(sy), 'tb': round(v - tq),
+                        'hb': round(v - sy)}
             res.append(itm_dict)
         sorted(res, key=lambda x: x['month'])
         return res
@@ -180,7 +188,7 @@ class SmartFinDetailView(DetailView):
         for k, v in now.items():
             tq = last.get(k - 1, 0)
             ys = ys_dict.get(k, 0) if ys_dict else 0
-            itm_dict = {'year': k, 'current': v, 'tq': tq, 'yszj': v - ys, 'tqzj': v - tq}
+            itm_dict = {'year': k, 'current': v, 'tq': tq, 'yszj': round(v - ys), 'tqzj': round(v - tq), 'ys': round(ys)}
             res.append(itm_dict)
         sorted(res, key=lambda x: x['year'])
         return res
@@ -190,7 +198,7 @@ class SmartFinDetailView(DetailView):
         res = []
         for k, v in site.items():
             comp_current = comp.get(k, 0)
-            itm_dict = {'month': k, 'current': comp_current, 'yddb': v - comp_current}
+            itm_dict = {'month': k, 'current': comp_current, 'yddb': round(v - comp_current)}
             res.append(itm_dict)
         sorted(res, key=lambda x: x['month'])
         return res
@@ -200,7 +208,7 @@ class SmartFinDetailView(DetailView):
         res = []
         for k, v in site.items():
             comp_current = comp.get(k, 0)
-            itm_dict = {'year': k, 'current': comp_current, 'nddb': v - comp_current}
+            itm_dict = {'year': k, 'current': comp_current, 'nddb': round(v - comp_current)}
             res.append(itm_dict)
         sorted(res, key=lambda x: x['year'])
         return res
@@ -454,13 +462,13 @@ class DepreciationCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, S
 # 员工薪酬
 class SalaryCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
-    column = Excel.salary_cost_ao
+    column = Excel.salary_cost_ab
     ys_column = 'salary_cost'
     unit_keys = {'current': '元'}
     api_name = '员工薪酬'
 
     def get_from_db(self, belong, group_condition, fmt_str):
-        res = session.query(group_condition, func.sum(self.model.salary_cost_ao)).filter(
+        res = session.query(group_condition, func.sum(self.model.salary_cost_ab)).filter(
             self.model.belong_id == belong).group_by(group_condition)
         return res
 
@@ -523,10 +531,11 @@ class OtherCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFin
 # 费用总额
 class TotalCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
-    column = [Excel.other_cost_aq, Excel.water_ele_cost_af, Excel.daily_repair_ad, Excel.salary_cost_ao,
+    column = [Excel.other_cost_aq, Excel.water_ele_cost_af, Excel.daily_repair_ad, Excel.salary_cost_ab,
               Excel.depreciation_cost_ao, Excel.goods_sell_cost_bi, Excel.gas_sell_cost_u, Excel.diesel_sell_cost_v]
     api_name = '费用总额'
     ys_column = 'total_cost'
+    unit_keys = {'current': '元'}
 
     def get_original_time_data(self, context, st, et, belong=None):
         fmt_str, fmt = self.get_time_fmt(st, et)
@@ -534,7 +543,7 @@ class TotalCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFin
         group_condition = self.model.month if fmt_str == 'month' else self.model.year
         res = session.query(group_condition,
                             func.sum(
-                                Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ao +
+                                Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ab +
                                 Excel.depreciation_cost_ao + Excel.goods_sell_cost_bi + Excel.gas_sell_cost_u + Excel.diesel_sell_cost_v)).filter(
             self.model.belong_id == belong).group_by(group_condition)
         if fmt_str == 'month':
@@ -612,6 +621,7 @@ class TonOilGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     ys_column = 'ton_oil_g_profit'
     unit_keys = {'current': '元'}
     api_name = '吨油毛利'
+    ton = True
 
     def get_from_db(self, belong, group_condition, fmt_str):
         res = session.query(group_condition, func.sum(self.model.ton_oil_g_profit_wdivn)).filter(
@@ -625,6 +635,7 @@ class TonGasGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     column = Excel.ton_gas_g_profit_xdivo
     unit_keys = {'current': '元'}
     api_name = '汽油毛利'
+    ton = True
 
     def get_from_db(self, belong, group_condition, fmt_str):
         res = session.query(group_condition, func.sum(self.model.ton_gas_g_profit_xdivo)).filter(
@@ -638,6 +649,7 @@ class TonDieselGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixi
     column = Excel.ton_die_g_profit_ydivp
     unit_keys = {'current': '元'}
     api_name = '柴油毛利'
+    ton = True
 
     def get_from_db(self, belong, group_condition, fmt_str):
         res = session.query(group_condition, func.sum(self.model.ton_die_g_profit_ydivp)).filter(
@@ -652,6 +664,7 @@ class TonOilCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
     ys_column = 'ton_oil_cost'
     unit_keys = {'current': '元'}
     api_name = '吨油费用'
+    ton = True
 
     def get_from_db(self, belong, group_condition, fmt_str):
         res = session.query(group_condition, func.sum(self.model.ton_oil_cost_aadivn)).filter(
@@ -665,6 +678,7 @@ class TonOilProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smart
     column = Excel.ton_oil_profit_j
     unit_keys = {'current': '元'}
     api_name = '吨油利润'
+    ton = True
 
     def get_from_db(self, belong, group_condition, fmt_str):
         res = session.query(group_condition, func.sum(self.model.ton_oil_profit_j)).filter(
@@ -797,7 +811,7 @@ class BalanceView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDe
 
     def get(self, request, *args, **kwargs):
         total_cost = \
-            session.query(Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ao +
+            session.query(Excel.other_cost_aq + Excel.water_ele_cost_af + Excel.daily_repair_ad + Excel.salary_cost_ab +
                           Excel.depreciation_cost_ao + Excel.goods_sell_cost_bi + Excel.gas_sell_cost_u + Excel.diesel_sell_cost_v).filter(
                 Excel.belong_id == self.site.id).order_by(Excel.year.desc(), Excel.month.desc()).first()[0]
         ton_profit = \

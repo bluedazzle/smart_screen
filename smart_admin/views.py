@@ -322,17 +322,15 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
                 if isinstance(slug, (float, int)):
                     slug = '{0}'.format(int(slug))
                 site = Site.objects.get(slug=slug)
-                obj = Excel.objects.filter(belong=site, year=year, month=month - 1).all()
-                if obj.exists():
-                    obj = obj[0]
+                objs = Excel.objects.filter(belong=site, year=year, month__lt=month).all()
             except Exception as e:
                 logging.exception('ERROR in get excel data reason site {0} not exist'.format(slug))
                 continue
             excel = Excel(belong=site, year=year, month=month)
             for key in keys:
                 last = 0.0
-                if obj:
-                    last = getattr(obj, key)
+                if objs:
+                    last = reduce(lambda x,y: x+y, [getattr(obj, key, ) for obj in objs], 0)
                 data, cal = get_excel_row(key)
                 s = 0.0
                 if cal:

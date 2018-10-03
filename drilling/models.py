@@ -328,7 +328,7 @@ class Excel(Base):
     oil_loss_ai = Column(Float)
     goods_sell_cost_bi = Column(Float)
     depreciation_cost_ao = Column(Float)
-    salary_cost_ao = Column(Float)
+    salary_cost_ab = Column(Float)
     water_ele_cost_af = Column(Float)
     other_cost_aq = Column(Float)
     oil_gross_profit_w = Column(Float)
