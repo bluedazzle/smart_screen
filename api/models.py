@@ -49,6 +49,7 @@ class Site(BaseModel):
     cost_control = models.TextField(default='', null=True, blank=True)
     promote = models.TextField(default='', null=True, blank=True)
     advice = models.TextField(default='', null=True, blank=True)
+    open_time = models.IntegerField(default=365)
 
     gas_92 = models.FloatField(default=0.0)
     gas_95 = models.FloatField(default=0.0)

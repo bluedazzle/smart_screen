@@ -82,7 +82,7 @@ TILL.TIMECLOSE DESC'''.format(st, et)
                 logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
                 session.rollback()
     logging.info('=============create store order {0} site {1}=============='.format(nums, site.name))
-    get_goods_order_payment(site)
+    # get_goods_order_payment(site)
     update_site_status(site, '商品订单更新')
 
 
@@ -126,10 +126,10 @@ def get_first_classify(site):
             continue
 
 
-def get_goods_order_payment(site):
+def get_goods_order_payment(site, threads=2):
     t_orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False, GoodsOrder.belong_id == site.id).all()
     total = len(t_orders)
-    thread_nums = 5
+    thread_nums = threads
     thread_list = []
     slice_num = total / thread_nums
     offset = 0
@@ -161,7 +161,7 @@ def get_goods_order_payment(site):
                     session.rollback()
 
     for i in range(thread_nums):
-        t = threading.Thread(target=get_payment, args=(i, site, session, GoodsOrder, total, offset, 100))
+        t = threading.Thread(target=get_payment, args=(i, site, session, GoodsOrder, total, offset, 500))
         offset += slice_num
         thread_list.append(t)
 

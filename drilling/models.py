@@ -278,6 +278,7 @@ class Site(Base):
     per_oil_amount = Column(Float, default=0.0)
     per_profit = Column(Float, default=0.0)
     per_goods_income = Column(Float, default=0.0)
+    open_time = Column(Integer, default=365)
 
     gas_92 = Column(Float, default=0.0)
     gas_95 = Column(Float, default=0.0)
@@ -335,13 +336,17 @@ class Excel(Base):
     total_profit_gaddi = Column(Float)
     oil_profit_g = Column(Float)
     goods_profit_i = Column(Float)
-    ton_oil_g_profit_wdivn = Column(Float)
-    ton_gas_g_profit_xdivo = Column(Float)
     per_oil_amount_m = Column(Float)
-    ton_die_g_profit_ydivp = Column(Float)
-    ton_oil_cost_aadivn = Column(Float)
     ton_oil_profit_j = Column(Float)
     daliy_sell_amount_l = Column(Float)
+    total_cost_aa = Column(Float)
+    total_profit_f = Column(Float)
+    oil_amount_n = Column(Float)
+    total_goods_profit_bh = Column(Float)
+    base_x = Column(Float)
+    base_o = Column(Float)
+    base_y = Column(Float)
+    base_p = Column(Float)
 
 
 # engine = create_engine('postgresql+psycopg2://rapospectre:123456qq@localhost:5432/ss_06',

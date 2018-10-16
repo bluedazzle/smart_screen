@@ -38,13 +38,18 @@ class Excel(models.Model):
     total_profit_gaddi = models.FloatField(default=0.0)
     oil_profit_g = models.FloatField(default=0.0)
     goods_profit_i = models.FloatField(default=0.0)
-    ton_oil_g_profit_wdivn = models.FloatField(default=0.0)
-    ton_gas_g_profit_xdivo = models.FloatField(default=0.0)
     per_oil_amount_m = models.FloatField(default=0.0)
-    ton_die_g_profit_ydivp = models.FloatField(default=0.0)
-    ton_oil_cost_aadivn = models.FloatField(default=0.0)
     ton_oil_profit_j = models.FloatField(default=0.0)
     daliy_sell_amount_l = models.FloatField(default=0.0)
+    total_cost_aa = models.FloatField(default=0.0)
+    total_profit_f = models.FloatField(default=0.0)
+    oil_amount_n = models.FloatField(default=0.0)
+    total_goods_profit_bh = models.FloatField(default=0.0)
+    base_x = models.FloatField(default=0.0)
+    base_o = models.FloatField(default=0.0)
+    base_y = models.FloatField(default=0.0)
+    base_p = models.FloatField(default=0.0)
+
 
     def __unicode__(self):
         return '{0}: {1}年-{2}月'.format(self.belong.name, self.year, self.month)

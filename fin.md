@@ -218,6 +218,7 @@ fuel_type 取值： （左侧为可取值，右侧为含义）
 ##### GET /api/v1/fin/cost/wec/ 水电暖费
 ##### GET /api/v1/fin/cost/ol/ 油品损溢
 ##### GET /api/v1/fin/cost/oc/ 其他费用
+##### GET /api/v1/fin/cost/dr/ 日常维修
 ##### GET /api/v1/fin/cost/tc/ 费用总额
 #### 利润指标
 

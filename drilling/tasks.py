@@ -60,7 +60,7 @@ class OilTask(Task):
         log.create_time = now
         log.modify_time = now
         log.original_create_time = now
-        log.err_info = exc
+        log.err_info = einfo
         log.belong_id = site.id
         session.add(log)
         try:
@@ -72,29 +72,30 @@ class OilTask(Task):
 
 
 @app.on_after_configure.connect
+@with_session
 def init_periodic_tasks(sender, **kwargs):
-    # site_list = [itm[0] for itm in session.query(Site.slug).all()]
-    site_list = ['mf', '54', 'air']
+    site_list = [itm[0] for itm in session.query(Site.slug).filter(Site.check == True).all()]
+    # site_list = ['mf', '54', 'air']
     for site in site_list:
         sender.add_periodic_task(
-            datetime.timedelta(seconds=40),
+            datetime.timedelta(minutes=10),
             # crontab(hour=7, minute=30, day_of_week=1),
             get_tank_info_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(seconds=30),
+            datetime.timedelta(minutes=10),
             get_inventory_record_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(seconds=25),
+            datetime.timedelta(minutes=15),
             get_fuel_order_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(seconds=35),
+            datetime.timedelta(minutes=15),
             get_store_order_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(seconds=45),
+            datetime.timedelta(minutes=15),
             get_delivery_task.s(site),
         )
         sender.add_periodic_task(
@@ -102,7 +103,7 @@ def init_periodic_tasks(sender, **kwargs):
             get_inventories_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(seconds=20),
+            datetime.timedelta(minutes=10),
             get_card_record_task.s(site),
         )
 

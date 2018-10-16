@@ -47,7 +47,7 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
                           classification_id=dept, barcode=barcode, super_cls_id=int(super_dept))
         nums += 1
     logging.info('=============create fuel order {0} site {1}=============='.format(nums, site.name))
-    get_fuel_order_payment(site)
+    # get_fuel_order_payment(site)
     update_site_status(site, '油品订单更新')
 
 
@@ -68,10 +68,10 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 #             session.commit()
 
 
-def get_fuel_order_payment(site):
+def get_fuel_order_payment(site, threads=2):
     t_orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id).all()
     total = len(t_orders)
-    thread_nums = 5
+    thread_nums = threads
     thread_list = []
     slice_num = total / thread_nums
     offset = 0
@@ -102,7 +102,7 @@ def get_fuel_order_payment(site):
                 session.rollback()
 
     for i in range(thread_nums):
-        t = threading.Thread(target=get_payment, args=(i, site, session, FuelOrder, total, offset, 100))
+        t = threading.Thread(target=get_payment, args=(i, site, session, FuelOrder, total, offset, 500))
         offset += slice_num
         thread_list.append(t)
 
