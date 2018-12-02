@@ -233,6 +233,8 @@ def get_clean_data(value):
 
 
 def datetime_to_string(obj, fmt='%Y-%m-%d'):
+    if not obj:
+        return '1980-01-01'
     return obj.strftime(fmt)
 
 
@@ -357,15 +359,18 @@ def update_goods_inventory(hash_str, **kwargs):
     return gi
 
 
-def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0, limit=1000, name='default'):
+def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0, end_offset=0, limit=1000, name='default'):
     total_page = int(math.ceil(total / float(limit)))
     start = 0
     if start_offset:
         start = start_offset / limit
 
+    if end_offset:
+        total_page = end_offset / limit
+
     for i in xrange(start, total_page):
         offset = limit * i
-        result = session.query(obj).filter(obj.catch_payment == False).order_by(order_by).limit(limit).offset(
+        result = session.query(obj).filter(obj.catch_payment == False, obj.belong_id == site.id).order_by(order_by).limit(limit).offset(
             offset).all()
         logging.info(
             'Thread {0} {1}: Current {2}->{3}/{4} {5}%'.format(name, site.slug, offset, offset + limit, total,

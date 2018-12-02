@@ -22,3 +22,7 @@ class SiteListView(TemplateView):
 
 class TaskListView(TemplateView):
     template_name = 'super_admin/task.html'
+
+
+class IndexView(TemplateView):
+    template_name = 'super_admin/index.html'

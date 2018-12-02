@@ -127,15 +127,17 @@ def get_first_classify(site):
 
 
 def get_goods_order_payment(site, threads=2):
-    t_orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False, GoodsOrder.belong_id == site.id).all()
+    t_orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False,
+                                                GoodsOrder.belong_id == site.id).all()
     total = len(t_orders)
     thread_nums = threads
     thread_list = []
     slice_num = total / thread_nums
     offset = 0
 
-    def get_payment(thread_name, site, session, obj, total, start_offset=0, limit=100):
-        for orders in query_by_pagination(site, session, obj, total, start_offset=start_offset, limit=limit,
+    def get_payment(thread_name, obj, start_offset=0, end_offset=0, limit=100):
+        for orders in query_by_pagination(site, session, obj, total, start_offset=start_offset, end_offset=end_offset,
+                                          limit=limit,
                                           name=thread_name):
             ib_session = init_interbase_connect(site.fuel_server)
             till_list = [unicode(order.till_id) for order in orders]
@@ -147,6 +149,7 @@ def get_goods_order_payment(site, threads=2):
         PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
             ib_session.execute(sql)
             res = ib_session.fetchall()
+
             for itm in res:
                 till_id, payment_code, payment_type = itm
                 orders = session.query(GoodsOrder).filter(GoodsOrder.till_id == till_id).all()
@@ -154,14 +157,20 @@ def get_goods_order_payment(site, threads=2):
                     order.payment_code = payment_code
                     order.payment_type = get_clean_data(payment_type)
                     order.catch_payment = True
-                try:
-                    session.commit()
-                except Exception as e:
-                    logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
-                    session.rollback()
+            try:
+                session.flush()
+                session.commit()
+                logging.info('INFO commit to db success site {0}'.format(site.name))
+            except Exception as e:
+                logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+                session.rollback()
 
     for i in range(thread_nums):
-        t = threading.Thread(target=get_payment, args=(i, site, session, GoodsOrder, total, offset, 500))
+        if i == thread_nums + 1:
+            e_offset = total
+        else:
+            e_offset = offset + slice_num
+        t = threading.Thread(target=get_payment, args=(i, GoodsOrder, offset, e_offset, 100))
         offset += slice_num
         thread_list.append(t)
 

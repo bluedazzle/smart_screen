@@ -10,6 +10,10 @@ from drilling.db.session import config_oil_session
 
 config_oil_session(conf)
 
+import logging
+
+logging.getLogger().setLevel(logging.INFO)
+
 
 def init_site_data():
     result = session.query(Site).fliter(Site.check == True).all()
@@ -20,6 +24,7 @@ def get_payments():
     sites = init_site_data()
     for site in sites:
         get_fuel_order_payment(site, 4)
+
 
 if __name__ == '__main__':
     get_payments()

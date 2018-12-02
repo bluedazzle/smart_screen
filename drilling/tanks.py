@@ -90,6 +90,8 @@ def get_tank_grade(site):
     tanks = get_all_tanks_by_site(site)
     ib_session = init_interbase_connect(site.fuel_server)
     for tank in tanks:
+        if not tank.grade_id:
+            continue
         sql = 'SELECT GRADE, GRADENAME FROM FUELGRADE WHERE GRADE={0}'.format(tank.grade_id)
         ib_session.execute(sql)
         res = ib_session.fetchone()
@@ -262,8 +264,14 @@ AND FPR.SHIFT_CONTROL_ID = {0}
 AND FPH.TANK1_ID = {1}'''.format(record.shift_control_id, tank_id)
         ib_session.execute(sql)
         totals = ib_session.fetchall()
+
+        def total_add(x, y):
+            if y[0]:
+                return x + y[0]
+            return x
+
         if totals:
-            total = reduce(lambda x, y: x + y[0], totals, 0)
+            total = reduce(total_add, totals, 0)
             record.tanker_act_out_amount = total
         if record.record_type == 3:
             record.loss_amount = record.tanker_act_out_amount - record.tank_out_amount

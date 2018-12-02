@@ -170,7 +170,7 @@ class FuelTank(BaseModel):
     belong = models.ForeignKey(Site, related_name='site_fuel_tanks')
 
     def __unicode__(self):
-        return self.name
+        return '{0}-{1}-{2}-{3}'.format(self.belong.name, self.name, self.max_value, self.min_value)
 
 
 class InventoryRecord(BaseModel):

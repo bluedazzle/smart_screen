@@ -63,7 +63,7 @@ class TaskView(StatusWrapMixin, JsonResponseMixin, DetailView):
 
 class TaskListView(StatusWrapMixin, MultipleJsonResponseMixin, ListView):
     model = Task
-    paginate_by = 5
+    paginate_by = 500
 
     def get_queryset(self):
         queryset = super(TaskListView, self).get_queryset().order_by('-create_time')

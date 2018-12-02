@@ -173,8 +173,8 @@ class SmartFinDetailView(DetailView):
 
     def format_num(self, value):
         if self.wan:
-            return round(value / 10000.0, 2)
-        return round(value, 2)
+            return round(value / 10000.0, 0)
+        return round(value, 0)
 
     def cal_month_data(self, now, last):
         res = []
@@ -669,8 +669,8 @@ class TonOilGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
     model = Excel
     column = Excel.oil_gross_profit_w
     ys_column = 'ton_oil_g_profit'
-    unit_keys = {'current': '万元'}
-    wan = True
+    unit_keys = {'current': '元/吨'}
+    # wan = True
     api_name = '吨油毛利'
 
     # ton = True
@@ -686,8 +686,8 @@ class TonOilGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
 class TonGasGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
     column = [Excel.base_x, Excel.base_o]
-    unit_keys = {'current': '万元'}
-    wan = True
+    unit_keys = {'current': '元/吨'}
+    # wan = True
     api_name = '汽油毛利'
 
     # ton = True
@@ -702,8 +702,8 @@ class TonGasGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
 class TonDieselGrossProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
     column = [Excel.base_y, Excel.base_p]
-    unit_keys = {'current': '万元'}
-    wan = True
+    unit_keys = {'current': '元/吨'}
+    # wan = True
     api_name = '柴油毛利'
 
     # ton = True
@@ -719,8 +719,8 @@ class TonOilCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
     model = Excel
     column = [Excel.total_cost_aa, Excel.oil_amount_n]
     ys_column = 'ton_oil_cost'
-    unit_keys = {'current': '万元'}
-    wan = True
+    unit_keys = {'current': '元/吨'}
+    # wan = True
     api_name = '吨油费用'
 
     # ton = True
@@ -736,8 +736,8 @@ class TonOilCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
 class TonOilProfitView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFinDetailView):
     model = Excel
     column = [Excel.total_profit_f, Excel.oil_amount_n]
-    unit_keys = {'current': '万元'}
-    wan = True
+    unit_keys = {'current': '元/吨'}
+    # wan = True
     api_name = '吨油利润'
 
     # ton = True

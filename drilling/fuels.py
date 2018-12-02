@@ -76,9 +76,10 @@ def get_fuel_order_payment(site, threads=2):
     slice_num = total / thread_nums
     offset = 0
 
-    def get_payment(thread_name, site, session, obj, total, start_offset=0, limit=100):
-        for orders in query_by_pagination(site, session, obj, total, limit=limit, name=thread_name,
-                                          start_offset=start_offset):
+    def get_payment(thread_name, obj, start_offset=0, end_offset=0, limit=100):
+        for orders in query_by_pagination(site, session, obj, total, start_offset=start_offset, end_offset=end_offset,
+                                          limit=limit,
+                                          name=thread_name):
             ib_session = init_interbase_connect(site.fuel_server)
             tills = ','.join([unicode(i.till_id) for i in orders])
             if not tills:
@@ -97,12 +98,17 @@ def get_fuel_order_payment(site, threads=2):
                     order.catch_payment = True
             try:
                 session.commit()
+                logging.info('INFO commit to db success site {0}'.format(site.name))
             except Exception as e:
                 logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
                 session.rollback()
 
     for i in range(thread_nums):
-        t = threading.Thread(target=get_payment, args=(i, site, session, FuelOrder, total, offset, 500))
+        if i == thread_nums + 1:
+            e_offset = total
+        else:
+            e_offset = offset + slice_num
+        t = threading.Thread(target=get_payment, args=(i, FuelOrder, offset, e_offset, 100))
         offset += slice_num
         thread_list.append(t)
 

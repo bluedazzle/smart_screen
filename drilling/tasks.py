@@ -15,10 +15,10 @@ from celery import Celery
 
 from drilling.card import get_card_record
 from drilling.db.session import with_session
-from drilling.fuels import get_fuel_order, get_delivery
+from drilling.fuels import get_fuel_order, get_delivery, get_fuel_order_payment
 from drilling.init import init_all, init_in_test
 from drilling.models import session, Site, CeleryLog
-from drilling.store import get_store_order, get_inventories
+from drilling.store import get_store_order, get_inventories, get_goods_order_payment
 from drilling.tanks import get_tank_info, get_tank_temperature, get_tank_value, get_inventory_record, get_tank_grade
 from drilling.utils import get_now_time_with_timezone, get_site_by_slug
 
@@ -106,6 +106,19 @@ def init_periodic_tasks(sender, **kwargs):
             datetime.timedelta(minutes=10),
             get_card_record_task.s(site),
         )
+        sender.add_periodic_task(
+            crontab(hour=4, minute=10, day_of_month=1),
+            # datetime.timedelta(minutes=10),
+            init_task.s(site),
+        )
+        # sender.add_periodic_task(
+        #     datetime.timedelta(minutes=480),
+        #     get_fuel_payments.s(site),
+        # )
+        # sender.add_periodic_task(
+        #     datetime.timedelta(minutes=470),
+        #     get_goods_payments.s(site),
+        # )
 
 
 @app.task()
@@ -162,6 +175,26 @@ def get_inventories_task(site):
     task_info = 'get store order {0}'.format(site)
     logging.info('START {0}'.format(task_info))
     get_inventories(site)
+    logging.info('SUCCESS {0}'.format(task_info))
+
+
+@app.task()
+@with_session
+def get_fuel_payments(site, threads=4):
+    task_info = 'get fuel order payments {0}'.format(site)
+    logging.info('START {0}'.format(task_info))
+    site = get_site_by_slug(site)
+    get_fuel_order_payment(site, threads)
+    logging.info('SUCCESS {0}'.format(task_info))
+
+
+@app.task()
+@with_session
+def get_goods_payments(site, threads=4):
+    task_info = 'get goods order payments {0}'.format(site)
+    logging.info('START {0}'.format(task_info))
+    site = get_site_by_slug(site)
+    get_goods_order_payment(site, threads)
     logging.info('SUCCESS {0}'.format(task_info))
 
 
