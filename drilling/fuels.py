@@ -68,8 +68,11 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 #             session.commit()
 
 
-def get_fuel_order_payment(site, threads=2):
-    t_orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id).all()
+def get_fuel_order_payment(site, threads=2, today=False):
+    t_orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id)
+    if today:
+        t_orders = t_orders.filter(FuelOrder.create_time == datetime.datetime.now().date())
+    t_orders = t_orders.all()
     total = len(t_orders)
     thread_nums = threads
     thread_list = []

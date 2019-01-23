@@ -78,24 +78,24 @@ def init_periodic_tasks(sender, **kwargs):
     # site_list = ['mf', '54', 'air']
     for site in site_list:
         sender.add_periodic_task(
-            datetime.timedelta(minutes=10),
+            datetime.timedelta(minutes=1),
             # crontab(hour=7, minute=30, day_of_week=1),
             get_tank_info_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(minutes=10),
+            datetime.timedelta(minutes=5),
             get_inventory_record_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(minutes=15),
+            datetime.timedelta(seconds=70),
             get_fuel_order_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(minutes=15),
+            datetime.timedelta(minutes=1),
             get_store_order_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(minutes=15),
+            datetime.timedelta(minutes=1),
             get_delivery_task.s(site),
         )
         sender.add_periodic_task(
@@ -103,7 +103,7 @@ def init_periodic_tasks(sender, **kwargs):
             get_inventories_task.s(site),
         )
         sender.add_periodic_task(
-            datetime.timedelta(minutes=10),
+            datetime.timedelta(seconds=50),
             get_card_record_task.s(site),
         )
         sender.add_periodic_task(

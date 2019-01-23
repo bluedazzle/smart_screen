@@ -143,6 +143,8 @@ def config_oil_session(conf, pool_recycle=60):
 
     engine = _create_engine(conf.smart_screen_user, conf.smart_screen_password, conf.smart_screen_host,
                             int(conf.smart_screen_port), conf.smart_screen_name, pool_recycle=pool_recycle, )
+    from multiprocessing.util import register_after_fork
+    register_after_fork(engine, engine.dispose())
     engines = {'utf8mb4': engine, 'default': engine}
     OilSession.configure(bind=engine, engines=engines, autocommit=False, autoflush=False, expire_on_commit=False)
 
@@ -153,4 +155,5 @@ def with_session(func):
         response = func(*args, **kwargs)
         OilSession.remove()
         return response
+
     return _wrapped

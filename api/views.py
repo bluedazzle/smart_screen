@@ -1453,6 +1453,14 @@ class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandl
             CardRecord.belong_id == self.site.id, CardRecord.original_create_time.between(st, et),
         ).all()
         card_res = [{'cls_name': itm[0], 'total': round(itm[1] / 100.0)} for itm in card_res]
+        if len(fuel_res) == 1:
+            if fuel_res[0].get('cls_name') == '汽油':
+                fuel_res.append({'cls_name': '柴油', 'amount': 0.0})
+            else:
+                card_res.append({'cls_name': '汽油', 'amount': 0.0})
+        if len(fuel_res) == 0:
+            for cls in ['柴油', '汽油']:
+                fuel_res.append({'cls_name': cls, 'amount': 0.0})
         if len(card_res) == 1:
             if card_res[0].get('cls_name') == '汽油':
                 card_res.append({'cls_name': '柴油', 'total': 0.0})

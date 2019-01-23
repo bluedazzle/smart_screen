@@ -126,9 +126,12 @@ def get_first_classify(site):
             continue
 
 
-def get_goods_order_payment(site, threads=2):
+def get_goods_order_payment(site, threads=2, today=False):
     t_orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False,
-                                                GoodsOrder.belong_id == site.id).all()
+                                                GoodsOrder.belong_id == site.id)
+    if today:
+        t_orders = t_orders.filter(GoodsOrder.create_time == datetime.datetime.now().date())
+    t_orders = t_orders.all()
     total = len(t_orders)
     thread_nums = threads
     thread_list = []
