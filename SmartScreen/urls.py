@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.conf.urls.static import static
 
 from SmartScreen import settings
 from api.views import TokenView
+
 
 urlpatterns = [
     url(r'^site_admin/', include(admin.site.urls)),
@@ -25,5 +27,5 @@ urlpatterns = [
     url(r'^api/admin/', include('smart_admin.urls')),
     url(r'^super/admin/', include('super_admin.urls')),
     url(r'^$', TokenView.as_view()),
-    url(r'^s/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_MEDIA}),
-]
+    # url(r'^s/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_MEDIA}),
+] + static('/s/', document_root=settings.STATIC_MEDIA)
