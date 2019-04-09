@@ -18,7 +18,7 @@ def abnormal_card_check(card_id):
     if not card_id:
         return 0, ''
     st, et = get_today_st_et()
-    card_sql = session.query(CardRecord).filter(CardRecord.card_id == unicode(card_id))
+    card_sql = session.query(CardRecord).filter(CardRecord.card_id == str(card_id))
     day_card_res = card_sql.filter(CardRecord.original_create_time.between(st, et))
     # 日异常判断:
     count = day_card_res.count()
@@ -259,7 +259,7 @@ def convert_goods(good_id):
 
 
 def details_handle(details):
-    detail_list = unicode(details).split(';')
+    detail_list = str(details).split(';')
     details = []
     for detail in detail_list:
         if not detail:
@@ -306,8 +306,8 @@ def get_card_record(site, start_time=None, end_time=None):
     for itm in res:
         unique_id, balance, details, pump_id, card_id, bank_card_id, card_type, eps_unique_id, original_create_time = itm
         unique_str = generate_hash(unicode(pump_id), datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'),
-                                   unicode(card_id), unicode(bank_card_id), unicode(eps_unique_id),
-                                   unicode(unique_id), unicode(site.id))
+                                   str(card_id), str(bank_card_id), str(eps_unique_id),
+                                   str(unique_id), str(site.id))
         exist = check_card_record(unique_str)
         if exist:
             continue

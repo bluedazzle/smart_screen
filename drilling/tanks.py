@@ -206,9 +206,9 @@ AND FTH.ITEMDOCTYPE_ID IN (1, 7, 8, 10, 11)'''.format(start_time=st, end_time=et
         volum_sum = 0
     for record in records:
         tank_id, original_create_time, record_type, extref, send_amount, receive_amount, altitude, water_altitude, fuel_volum, fuel_temperature, experiment_density, standard_density, fuel_standard_volum, shift_control_id, start_time, experiment_temperature = record
-        unique_str = generate_hash(unicode(tank_id), unicode(record_type), unicode(fuel_volum),
-                                   unicode(fuel_temperature), unicode(experiment_density),
-                                   unicode(standard_density), unicode(fuel_standard_volum), unicode(shift_control_id))
+        unique_str = generate_hash(unicode(tank_id), str(record_type), str(fuel_volum),
+                                   str(fuel_temperature), str(experiment_density),
+                                   str(standard_density), str(fuel_standard_volum), str(shift_control_id))
         exist = get_record_by_hash(unique_str)
         if exist:
             if exist.record_type == 3:

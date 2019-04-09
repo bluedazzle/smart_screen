@@ -202,7 +202,7 @@ class UploadPictureView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponse
         #     from PIL import Image
         img_data = request.FILES.get('image')
         # img = Image.open(img_data)
-        name = generate_hash(img_data.name, unicode(time.time()))
+        name = generate_hash(img_data.name, str(time.time()))
         from django.core.files.storage import default_storage
         from django.core.files.base import ContentFile
         default_storage.save('{0}image/{1}.png'.format(STATIC_ROOT, name), ContentFile(img_data.read()))

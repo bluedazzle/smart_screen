@@ -46,7 +46,8 @@ class StatusWrapMixin(object):
 class AdminStatusWrapMixin(StatusWrapMixin):
     def wrapper(self, context):
         data = super(AdminStatusWrapMixin, self).wrapper(context)
-        if isinstance(self.message, unicode):
+        # if isinstance(self.message, unicode):
+        if isinstance(self.message, str):
             data['msg'] = {'message': self.message}
             return data
         error_data = {}

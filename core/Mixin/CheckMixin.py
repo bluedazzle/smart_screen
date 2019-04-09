@@ -38,8 +38,8 @@ from core.Mixin.StatusWrapMixin import ERROR_PERMISSION_DENIED, ERROR_TOKEN, INF
 #
 #     def check_sign(self):
 #         # timestamp = self.request.GET.get('timestamp', '')
-#         # sign = unicode(self.request.GET.get('sign', '')).upper()
-#         # check = unicode(hashlib.md5('{0}{1}'.format(timestamp, self.secret)).hexdigest()).upper()
+#         # sign = str(self.request.GET.get('sign', '')).upper()
+#         # check = str(hashlib.md5('{0}{1}'.format(timestamp, self.secret)).hexdigest()).upper()
 #         # if check == sign:
 #         #     return True
 #         return True

@@ -894,7 +894,7 @@ class GoodsSearchSequentialView(CheckSiteMixin, StatusWrapMixin, JsonResponseMix
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
-        key = unicode(key).upper()
+        key = str(key).upper()
         res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
             return res
@@ -946,7 +946,7 @@ class GoodsSearchMonthSequentialView(CheckSiteMixin, StatusWrapMixin, JsonRespon
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
-        key = unicode(key).upper()
+        key = str(key).upper()
         res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
             return res
@@ -998,7 +998,7 @@ class GoodsSearchCompareYearView(CheckSiteMixin, StatusWrapMixin, JsonResponseMi
     unit_keys = {'amount': '笔', 'income': '元'}
 
     def search_goods_by_key(self, key):
-        key = unicode(key).upper()
+        key = str(key).upper()
         res = session.query(GoodsInventory.barcode, GoodsInventory.name).filter(GoodsInventory.py.contains(key)).first()
         if res:
             return res

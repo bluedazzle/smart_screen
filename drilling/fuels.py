@@ -35,10 +35,10 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
         till_id, original_create_time, fuel_type, price, amount, total_price, pump_id, dept, barcode = order
         fuel_type = get_clean_data(fuel_type)
         barcode = get_clean_data(barcode)
-        super_dept = unicode(dept)[:6]
+        super_dept = str(dept)[:6]
         unique_str = generate_hash(unicode(till_id), datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'),
-                                   unicode(price), unicode(amount), unicode(pump_id),
-                                   unicode(total_price))
+                                   str(price), str(amount), str(pump_id),
+                                   str(total_price))
         res = get_fuel_order_by_hash(unique_str)
         if res:
             continue
@@ -163,8 +163,8 @@ Order By EXTREF'''.format(st, et)
     for itm in res:
         _, original_create_time, rev_id, sup_id, number = itm
         number = get_clean_data(number)
-        unique_str = generate_hash(_, datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'), unicode(rev_id),
-                                   unicode(sup_id),
+        unique_str = generate_hash(_, datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'), str(rev_id),
+                                   str(sup_id),
                                    number[2:])
         obj = get_obj_by_hash(unique_str, DeliveryRecord)
         if obj:

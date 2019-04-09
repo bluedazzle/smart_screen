@@ -58,14 +58,14 @@ TILL.TIMECLOSE DESC'''.format(st, et)
     nums = 0
     for order in orders:
         sale_date, pos_id, till_id, shift, original_create_time, dept, barcode, name, unit, price, total, amount, _ = order
-        dept_str = unicode(dept)
+        dept_str = str(dept)
         if dept_str.startswith('1001'):
             continue
         name = get_clean_data(name)
         barcode = get_clean_data(barcode)
         unique_str = generate_hash(unicode(till_id), datetime_to_string(original_create_time, '%Y-%m-%d %H:%M:%S'),
-                                   unicode(price), unicode(amount), unicode(barcode),
-                                   unicode(total), unicode(site.id))
+                                   str(price), str(amount), str(barcode),
+                                   str(total), str(site.id))
         res = get_goods_order_by_hash(unique_str)
         if res:
             continue
@@ -220,7 +220,7 @@ ORDER BY
         barcode = get_clean_data(barcode)
         name = get_clean_data(name)
         unit = get_clean_data(unit)
-        unique_str = generate_hash(unicode(f_cls), unicode(s_cls), unicode(t_cls), barcode, unicode(site.id))
+        unique_str = generate_hash(unicode(f_cls), str(s_cls), str(t_cls), barcode, str(site.id))
         update_goods_inventory(unique_str, name=name, unit=unit, hash=unique_str, barcode=barcode, itemcode=barcode,
                                third_cls_id=t_cls, py=get_py(name),
                                second_cls_id=s_cls, cls_id=f_cls, amount=amount, belong_id=site.id)
