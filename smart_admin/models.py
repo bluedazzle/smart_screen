@@ -16,7 +16,7 @@ class Account(AbstractBaseUser):
 
     USERNAME_FIELD = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
 
 
@@ -51,5 +51,5 @@ class Excel(models.Model):
     base_p = models.FloatField(default=0.0)
 
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}: {1}年-{2}月'.format(self.belong.name, self.year, self.month)

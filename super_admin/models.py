@@ -24,7 +24,7 @@ class CeleryLog(BaseModel):
     err_info = models.TextField(null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_celery_logs', null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}-{2}-{3}'.format(self.belong.name, self.status, self.task_type, self.create_time)
 
 
@@ -33,5 +33,5 @@ class Task(BaseModel):
     name = models.CharField(max_length=64)
     belong = models.ForeignKey(Site, related_name='site_celery_tasks', null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}-{2}'.format(self.belong.name, self.name, self.create_time)

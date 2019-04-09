@@ -63,7 +63,7 @@ class Site(BaseModel):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -75,7 +75,7 @@ class Classification(BaseModel):
     def __str__(self):
         return self.name
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}'.format(self.id, self.name)
 
 
@@ -85,7 +85,7 @@ class SecondClassification(BaseModel):
     parent = models.ForeignKey(Classification, related_name='cls_sub_cls')
     belong = models.ForeignKey(Site, related_name='site_second_classification', null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}<-{2}'.format(self.id, self.name, self.parent.name)
 
 
@@ -96,7 +96,7 @@ class ThirdClassification(BaseModel):
     grandparent = models.ForeignKey(Classification, related_name='cls_ssub_cls')
     belong = models.ForeignKey(Site, related_name='site_third_classification', null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}<-{2}<-{3}'.format(self.id, self.name, self.parent.name, self.grandparent.name)
 
 
@@ -116,7 +116,7 @@ class FuelOrder(BaseModel):
     barcode = models.CharField(max_length=100, default='', null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_fuel_orders')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}-{3}L-￥{4}'.format(self.belong.name, self.original_create_time,
                                                                  self.fuel_type, self.amount, self.total_price)
 
@@ -137,7 +137,7 @@ class GoodsInventory(BaseModel):
     cls = models.ForeignKey(Classification, related_name='cls_gis')
     belong = models.ForeignKey(Site, related_name='site_gis')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}: {1} {2}{3}'.format(self.belong.name, self.name, self.amount, self.unit)
 
 
@@ -159,7 +159,7 @@ class GoodsOrder(BaseModel):
     hash = models.CharField(max_length=64, unique=True)
     belong = models.ForeignKey(Site, related_name='site_goods_orders')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}x{2} {3}元-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.name, self.amount, self.total,
                                                                 self.original_create_time)
 
@@ -175,7 +175,7 @@ class FuelTank(BaseModel):
     water_stick = models.FloatField(default=0.0, null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_fuel_tanks')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}-{2}-{3}'.format(self.belong.name, self.name, self.max_value, self.min_value)
 
 
@@ -226,7 +226,7 @@ class InventoryRecord(BaseModel):
     tank = models.ForeignKey(FuelTank, related_name='tank_inventory_records')
     belong = models.ForeignKey(Site, related_name='site_inventory_records')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}号油罐-{2}-{3}-{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.tank.tank_id, self.tank.name,
                                                                   self.record_type, self.original_create_time)
 
@@ -238,7 +238,7 @@ class DeliveryRecord(BaseModel):
     hash = models.CharField(max_length=128, unique=True)
     belong = models.ForeignKey(Site, related_name='site_deliveries')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1: %Y-%m-%d %H:%M:%S}-{2}'.format(self.belong.name, self.original_create_time, self.truck_number)
 
 
@@ -247,7 +247,7 @@ class Supplier(models.Model):
     name = models.CharField(default='', max_length=50)
     belong = models.ForeignKey(Site, related_name='site_suppliers')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
 
 
@@ -256,7 +256,7 @@ class Receiver(models.Model):
     name = models.CharField(default='', max_length=50)
     belong = models.ForeignKey(Site, related_name='site_receivers')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}'.format(self.belong.name, self.name)
 
 
@@ -278,7 +278,7 @@ class FuelPlan(models.Model):
     total = models.FloatField(default=0)
     belong = models.ForeignKey(Site, related_name='site_plans', null=True, blank=True, on_delete=models.SET_NULL)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}'.format(self.year, self.fuel_type.name)
 
 
@@ -305,7 +305,7 @@ class CardRecord(BaseModel):
     detail = models.CharField(max_length=50, null=True, blank=True)
     belong = models.ForeignKey(Site, related_name='site_card_records')
 
-    def __unicode__(self):
+    def __str__(self):
         if self.card_type == 1 or self.card_type == 2:
             card_id = self.card_id
         else:
@@ -334,7 +334,7 @@ class AbnormalRecord(models.Model):
     abnormal_type = models.IntegerField(default=1)
     belong = models.ForeignKey(Site, related_name='site_abnormal_records')
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0}-{1}-{2}-{3: %Y-%m-%d %H:%M:%S}~{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.card_id,
                                                                                   self.reason, self.start_time,
                                                                                   self.end_time)
