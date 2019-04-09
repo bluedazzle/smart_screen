@@ -131,7 +131,7 @@ from fdb.ibase import (frb_info_att_charset, isc_dpb_activate_shadow,
     isc_tpb_version3, isc_tpb_wait, isc_tpb_write,
 
     b, s, ord2, int2byte, mychr, mybytes, myunicode, mylong, StringType,
-    IntType, LongType, FloatType, ListType, UnicodeType, TupleType, xrange,
+    IntType, LongType, FloatType, ListType, UnicodeType, TupleType, range,
     charset_map,
 
     #isc_sqlcode, isc_sql_interprete, fb_interpret, isc_dsql_execute_immediate,
@@ -1960,7 +1960,7 @@ class EventBlock(object):
             self.__wait_for_events()
             return None
 
-        for i in xrange(len(self.event_names)):
+        for i in range(len(self.event_names)):
             result[self.event_names[i]] = int(self.__results[i])
         self.__wait_for_events()
         return result
@@ -2787,7 +2787,7 @@ class PreparedStatement(object):
                     value_size += 2
                 dimensions = []
                 total_num_elements = 1
-                for dimension in xrange(arraydesc.array_desc_dimensions):
+                for dimension in range(arraydesc.array_desc_dimensions):
                     bounds = arraydesc.array_desc_bounds[dimension]
                     dimensions.append((bounds.array_bound_upper+1)-bounds.array_bound_lower)
                     total_num_elements *= dimensions[dimension]
@@ -2821,7 +2821,7 @@ class PreparedStatement(object):
         """
         value = []
         if dim == len(dimensions)-1:
-            for i in xrange(dimensions[dim]):
+            for i in range(dimensions[dim]):
                 if dtype in (blr_text,blr_text2):
                     val = ctypes.string_at(buf[bufpos:bufpos+esize],esize)
                     ### Todo: verify handling of P version differences
@@ -2864,7 +2864,7 @@ class PreparedStatement(object):
                 value.append(val)
                 bufpos += esize
         else:
-            for i in xrange(dimensions[dim]):
+            for i in range(dimensions[dim]):
                 (val,bufpos) = self.__extract_db_array_to_list(esize,dtype,subtype,scale,dim+1,dimensions,buf,bufpos)
                 value.append(val)
         return (value,bufpos)
@@ -2907,7 +2907,7 @@ class PreparedStatement(object):
     def __fill_db_array_buffer(self,esize,dtype,subtype,scale,dim,dimensions,
                                value,valuebuf,buf,bufpos):
         if dim == len(dimensions)-1:
-            for i in xrange(dimensions[dim]):
+            for i in range(dimensions[dim]):
                 if dtype in (blr_text,blr_text2,
                              blr_varying,blr_varying2):
                     val = value[i]
@@ -2962,7 +2962,7 @@ class PreparedStatement(object):
                     raise OperationalError("Unsupported Firebird ARRAY subtype: %i" % dtype)
                 bufpos += esize
         else:
-            for i in xrange(dimensions[dim]):
+            for i in range(dimensions[dim]):
                 bufpos = self.__fill_db_array_buffer(esize,dtype,subtype,
                                                       scale,dim+1,
                                                       dimensions,value[i],
@@ -2977,7 +2977,7 @@ class PreparedStatement(object):
         ok = ok and (len(value) == dimensions[dim])
         if not ok:
             return False
-        for i in xrange(dimensions[dim]):
+        for i in range(dimensions[dim]):
             if dim == len(dimensions)-1:
                 # leaf: check value type
                 if value_type in (blr_text,blr_text2,
@@ -3011,7 +3011,7 @@ class PreparedStatement(object):
     def __Tuple2XSQLDA(self, xsqlda, parameters):
         """Move data from parameters to input XSQLDA.
         """
-        for i in xrange(xsqlda.sqld):
+        for i in range(xsqlda.sqld):
             sqlvar = xsqlda.sqlvar[i]
             value = parameters[i]
             vartype = sqlvar.sqltype & ~1
@@ -3205,7 +3205,7 @@ class PreparedStatement(object):
                         value_size += 2
                     dimensions = []
                     total_num_elements = 1
-                    for dimension in xrange(arraydesc.array_desc_dimensions):
+                    for dimension in range(arraydesc.array_desc_dimensions):
                         bounds = arraydesc.array_desc_bounds[dimension]
                         dimensions.append((bounds.array_bound_upper+1)-bounds.array_bound_lower)
                         total_num_elements *= dimensions[dimension]
@@ -4057,7 +4057,7 @@ class Transaction(object):
         elif len(self._connections) > 1:
             cnum = len(self._connections)
             teb_array = tebarray_factory(cnum)
-            for i in xrange(cnum):
+            for i in range(cnum):
                 teb_array[i].db_ptr = ctypes.pointer(self._connections[i]()._db_handle)
                 teb_array[i].tpb_len = len(_tpb)
                 teb_array[i].tpb_ptr = _tpb

@@ -61,7 +61,8 @@ def get_engine(bind, engines):
 def get_tables_for_bind(bind=None):
     """Returns a list of all tables relevant for a bind."""
     result = []
-    for table in Base.metadata.tables.itervalues():
+    # for table in Base.metadata.tables.itervalues():
+    for table in Base.metadata.tables.values():
         if table.info.get('bind_key') == bind:
             result.append(table)
     return result

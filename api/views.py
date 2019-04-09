@@ -446,7 +446,7 @@ class FuelCompareDetailView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, 
         now_hour = 23
         if fresh:
             now_hour = datetime.datetime.today().hour
-        for i in xrange(0, now_hour + 1):
+        for i in range(0, now_hour + 1):
             for fuel in fuel_types:
                 if not self.search_day(res, fuel, i):
                     res.append((fuel, i, 0, 0, 0))
@@ -1333,11 +1333,13 @@ class AbnormalCardView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixi
     def get_queryset(self):
         st, et = get_today_st_et()
         queryset = super(AbnormalCardView, self).get_queryset()
-        queryset_day = queryset.filter(abnormal_type=1, start_time__gte=st, end_time__gte=et, belong=self.site)
+        queryset_day = queryset.filter(abnormal_type=1, start_time__gte=st, end_time__lte=et, belong=self.site)
+        print(st, et)
         st, et = get_week_st_et()
         queryset_week = queryset.filter(abnormal_type=2, start_time__gte=st, end_time__gte=et, belong=self.site)
         queryset = queryset_day | queryset_week
         queryset = queryset.order_by('-create_time')
+        print(queryset_day)
         return queryset
 
 

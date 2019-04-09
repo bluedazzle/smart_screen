@@ -368,7 +368,7 @@ def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0
     if end_offset:
         total_page = end_offset / limit
 
-    for i in xrange(start, total_page):
+    for i in range(start, total_page):
         offset = limit * i
         result = session.query(obj).filter(obj.catch_payment == False, obj.belong_id == site.id).order_by(order_by).limit(limit).offset(
             offset).all()

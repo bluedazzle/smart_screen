@@ -34,7 +34,7 @@ class AdminLoginView(StatusWrapMixin, JsonResponseMixin, DetailView):
 
     @staticmethod
     def create_token(count=32):
-        return string.join(
+        return ''.join(
             random.sample('ZYXWVUTSRQPONMLKJIHGFEDCBA1234567890zyxwvutsrqponmlkjihgfedcbazyxwvutsrqponmlkjihgfedcba',
                           count)).replace(" ", "")
 
@@ -52,9 +52,11 @@ class AdminLoginView(StatusWrapMixin, JsonResponseMixin, DetailView):
                 self.status_code = ERROR_PASSWORD
                 return self.render_to_response()
             except Exception as e:
-                self.message = '账号不存在'
+                import traceback
+                traceback.print_exc()
+                self.message = str(e) # '账号不存在'
                 self.status_code = INFO_NO_EXIST
-                return self.render_to_response()
+                return self.render_to_response({'err':e})
 
 
 class InventoryListView(CheckAdminPermissionMixin, StatusWrapMixin, MultipleJsonResponseMixin, ListView):

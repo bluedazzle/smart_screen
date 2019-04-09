@@ -21,7 +21,7 @@ def query_by_pagination(session, obj, order_by='id', start_offset=0, limit=1000)
     if start_offset:
         start = start_offset / limit
 
-    for i in xrange(start, total_page):
+    for i in range(start, total_page):
         offset = limit * i
         result = session.query(obj).order_by(order_by).limit(limit).offset(
             offset).all()

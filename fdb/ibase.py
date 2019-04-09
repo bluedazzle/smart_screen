@@ -79,7 +79,7 @@ if PYTHON_MAJOR_VER == 3:
     ListType = list
     UnicodeType = str
     TupleType = tuple
-    xrange = range
+    range = range
 
 else:
     from Queue import PriorityQueue
@@ -118,7 +118,7 @@ else:
     ListType = types.ListType
     UnicodeType = types.UnicodeType
     TupleType = types.TupleType
-    xrange = xrange
+    range = range
 
 # Support routines from ctypesgen generated file.
 
