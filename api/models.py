@@ -60,6 +60,9 @@ class Site(BaseModel):
     die_0 = models.FloatField(default=0.0)
     die_d20 = models.FloatField(default=0.0)
 
+    def __str__(self):
+        return self.name
+
     def __unicode__(self):
         return self.name
 
@@ -68,6 +71,9 @@ class Classification(BaseModel):
     name = models.CharField(max_length=100, default='')
     id = models.IntegerField(unique=True, primary_key=True)
     belong = models.ForeignKey(Site, related_name='site_classification', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
 
     def __unicode__(self):
         return '{0}-{1}'.format(self.id, self.name)

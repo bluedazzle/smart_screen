@@ -4,10 +4,16 @@ import re
 import string
 import os
 import sys
-
-from urlparse import urlparse, parse_qs
+# import six
 
 from core.pyutil.net import is_python3
+
+# if six.PY3:
+if is_python3:
+    from urllib.parse import parse_qs
+    from urllib import parse as urlparse
+else:
+    from urlparse import urlparse, parse_qs
 
 
 def string2list(s, sep=','):

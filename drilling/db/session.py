@@ -110,7 +110,7 @@ class SignallingSession(SessionBase):
 
     def set_binds(self, binds):
         if binds is not None:
-            for mapperortable, bind in binds.iteritems():
+            for mapperortable, bind in binds.items():
                 if isinstance(mapperortable, (type, Mapper)):
                     self.bind_mapper(mapperortable, bind)
                 else:

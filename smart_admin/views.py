@@ -237,7 +237,7 @@ class UpdateBudgetView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseM
             req_dict.pop('total_profit')
         except Exception as e:
             pass
-        for k, v in req_dict.iteritems():
+        for k, v in req_dict.items():
             setattr(self.site, k, v)
         self.site.total_cost = self.sum_value(
             ['depreciation_cost', 'salary_cost', 'daily_repair', 'water_ele_cost', 'other_cost'])

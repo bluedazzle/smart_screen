@@ -10,4 +10,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         res = Site.objects.all()
         for itm in res:
-            print '{0},{1}'.format(itm.name, itm.slug)
+            print('{0},{1}'.format(itm.name, itm.slug))

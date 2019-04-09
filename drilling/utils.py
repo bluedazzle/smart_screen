@@ -152,7 +152,7 @@ def get_obj_by_hash(hash_str, obj_class):
         obj = session.query(obj_class).filter(obj_class.hash == hash_str).first()
         return obj
     except Exception as e:
-        print e
+        print(e)
         return None
 
 
@@ -161,7 +161,7 @@ def get_goods_order_by_hash(hash_str):
         obj = session.query(GoodsOrder).filter(GoodsOrder.hash == hash_str).first()
         return obj
     except Exception as e:
-        print e
+        print(e)
         return None
 
 
@@ -170,7 +170,7 @@ def get_fuel_order_by_hash(hash_str):
         obj = session.query(FuelOrder).filter(FuelOrder.hash == hash_str).first()
         return obj
     except Exception as e:
-        print e
+        print(e)
         return None
 
 
@@ -436,4 +436,4 @@ def get_py(name):
 
 
 if __name__ == '__main__':
-    print string_to_datetime('2017-01-01 00:00:00')
+    print(string_to_datetime('2017-01-01 00:00:00'))

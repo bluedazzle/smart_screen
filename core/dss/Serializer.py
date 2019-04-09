@@ -71,7 +71,7 @@ class Serializer(object):
             for field in concrete_model._meta.many_to_many:
                 if self.check_attr(field.name) and self.many:
                     obj_dict[field.name] = self.data_inspect(getattr(data, field.name))
-            for k, v in data.__dict__.iteritems():
+            for k, v in data.__dict__.items():
                 if not unicode(k).startswith('_') and k not in obj_dict.keys() and self.check_attr(k):
                     obj_dict[k] = self.data_inspect(v)
             return obj_dict
@@ -90,10 +90,10 @@ class Serializer(object):
         elif isinstance(data, dict):
             obj_dict = {}
             if self._dict_check:
-                for k, v in data.iteritems():
+                for k, v in data.items():
                     obj_dict[k] = self.data_inspect(v)
             else:
-                for k, v in data.iteritems():
+                for k, v in data.items():
                     if self.check_attr(k):
                         obj_dict[k] = self.data_inspect(v)
             return obj_dict

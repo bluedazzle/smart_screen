@@ -54,7 +54,7 @@ class AdminStatusWrapMixin(StatusWrapMixin):
             for itm in self.message:
                 error_data[itm[0]] = itm[1]
         if isinstance(self.message, dict):
-            for k, v in self.message.iteritems():
+            for k, v in self.message.items():
                 error_data[k] = v[0].get('message', '')
         data['msg'] = error_data
         return data

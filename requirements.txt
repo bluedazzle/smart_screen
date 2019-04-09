@@ -4,6 +4,7 @@ celery==4.3.0
 certifi==2019.3.9
 chardet==3.0.4
 Django==1.11.20
+django-adminlte2==0.4.1
 fdb==2.0.0
 future==0.17.1
 idna==2.8

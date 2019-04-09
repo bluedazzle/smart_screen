@@ -1766,7 +1766,7 @@ class Connection(object):
         stats = self.db_info(info_codes)
         for info_code in info_codes:
             stat = stats[info_code]
-            for table,count in stat.iteritems():
+            for table,count in stat.items():
                 tables.setdefault(table,_TableAccessStats(table))._set_info(info_code,count)
         return tables.values()
 
@@ -5295,7 +5295,7 @@ class TableReservation(object):
             return b('')
         frags = []
         _ = frags.append
-        for tableName, resDefs in self.iteritems():
+        for tableName, resDefs in self.items():
             tableNameLenWithTerm = len(b(tableName)) + 1
             for (sharingMode, accessMode) in resDefs:
                 _(int2byte(accessMode))
@@ -5335,7 +5335,7 @@ class TableReservation(object):
             return '<TableReservation with no entries>'
         frags = ['<TableReservation with entries:\n']
         _ = frags.append
-        for tableName, resDefs in self.iteritems():
+        for tableName, resDefs in self.items():
             _('  "%s":\n' % tableName)
             for rd in resDefs:
                 sharingModeStr = TableReservation._SHARING_MODE_STRS[rd[0]]
@@ -5358,7 +5358,7 @@ class TableReservation(object):
         if PYTHON_MAJOR_VER == 3:
             return self._res.items()
         else:
-            return self._res.iteritems()
+            return self._res.items()
     def __setitem__(self, key, value):
         key = self._validateKey(key)
         key = _normalizeDatabaseIdentifier(key)

@@ -14,7 +14,7 @@ def get_tank():
     cur.execute(
         'SELECT SHIFT_CONTROL_ID ,TANK_ID ,WATER_STICK ,CLOSE_QTY ,WATER_VOLUME ,TRANS_DATE FROM FUEL_TANK_READING WHERE TANK_ID = 2 ORDER BY TRANS_DATE DESC')
     res = cur.fetchone()
-    print res
+    print(res)
 
     # tank = session.query(FuelTank).filter(FuelTank.tank_id == 1).first()
     # tank.current = res[3]
