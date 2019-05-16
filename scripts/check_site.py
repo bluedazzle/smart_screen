@@ -52,6 +52,7 @@ def check_site():
 
 
 if __name__ == '__main__':
-    # print check_fuel('10.97.226.97')
-    # print check_eps('10.97.226.98')
+    #print check_fuel('11.94.30.1')
+    #print check_eps('11.94.30.2')
     check_site()
+

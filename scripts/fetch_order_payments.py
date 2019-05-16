@@ -1,11 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import datetime
-
-from drilling.db.interbase import init_interbase_connect
-from drilling.store import get_goods_order_payment, get_store_order
-from drilling.models import Site, session, GoodsOrder
+from drilling.store import get_goods_order_payment
+from drilling.models import Site, session
 
 from core.util import conf
 
@@ -19,7 +16,7 @@ config_oil_session(conf)
 
 
 def init_site_data():
-    result = session.query(Site).fliter(Site.check == True).all()
+    result = session.query(Site).filter(Site.check == True).all()
     return result
 
 
@@ -29,8 +26,6 @@ def get_payments():
         get_goods_order_payment(site, 4)
 
 
-def test():
-    get_store_order('mf', datetime.datetime(2018, 9, 25), datetime.datetime(2018, 10, 25))
-
 if __name__ == '__main__':
-    test()
+    get_payments()
+

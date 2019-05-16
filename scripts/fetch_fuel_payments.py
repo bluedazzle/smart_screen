@@ -16,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def init_site_data():
-    result = session.query(Site).fliter(Site.check == True).all()
+    result = session.query(Site).filter(Site.check == True).all()
     return result
 
 
@@ -28,3 +28,4 @@ def get_payments():
 
 if __name__ == '__main__':
     get_payments()
+

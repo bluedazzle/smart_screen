@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import datetime
-
+import redis
 import logging
 import threading
 
@@ -69,9 +69,9 @@ virtual_hose_id,timeopen DESC'''.format(st, et)
 
 
 def get_fuel_order_payment(site, threads=2, today=False):
-    t_orders = session.query(FuelOrder).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id)
+    t_orders = session.query(FuelOrder.till_id, FuelOrder.id).filter(FuelOrder.catch_payment == False, FuelOrder.belong_id == site.id)
     if today:
-        t_orders = t_orders.filter(FuelOrder.create_time == datetime.datetime.now().date())
+        t_orders = t_orders.filter(FuelOrder.create_time >= datetime.datetime.now().date())
     t_orders = t_orders.all()
     total = len(t_orders)
     thread_nums = threads
@@ -79,39 +79,42 @@ def get_fuel_order_payment(site, threads=2, today=False):
     slice_num = total / thread_nums
     offset = 0
 
-    def get_payment(thread_name, obj, start_offset=0, end_offset=0, limit=100):
-        for orders in query_by_pagination(site, session, obj, total, start_offset=start_offset, end_offset=end_offset,
-                                          limit=limit,
-                                          name=thread_name):
-            ib_session = init_interbase_connect(site.fuel_server)
-            tills = ','.join([unicode(i.till_id) for i in orders])
-            if not tills:
-                return
-            sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
-        PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
-        PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
-            ib_session.execute(sql)
-            res = ib_session.fetchall()
-            for itm in res:
-                till_id, payment_code, payment_type = itm
-                order = session.query(FuelOrder).filter(FuelOrder.till_id == till_id).first()
-                if order:
-                    order.payment_code = payment_code
-                    order.payment_type = get_clean_data(payment_type)
-                    order.catch_payment = True
-            try:
-                session.commit()
-                logging.info('INFO commit to db success site {0}'.format(site.name))
-            except Exception as e:
-                logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
-                session.rollback()
-
+    def get_payment(order_tills, obj, limit=100):
+        tills = ', '.join([str(i[0]) for i in order_tills])
+        sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE from TILLITEM_PMNT_SPLIT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0})'''.format(tills)
+        ib_session = init_interbase_connect(site.fuel_server)
+        ib_session.execute(sql)
+        res = ib_session.fetchall()
+        order_tills_map = dict(order_tills)
+        print(res) 
+        for till_id, pmnt_subcode_id in res:
+            order_id = order_tills_map.get(till_id)
+            if order_id:
+                order = session.query(FuelOrder).filter(FuelOrder.id == order_id).first()
+                try:
+                    payment_type = get_cache_payment_type(site.id, pmnt_subcode_id, site)
+                    # print('----',order_id, till_id, pmnt_subcode_id, payment_type)
+                    if payment_type:
+                        # print('get_paytype', payment_type, pmnt_subcode_id, order_id)
+                        order.payment_code = pmnt_subcode_id
+                        order.payment_type = payment_type
+                        order.catch_payment = True
+                        try:
+                            session.commit()
+                            logging.info('INFO commit to db success site {0}'.format(site.name))
+                        except Exception as e:
+                            # logging.exception('ERROR in commit session site {0} reason {1}'.format('mf', e))
+                            logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+                            session.rollback()
+                except Exception as e:
+                    print(e)
     for i in range(thread_nums):
         if i == thread_nums + 1:
             e_offset = total
         else:
             e_offset = offset + slice_num
-        t = threading.Thread(target=get_payment, args=(i, FuelOrder, offset, e_offset, 100))
+        print(i, offset, e_offset, slice_num) 
+        t = threading.Thread(target=get_payment, args=(t_orders[offset:e_offset], FuelOrder, 50))
         offset += slice_num
         thread_list.append(t)
 
@@ -120,6 +123,7 @@ def get_fuel_order_payment(site, threads=2, today=False):
 
     for t in thread_list:
         t.join()
+    print('-----end----')
 
 
 def get_sup(site):
@@ -177,9 +181,28 @@ Order By EXTREF'''.format(st, et)
     update_site_status(site, '油品配送记录更新')
 
 
+def get_cache_payment_type(belong_id, pmnt_subcode_id, site):
+    rds = redis.Redis(db=5)
+    pkey = "ptype_{}_{}".format(belong_id, pmnt_subcode_id)
+    payment_type = rds.get(pkey)
+    if not payment_type:
+        try:
+            ib_session = init_interbase_connect(site.fuel_server)
+            ib_session.execute('SELECT PMNT_ID, PMSUBCODE_ID, PMNT_NAME FROM PMNT WHERE PMSUBCODE_ID={};'.format(pmnt_subcode_id))
+            pmnt_id, pmsc_id, payment_type = ib_session.fetchone()
+            payment_type = get_clean_data(payment_type)
+            rds.setex(pkey, payment_type, 3600)
+            return payment_type
+        except Exception as e:
+            logging.exception('can not get payment type in pmnt pmnt_subcode_id :{}, site: {}'.format(pmnt_subcode_id, site.name))
+            return None
+    return payment_type.decode('utf-8')
+
+
 if __name__ == '__main__':
     get_fuel_order('test', datetime.datetime(2017, 1, 1), datetime.datetime(2017, 1, 2))
     # site = get_site_by_slug('test')
     # get_sup('test')
     # get_rev('test')
     # get_delivery('test', datetime.datetime(2017, 5, 1), datetime.datetime(2017, 10, 30))
+

@@ -26,5 +26,4 @@ urlpatterns = [
 
     url(r'^view/sites/$', views.SiteListView.as_view()),
     url(r'^view/tasks/$', views.TaskListView.as_view()),
-    url(r'^view/index/$', views.IndexView.as_view()),
 ]

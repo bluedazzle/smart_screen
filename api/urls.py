@@ -87,3 +87,4 @@ urlpatterns = [
     url(r'^fin/compare/list/$', CompareListView.as_view()),
 
 ]
+

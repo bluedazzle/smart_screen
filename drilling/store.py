@@ -5,6 +5,7 @@ import datetime
 
 import logging
 import threading
+import redis
 
 from drilling.db.interbase import init_interbase_connect
 from drilling.models import session, GoodsOrder
@@ -127,10 +128,10 @@ def get_first_classify(site):
 
 
 def get_goods_order_payment(site, threads=2, today=False):
-    t_orders = session.query(GoodsOrder).filter(GoodsOrder.catch_payment == False,
+    t_orders = session.query(GoodsOrder.till_id, GoodsOrder.id).filter(GoodsOrder.catch_payment == False,
                                                 GoodsOrder.belong_id == site.id)
     if today:
-        t_orders = t_orders.filter(GoodsOrder.create_time == datetime.datetime.now().date())
+        t_orders = t_orders.filter(GoodsOrder.create_time >= datetime.datetime.now().date())
     t_orders = t_orders.all()
     total = len(t_orders)
     thread_nums = threads
@@ -138,42 +139,42 @@ def get_goods_order_payment(site, threads=2, today=False):
     slice_num = total / thread_nums
     offset = 0
 
-    def get_payment(thread_name, obj, start_offset=0, end_offset=0, limit=100):
-        for orders in query_by_pagination(site, session, obj, total, start_offset=start_offset, end_offset=end_offset,
-                                          limit=limit,
-                                          name=thread_name):
-            ib_session = init_interbase_connect(site.fuel_server)
-            till_list = [unicode(order.till_id) for order in orders]
-            if not till_list:
-                return
-            tills = ','.join(till_list)
-            sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE, PMNT.PMNT_NAME from TILLITEM_PMNT_SPLIT,
-        PMNT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0}) AND
-        PMNT.PMSUBCODE_ID=TILLITEM_PMNT_SPLIT.PMSUBCODE'''.format(tills)
-            ib_session.execute(sql)
-            res = ib_session.fetchall()
-
-            for itm in res:
-                till_id, payment_code, payment_type = itm
-                orders = session.query(GoodsOrder).filter(GoodsOrder.till_id == till_id).all()
-                for order in orders:
-                    order.payment_code = payment_code
-                    order.payment_type = get_clean_data(payment_type)
-                    order.catch_payment = True
-            try:
-                session.flush()
-                session.commit()
-                logging.info('INFO commit to db success site {0}'.format(site.name))
-            except Exception as e:
-                logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
-                session.rollback()
-
+    def get_payment(order_tills, obj, limit=100):
+        tills = ', '.join([str(i[0]) for i in order_tills])
+        sql = '''select TILLITEM_PMNT_SPLIT.TILLNUM, TILLITEM_PMNT_SPLIT.PMSUBCODE from TILLITEM_PMNT_SPLIT where TILLITEM_PMNT_SPLIT.TILLNUM IN ({0})'''.format(tills)
+        ib_session = init_interbase_connect(site.fuel_server)
+        ib_session.execute(sql)
+        res = ib_session.fetchall()
+        order_tills_map = dict(order_tills)
+        print(res) 
+        for till_id, pmnt_subcode_id in res:
+            order_id = order_tills_map.get(till_id)
+            if order_id:
+                order = session.query(GoodsOrder).filter(GoodsOrder.id == order_id).first()
+                try:
+                    payment_type = get_cache_payment_type(site.id, pmnt_subcode_id, site)
+                    # print('----',order_id, till_id, pmnt_subcode_id, payment_type)
+                    if payment_type:
+                        # print('get_paytype', payment_type, pmnt_subcode_id, order_id)
+                        order.payment_code = pmnt_subcode_id
+                        order.payment_type = payment_type
+                        order.catch_payment = True
+                        try:
+                            session.commit()
+                            logging.info('INFO commit to db success site {0}'.format(site.name))
+                        except Exception as e:
+                            # logging.exception('ERROR in commit session site {0} reason {1}'.format('mf', e))
+                            logging.exception('ERROR in commit session site {0} reason {1}'.format(site.name, e))
+                            session.rollback()
+                except Exception as e:
+                    print(e)
     for i in range(thread_nums):
         if i == thread_nums + 1:
             e_offset = total
         else:
             e_offset = offset + slice_num
-        t = threading.Thread(target=get_payment, args=(i, GoodsOrder, offset, e_offset, 100))
+        print(i, offset, e_offset, slice_num) 
+        t = threading.Thread(target=get_payment, args=(t_orders[offset:e_offset], GoodsOrder, 50))
         offset += slice_num
         thread_list.append(t)
 
@@ -182,7 +183,7 @@ def get_goods_order_payment(site, threads=2, today=False):
 
     for t in thread_list:
         t.join()
-
+    print('-----end----') 
 
 def get_inventories(site):
     site = get_site_by_slug(site)
@@ -228,9 +229,27 @@ ORDER BY
     update_site_status(site, '商品库存更新')
 
 
+def get_cache_payment_type(belong_id, pmnt_subcode_id, site):
+    rds = redis.Redis(db=5)
+    pkey = "ptype_{}_{}".format(belong_id, pmnt_subcode_id)
+    payment_type = rds.get(pkey)
+    if not payment_type:
+        try:
+            ib_session = init_interbase_connect(site.fuel_server)
+            ib_session.execute('SELECT PMNT_ID, PMSUBCODE_ID, PMNT_NAME FROM PMNT WHERE PMSUBCODE_ID={};'.format(pmnt_subcode_id))
+            pmnt_id, pmsc_id, payment_type = ib_session.fetchone()
+            payment_type = get_clean_data(payment_type)
+            rds.setex(pkey, payment_type, 3600)
+            return payment_type
+        except Exception as e:
+            logging.exception('can not get payment type in pmnt pmnt_subcode_id :{}, site: {}'.format(pmnt_subcode_id, site.name))
+            return None
+    return payment_type.decode('utf-8')
+
 if __name__ == '__main__':
     # get_store_order('test', datetime.datetime(2017, 8, 2), datetime.datetime(2017, 8, 3))
     # get_first_classify('test')
     # get_second_classify('test')
     # get_third_classify('test')
     get_inventories('test')
+

@@ -109,6 +109,51 @@ def init_all(slug, task_id=None):
         raise e
 
 
+def get_missing(slug, task_id=None):
+    try:
+        begin = datetime.datetime.now()
+        now = get_now_time_with_timezone()
+        logging.info('开始初始化任务 {0: %Y-%m-%d %H:%M:%S}'.format(begin))
+        site = session.query(Site).filter(Site.slug == slug).first()
+        if site:
+            task = Task()
+            task.task_id = task_id
+            task.belong_id = site.id
+            task.name = '初始化任务: {0}'.format(site.name)
+            task.create_time = now
+            task.original_create_time = now
+            task.modify_time = now
+            session.add(task)
+            try:
+                session.commit()
+            except Exception as e:
+                logging.exception('ERROR in commit session site {0} reason {1}'.format(slug, e))
+                session.rollback()
+
+            init_st = add_timezone_to_naive_time(datetime.datetime(2017, 5, 1))
+            init_et = add_timezone_to_naive_time(datetime.datetime.now())
+            total_days = (init_et - init_st).days
+            times = total_days / 7
+            detla = datetime.timedelta(days=7)
+            count = 0.0
+            et = init_st
+            while 1:
+                st = et
+                et = et + detla
+                count += 1
+                percent = round(count / times, 2) * 100
+                init_day_record(site.slug, st, et, task_id, percent)
+                if st > init_et:
+                    break
+        end = datetime.datetime.now()
+        msg = '结束初始化任务 {0: %Y-%m-%d %H:%M:%S} 共计耗时 {1} 分钟'.format(end, round((end - begin).seconds / 60.0))
+        update_init_progress(task_id, 100, msg, TaskStatus.finish)
+    except Exception as e:
+        logging.exception('ERROR in init all site {0} reason {1}'.format(slug, e))
+        update_init_progress(task_id, 0, e.message, TaskStatus.error)
+        raise e
+
+
 def init_in_test(slug, task_id=None):
     import time
     try:
@@ -158,3 +203,4 @@ def init_in_test(slug, task_id=None):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     init_all('air')
+
