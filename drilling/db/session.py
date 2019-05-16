@@ -40,7 +40,7 @@ def make_declarative_base():
 Base = make_declarative_base()
 
 
-def _create_engine(user, password, host, port, db, pool_recycle=60, charset='utf8'):
+def _create_engine(user, password, host, port, db, pool_recycle=-1, charset='utf8'):
     engine = create_engine('postgresql+psycopg2://%s:%s@%s:%s/%s' % (
         user, password,
         host, port,
@@ -155,5 +155,4 @@ def with_session(func):
         response = func(*args, **kwargs)
         OilSession.remove()
         return response
-
     return _wrapped

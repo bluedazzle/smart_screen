@@ -10,6 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         sites = Site.objects.all()
         for site in sites:
-            site.password = 123
+            site.password = 123123
             site.lock = 1000
             site.save()
+

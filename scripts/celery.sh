@@ -8,6 +8,6 @@ log_dir=/var/log/run/celery
 
 mkdir -p ${log_dir}
 
-cd /var/www/site/
+cd /var/www/site/smart_screen/
 
-celery -A smart_screen.drilling.tasks worker -l info -B 2>&1 | cronolog ${log_dir}/celery-%Y-%m-%d.log &
+celery -A drilling.tasks worker -l info -B 2>&1 | cronolog ${log_dir}/celery-%Y-%m-%d.log &

@@ -332,3 +332,4 @@ class AbnormalRecord(models.Model):
         return '{0}-{1}-{2}-{3: %Y-%m-%d %H:%M:%S}~{4: %Y-%m-%d %H:%M:%S}'.format(self.belong.name, self.card_id,
                                                                                   self.reason, self.start_time,
                                                                                   self.end_time)
+

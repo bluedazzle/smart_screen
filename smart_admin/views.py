@@ -145,19 +145,34 @@ class FuelPlanView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMixin
             return self.render_to_response()
         fp = FuelPlan(belong=self.site, fuel_type_id=fuel_type, year=year)
         if plan_type == 1:
-            month_plan = round(total / 12.0)
-            fp.jan = month_plan
-            fp.feb = month_plan
-            fp.mar = month_plan
-            fp.apr = month_plan
-            fp.may = month_plan
-            fp.jul = month_plan
-            fp.jun = month_plan
-            fp.aug = month_plan
-            fp.sep = month_plan
-            fp.nov = month_plan
-            fp.dec = month_plan
-            fp.oct = month_plan
+            if total == 0:
+                fp.jan = jan
+                fp.feb = feb
+                fp.mar = mar
+                fp.apr = apr
+                fp.may = may
+                fp.jul = jul
+                fp.jun = jun
+                fp.aug = aug
+                fp.sep = sep
+                fp.nov = nov
+                fp.dec = dec
+                fp.oct = oct
+                total = jan + feb + mar + apr + may + jun + jul + aug + sep + oct + nov + dec
+            else:
+                month_plan = round(total / 12.0)
+                fp.jan = month_plan
+                fp.feb = month_plan
+                fp.mar = month_plan
+                fp.apr = month_plan
+                fp.may = month_plan
+                fp.jul = month_plan
+                fp.jun = month_plan
+                fp.aug = month_plan
+                fp.sep = month_plan
+                fp.nov = month_plan
+                fp.dec = month_plan
+                fp.oct = month_plan
         else:
             fp.jan = jan
             fp.feb = feb
@@ -351,3 +366,4 @@ class ExcelUploadView(CheckAdminPermissionMixin, StatusWrapMixin, JsonResponseMi
                 setattr(excel, key, s)
             excel.save()
         return self.render_to_response({})
+

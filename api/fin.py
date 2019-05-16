@@ -266,10 +266,12 @@ class OilSellAmountView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, Smar
     unit_keys = {'current': '吨'}
     api_name = '油品销售数量'
 
-    fuel_dict = {98: '98号 车用汽油(V)', 95: '95号 车用汽油(Ⅴ)',
-                 92: '92号 车用汽油(Ⅴ)', 0: '0号 车用柴油(Ⅴ)',
-                 -20: '-20号 车用柴油(Ⅴ)', 35: '35号 车用柴油(Ⅴ)',
-                 10: '10号 车用柴油(Ⅴ)', 20: '20号 车用柴油(Ⅴ)'}
+    fuel_dict = {98: '98号 车用汽油(VIA)', 95: '95号 车用汽油(VIA)',
+                 92: '92号 车用汽油(VIA)', 0: '0号 车用柴油(VI)',
+                 '98': '98号 车用汽油(VIA)', '95': '95号 车用汽油(VIA)',
+                 '92': '92号 车用汽油(VIA)', '0': '0号 车用柴油(VI)',
+                 -20: '-20号 车用柴油(V)', 35: '35号 车用柴油(V)',
+                 10: '10号 车用柴油(V)', 20: '20号 车用柴油(V)'}
 
     fuel_column_dict = {98: 'gas_98', 95: 'gas_95',
                         92: 'gas_92', 0: 'die_0',
@@ -720,7 +722,6 @@ class TonOilCostView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, SmartFi
     column = [Excel.total_cost_aa, Excel.oil_amount_n]
     ys_column = 'ton_oil_cost'
     unit_keys = {'current': '元/吨'}
-    # wan = True
     api_name = '吨油费用'
 
     # ton = True
@@ -970,3 +971,4 @@ class CompareListView(CheckSiteMixin, StatusWrapMixin, MultipleJsonResponseMixin
     def get_queryset(self):
         queryset = self.model.objects.all()
         return queryset
+

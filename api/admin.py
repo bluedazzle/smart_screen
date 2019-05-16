@@ -11,10 +11,12 @@ class GoodsInventoryAdmin(admin.ModelAdmin):
 class GoodsAdmin(admin.ModelAdmin):
     search_fields = ['belong__id']
 
+class SiteAdmin(admin.ModelAdmin):
+    search_fields = ['slug']
 
 admin.site.register(FuelOrder, GoodsAdmin)
 admin.site.register(FuelTank)
-admin.site.register(Site)
+admin.site.register(Site, SiteAdmin)
 admin.site.register(GoodsOrder, GoodsAdmin)
 admin.site.register(InventoryRecord)
 admin.site.register(Classification)

@@ -233,8 +233,6 @@ def get_clean_data(value):
 
 
 def datetime_to_string(obj, fmt='%Y-%m-%d'):
-    if not obj:
-        return '1980-01-01'
     return obj.strftime(fmt)
 
 
@@ -367,10 +365,10 @@ def query_by_pagination(site, session, obj, total, order_by='id', start_offset=0
 
     if end_offset:
         total_page = end_offset / limit
-
+    from sqlalchemy import desc
     for i in xrange(start, total_page):
         offset = limit * i
-        result = session.query(obj).filter(obj.catch_payment == False, obj.belong_id == site.id).order_by(order_by).limit(limit).offset(
+        result = session.query(obj).filter(obj.catch_payment == False, obj.belong_id == site.id).order_by(desc(order_by)).limit(limit).offset(
             offset).all()
         logging.info(
             'Thread {0} {1}: Current {2}->{3}/{4} {5}%'.format(name, site.slug, offset, offset + limit, total,
@@ -437,3 +435,4 @@ def get_py(name):
 
 if __name__ == '__main__':
     print string_to_datetime('2017-01-01 00:00:00')
+

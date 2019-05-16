@@ -1479,3 +1479,4 @@ class OverView(CheckSiteMixin, StatusWrapMixin, JsonResponseMixin, DateTimeHandl
         card_res.append({'cls_name': '非油', 'total': round(money / 100.0 - card_total)})
         return self.render_to_response(
             {'fuel': fuel_res, 'card': card_res, 'unit': {'amount_unit': '升', 'total_unit': '元'}})
+

@@ -53,3 +53,4 @@ class Excel(models.Model):
 
     def __unicode__(self):
         return '{0}: {1}年-{2}月'.format(self.belong.name, self.year, self.month)
+
